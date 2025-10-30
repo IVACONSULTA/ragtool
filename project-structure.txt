@@ -1,0 +1,21 @@
+my_project/
+├── .gitignore
+├── README.md
+├── requirements.txt
+├── setup.py (or pyproject.toml)
+├── my_package/
+│   ├── __init__.py
+│   ├── module1.py
+│   ├── module2.py
+│   └── sub_package/
+│       ├── __init__.py
+│       └── sub_module.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_module1.py
+│   └── test_module2.py
+├── docs/
+│   └── index.md
+└── data/
+    ├── raw/
+    └── processed/

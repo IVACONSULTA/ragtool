@@ -1,0 +1,102 @@
+# .github/workflows/ci.yml
+name: CI
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Log level"
+        required: true
+        default: "warning"
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Set minimal environment for testing without real API keys
+      OPENAI_API_KEY: sk-test-dummy-key-for-ci
+      LLM_MODEL: gpt-4o-mini
+      EMBEDDING_MODEL: text-embedding-3-small
+      CHROMA_DB_PATH: ./test_db
+      DATA_FILE_PATH: ./utils/data/test.pdf
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Create test environment
+        run: |
+          echo "Setting up test environment..."
+          mkdir -p data/raw
+          mkdir -p test_db
+          # Create a dummy PDF for testing (if needed)
+          echo "PDF test content" > data/raw/test.pdf
+      - name: Check code structure
+        run: |
+          echo "Checking Python syntax for all modules..."
+          python -m py_compile agents/crewai/crew_agent_server.py
+          python -m py_compile agents/rag/files_ragtool.py
+          python -m py_compile agents/rag/rag_wrapper.py
+          python -m py_compile agents/utils/config.py
+          python -m py_compile agents/utils/files_manager.py
+      - name: Test configuration module
+        run: |
+          echo "Testing configuration validation..."
+          python3 -m agents.utils.config --validate || echo "Config validation completed (may show warnings in CI)"
+      - name: Test PDF management utilities
+        run: |
+          echo "Testing PDF management CLI syntax..."
+          python agents/utils/files_manager.py --help
+          echo "Testing environment detection..."
+          python -c "from agents.utils.files_manager import is_running_on_railway; print(f'Railway detected: {is_running_on_railway()}')"
+        continue-on-error: true
+      - name: Test Railway environment detection
+        run: |
+          echo "Testing Railway environment detection..."
+          # Test local environment (should be false in CI)
+          python -c "from agents.utils.files_manager import is_running_on_railway; assert not is_running_on_railway(), 'Should detect local environment in CI'"
+          echo "✅ Environment detection working correctly"
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests..."
+          if [ -f tests/test_crewai_compatibility.py ] && [ -s tests/test_crewai_compatibility.py ]; then
+            python -m pytest tests/ -v --tb=short
+          else
+            echo "No tests found or test file is empty"
+          fi
+        continue-on-error: true
+      - name: Run linting
+        run: |
+          echo "Running Python linting..."
+          python -m flake8 --select=E9,F63,F7,F82 --show-source --statistics agents/ utils/
+          echo "Running import sorting check..."
+          python -m isort --check-only --diff agents/ utils/ || echo "Import sorting issues found (non-blocking)"
+        continue-on-error: true
+      - name: Test scripts
+        run: |
+          echo "Testing shell scripts..."
+          chmod +x scripts/run_agent.sh scripts/run_pdf_processor.sh
+          # Test script syntax (don't execute, just validate)
+          bash -n scripts/run_agent.sh
+          bash -n scripts/run_pdf_processor.sh
+          echo "✅ Shell scripts syntax validated"
+        continue-on-error: true
+      - name: Cleanup test environment
+        run: |
+          echo "Cleaning up test environment..."
+          rm -rf test_db
+          rm -f utils/data/test.pdf

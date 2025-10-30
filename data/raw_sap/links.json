@@ -1,0 +1,26 @@
+[
+  {
+    "data_type": "web_page",
+    "url": "https://learning.sap.com/products/business-technology-platform"
+  },
+  {
+    "data_type": "web_page",
+    "url": "https://www.sap.com/products/technology-platform.html"
+  },
+  {
+    "data_type": "web_page",
+    "url": "https://www.taxtech500.com/featured-articles/from-banking-apps-to-sap-btp-the-new-era-of-embedded-tax"
+  },
+  {
+    "data_type": "web_page",
+    "url": "https://sapinsider.org/blogs/embracing-sap-btp-and-avalara-solutions-during-s4-migration-to-meet-tax-compliance-mandates"
+  },
+  {
+    "data_type": "web_page",
+    "url": "https://rtcsuite.com/an-introduction-to-sap-business-technology-platform-sap-btp"
+  },
+  {
+    "data_type": "web_page",
+    "url": "https://www.sap.com/swiss/products/erp/partners/meridian-global-vat-services-limited-arco-tax-determination-for-sap-btp.html"
+  }
+]
