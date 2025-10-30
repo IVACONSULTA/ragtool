@@ -1,3 +1,3 @@
 echo "Installing requirements for dev and production..."
 
-pip install -r requirements.txt -r requirements-dev.txt
+python3 -m pip install -r requirements.txt
