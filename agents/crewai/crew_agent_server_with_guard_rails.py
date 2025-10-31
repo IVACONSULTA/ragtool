@@ -172,16 +172,20 @@ except Exception as e:
     print("✅ Custom RAG Tool fallback initialized: RAG Tool: DISABLED")
 
 # Initialize crews based on RAG_ROLE
+# These crews are initialized once at startup
 iva_consulta_crew = None
 sap_crew = None
-default_crew = None
+active_crew = None  # The active crew to use for requests
+
+# Initialize crews based on RAG_ROLE
+# The active_crew will be used as the default for all requests
 
 # Initialize IVA Consulta crew (default)
 if RAG_ROLE == "iva_consulta":
     try:
         print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
         iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-        default_crew = iva_consulta_crew
+        active_crew = iva_consulta_crew
         print("✅ IVA Consulta Crew initialized successfully")
         print(f"   - {custom_llm.get_model_info()}")
         print(f"   - {custom_rag_tool.get_status_info()}")
@@ -200,18 +204,18 @@ if RAG_ROLE == "iva_consulta":
         
         try:
             sap_crew = SapCrew(custom_llm, custom_rag_tool)
-            default_crew = sap_crew
+            active_crew = sap_crew
             print("✅ SAP Crew initialized as fallback")
         except Exception as fallback_error:
             print(f"❌ Fallback initialization also failed: {fallback_error}")
-            default_crew = None
+            active_crew = None
 
 # Initialize SAP crew (default)
 elif RAG_ROLE == "sap":
     try:
         print("🤖 Initializing SAP Crew (DEFAULT)...")
         sap_crew = SapCrew(custom_llm, custom_rag_tool)
-        default_crew = sap_crew
+        active_crew = sap_crew
         print("✅ SAP Crew initialized successfully")
         print(f"   - {custom_llm.get_model_info()}")
         print(f"   - {custom_rag_tool.get_status_info()}")
@@ -230,42 +234,37 @@ elif RAG_ROLE == "sap":
         
         try:
             iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-            default_crew = iva_consulta_crew
+            active_crew = iva_consulta_crew
             print("✅ IVA Consulta Crew initialized as fallback")
         except Exception as fallback_error:
             print(f"❌ Fallback initialization also failed: {fallback_error}")
-            default_crew = None
+            active_crew = None
 
 else:
     print(f"⚠️  Unknown RAG_ROLE '{RAG_ROLE}', defaulting to IVA Consulta")
     try:
         print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
         iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-        default_crew = iva_consulta_crew
+        active_crew = iva_consulta_crew
         print("✅ IVA Consulta Crew initialized successfully")
     except Exception as e:
         print(f"❌ Error initializing IVA Consulta Crew: {e}")
-        default_crew = None
+        active_crew = None
 
 # Initialize the other crew as well if not already initialized (for flexibility)
 if RAG_ROLE == "iva_consulta" and sap_crew is None:
     try:
-        sap_data_path = ROLE_DATA_PATHS.get("sap")
-        if sap_data_path:
-            print("🤖 Initializing SAP Crew (secondary)...")
-            # Create a separate RAG tool instance for SAP if needed, or reuse
-            sap_crew = SapCrew(custom_llm, custom_rag_tool)
-            print("✅ SAP Crew initialized successfully")
+        print("🤖 Initializing SAP Crew (secondary)...")
+        sap_crew = SapCrew(custom_llm, custom_rag_tool)
+        print("✅ SAP Crew initialized successfully")
     except Exception as e:
         print(f"⚠️  Could not initialize SAP Crew (secondary): {e}")
 
 elif RAG_ROLE == "sap" and iva_consulta_crew is None:
     try:
-        iva_data_path = ROLE_DATA_PATHS.get("iva_consulta")
-        if iva_data_path:
-            print("🤖 Initializing IVA Consulta Crew (secondary)...")
-            iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-            print("✅ IVA Consulta Crew initialized successfully")
+        print("🤖 Initializing IVA Consulta Crew (secondary)...")
+        iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+        print("✅ IVA Consulta Crew initialized successfully")
     except Exception as e:
         print(f"⚠️  Could not initialize IVA Consulta Crew (secondary): {e}")
 
@@ -312,10 +311,28 @@ def verify_api_key():
 
 
 @trace_async_function("call_crewai_agent")
-async def call_crewai_agent(user_message: str, agent_type: str = "iva_consulta_agent") -> str:
-    """Call the CrewAI agent with the user's question."""
+async def call_crewai_agent(user_message: str, agent_type: str = None) -> str:
+    """Call the CrewAI agent with the user's question.
+    
+    Args:
+        user_message: The user's question/message
+        agent_type: Optional agent type. If not provided, uses active_crew based on RAG_ROLE
+        
+    Returns:
+        The agent's response as a string
+        
+    Raises:
+        ComplianceViolationError: If message violates EU AI Act compliance rules
+        Exception: If agent is not available or other errors occur
+    """
+    # Check if any crew is available
+    if active_crew is None:
+        error_msg = "The agent is not available at the moment. Please try again later."
+        print(f"❌ {error_msg}")
+        raise Exception(error_msg)
+    
     try:
-        print(f"📝 Processing question with {agent_type}: {user_message}")
+        print(f"📝 Processing question: {user_message}")
 
         # Apply EU AI Act compliance guardrails before processing
         print("🛡️ Running EU AI Act compliance checks...")
@@ -335,45 +352,47 @@ async def call_crewai_agent(user_message: str, agent_type: str = "iva_consulta_a
 
         print("✅ Message passed all compliance checks")
 
-        # Determine which crew to use based on agent_type or default
+        # Select crew based on agent_type or use active_crew (initialized once at startup)
+        selected_crew = None
+        crew_name = ""
+        
         if agent_type == "iva_consulta_agent" and iva_consulta_crew is not None:
-            print("🤖 Using IVA Consulta crew...")
-            crew_instance = iva_consulta_crew.create_crew_with_message(user_message)
+            selected_crew = iva_consulta_crew
+            crew_name = "IVA Consulta"
         elif agent_type == "sap_consultant" and sap_crew is not None:
-            print("🤖 Using SAP crew...")
-            crew_instance = sap_crew.create_crew_with_message(user_message)
+            selected_crew = sap_crew
+            crew_name = "SAP"
         else:
-            # Use default crew based on RAG_ROLE
-            if default_crew is not None:
-                crew_name = "IVA Consulta" if RAG_ROLE == "iva_consulta" else "SAP"
-                print(f"🤖 Using default {crew_name} crew (based on RAG_ROLE)...")
-                crew_instance = default_crew.create_crew_with_message(user_message)
-            elif iva_consulta_crew is not None:
-                print("🤖 Using IVA Consulta crew as fallback...")
-                crew_instance = iva_consulta_crew.create_crew_with_message(user_message)
-            elif sap_crew is not None:
-                print("🤖 Using SAP crew as fallback...")
-                crew_instance = sap_crew.create_crew_with_message(user_message)
-            else:
-                raise Exception("No crew initialized - check server logs for initialization errors")
+            # Use active_crew (initialized once based on RAG_ROLE)
+            selected_crew = active_crew
+            crew_name = "IVA Consulta" if RAG_ROLE == "iva_consulta" else "SAP"
+        
+        if selected_crew is None:
+            error_msg = "The agent is not available at the moment. Please try again later."
+            print(f"❌ {error_msg}")
+            raise Exception(error_msg)
+        
+        print(f"🤖 Using {crew_name} crew...")
 
-
-
+        # Create crew instance with user message and execute
         print("🤖 Executing CrewAI task...")
+        crew_instance = selected_crew.create_crew_with_message(user_message)
         task_output = await crew_instance.kickoff_async()
 
         response_content = str(task_output)
         
         # For IVA Consulta agent, ensure response is within 600 characters
-        if agent_type == "iva_consulta_agent" and len(response_content) > 600:
+        if (agent_type == "iva_consulta_agent" or 
+            (agent_type is None and RAG_ROLE == "iva_consulta")) and len(response_content) > 600:
             response_content = response_content[:597] + "..."
             print(f"⚠️  Response truncated to 600 characters for IVA Consulta agent")
         
-        print(f"✅ {agent_type} response generated: {len(response_content)} characters")
+        actual_agent_type = agent_type if agent_type else (f"{RAG_ROLE}_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant")
+        print(f"✅ Response generated: {len(response_content)} characters")
 
         # Log successful agent interaction to LangSmith
         log_agent_interaction(
-            agent_type,
+            actual_agent_type,
             user_message,
             response_content,
             {"compliance_checked": True, "response_length": len(response_content)}
@@ -386,10 +405,12 @@ async def call_crewai_agent(user_message: str, agent_type: str = "iva_consulta_a
             
         return response_content
 
+    except ComplianceViolationError:
+        # Re-raise compliance violations as-is
+        raise
     except Exception as e:
         error_msg = f"Error in CrewAI agent: {e}"
         print(f"❌ {error_msg}")
-
 
         # Log error to LangSmith
         log_error(
@@ -407,7 +428,7 @@ async def call_crewai_agent(user_message: str, agent_type: str = "iva_consulta_a
             raise e
         else:
             raise Exception(
-                "CrewAI agent service is currently unavailable. Please try again later."
+                "The agent is not available at the moment. Please try again later."
             )
 
 
@@ -463,10 +484,12 @@ def chat():
             return jsonify({"error": "No message provided"}), 400
 
         user_message: str = data["message"]
-        # Default agent type based on RAG_ROLE
-        default_agent_type = "iva_consulta_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant"
-        agent_type: str = data.get("agent_type", default_agent_type)
-        print(f"Received message: {user_message} (agent: {agent_type})")
+        # agent_type is optional - if not provided, uses active_crew based on RAG_ROLE
+        agent_type: str = data.get("agent_type")  # Can be None to use default
+        if agent_type:
+            print(f"Received message: {user_message} (agent: {agent_type})")
+        else:
+            print(f"Received message: {user_message} (using default agent based on RAG_ROLE)")
 
         # Execute the CrewAI agent call
         result: str = asyncio.run(call_crewai_agent(user_message, agent_type))
@@ -485,10 +508,15 @@ def chat():
                 }
             )
 
+        # Determine actual agent type for response
+        actual_agent_type = agent_type if agent_type else (
+            "iva_consulta_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant"
+        )
+        
         return jsonify(
             {
                 "response": result,
-                "agent_type": agent_type,
+                "agent_type": actual_agent_type,
                 "timestamp": datetime.now().isoformat(),
             }
         )
@@ -510,37 +538,6 @@ def chat():
         return jsonify({"error": str(exc)}), 500
 
 
-@app.route("/iva-consulta", methods=["POST"])
-@limiter.limit("20 per minute")
-def iva_consulta_chat():
-    """IVA Consulta specific endpoint for VAT consultation with guardrails."""
-    # Check API key in production
-    api_key, auth_error = verify_api_key()
-    if auth_error:
-        return auth_error
-    try:
-        data = request.get_json(force=True, silent=False)
-        if not data or "message" not in data:
-            return jsonify({"error": "No message provided"}), 400
-
-        user_message: str = data["message"]
-        print(f"Received IVA Consulta message: {user_message}")
-
-        # Execute the IVA Consulta agent call
-        result: str = asyncio.run(call_crewai_agent(user_message, "iva_consulta_agent"))
-
-        return jsonify(
-            {
-                "response": result,
-                "agent_type": "iva_consulta_agent",
-                "timestamp": datetime.now().isoformat(),
-                "source": "IVA Consulta VAT Specialist",
-            }
-        )
-    except Exception as exc:
-        print(f"Error in IVA Consulta endpoint: {exc}")
-        return jsonify({"error": str(exc)}), 500
-
 
 @app.route("/", methods=["GET"])
 def index():
@@ -550,8 +547,7 @@ def index():
             "version": "1.0.0",
             "endpoints": {
                 "health": "/health", 
-                "chat": "/chat",
-                "iva_consulta": "/iva-consulta"
+                "chat": "/chat"
             },
             "status": "running",
             "timestamp": datetime.now().isoformat(),
@@ -583,7 +579,6 @@ if __name__ == "__main__":
     print(f"📍 Server will be available on port: {port}")
     print("🔗 Health check: /health")
     print("💬 Chat endpoint: /chat")
-    print("🏛️  IVA Consulta endpoint: /iva-consulta")
     print("🤖 CrewAI multi-agent system ready")
     print(f"📄 VAT documents: {data_path}")
     print(f"🎯 Default agent: {RAG_ROLE.upper()} ({'IVA Consulta VAT Specialist' if RAG_ROLE == 'iva_consulta' else 'SAP Consultant'})")
