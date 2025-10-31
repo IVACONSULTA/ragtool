@@ -46,7 +46,6 @@ from agents.langsmith_integration import (
     trace_async_function,
     log_agent_interaction,
     log_error,
-    create_traced_openai_client,
     log_monitoring_summary,
 )
 
@@ -77,10 +76,25 @@ limiter = Limiter(
 #                    Agent Initialization                                       #
 #################################################################################
 
-# Initialize configuration using centralized config utility
+# Read RAG role and data path from environment
+RAG_ROLE = os.getenv("RAG_ROLE", "iva_consulta").lower()  # Default: iva_consulta
+RAG_DATA_PATH = os.getenv("RAG_DATA_PATH")  # Optional: can be None to use config default
 
+# Define role-specific data paths if RAG_DATA_PATH not provided
+ROLE_DATA_PATHS = {
+    "iva_consulta": "./data/raw",  # VAT documents directory
+    "sap": "./data/raw_sap",  # SAP documents directory
+}
 
-# This line is no longer needed as we added the correct path above
+# Get data path: env var > role-based default > config default
+if RAG_DATA_PATH is None:
+    RAG_DATA_PATH = ROLE_DATA_PATHS.get(RAG_ROLE)
+    print(f"📁 Using role-based data path for '{RAG_ROLE}': {RAG_DATA_PATH}")
+else:
+    print(f"📁 Using custom data path from RAG_DATA_PATH: {RAG_DATA_PATH}")
+
+print(f"🎯 RAG Role: {RAG_ROLE}")
+print(f"📂 Data Path: {RAG_DATA_PATH}")
 
 # Initialize LangSmith integration
 print("🔍 Initializing LangSmith integration...")
@@ -121,7 +135,7 @@ try:
             if project:
                 os.environ["LANGCHAIN_PROJECT"] = project
             else:
-                os.environ["LANGCHAIN_PROJECT"] = "sap-rag-tool"
+                os.environ["LANGCHAIN_PROJECT"] = "ivaconsulta-rag-tool"
             
             # Enable comprehensive monitoring
             print("📊 Enabling comprehensive LLM monitoring...")
@@ -135,6 +149,7 @@ try:
             print(f"⚠️  Could not set up LLM tracing: {e}")
     
     print(f"✅ Custom LLM initialized successfully: {custom_llm.get_model_info()}")
+
 except Exception as e:
     print(f"❌ Error initializing Custom LLM: {e}")
     # Create fallback instance
@@ -143,55 +158,117 @@ except Exception as e:
     llm = custom_llm.get_llm()
     print(f"✅ Custom LLM fallback initialized: {custom_llm.get_model_info()}")
 
-# Initialize CustomRagTool instance
+# Initialize CustomRagTool instance with role-based data path
 try:
-    print("🤖 Initializing Custom RAG Tool...")
-    custom_rag_tool = CustomRagTool()
-    rag_tool = custom_rag_tool.initialize_rag_tool()
+    print(f"🤖 Initializing Custom RAG Tool for '{RAG_ROLE}' role...")
+    custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
+    rag_tool = custom_rag_tool.initialize_rag_tool(data_path=RAG_DATA_PATH)
     print(f"✅ Custom RAG Tool initialized: {custom_rag_tool.get_status_info()}")
 except Exception as e:
     print(f"❌ Error initializing Custom RAG Tool: {e}")
     # Create fallback instance
-    custom_rag_tool = CustomRagTool()
+    custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
     rag_tool = None
     print("✅ Custom RAG Tool fallback initialized: RAG Tool: DISABLED")
 
-# Initialize the IVA Consulta crew instance (DEFAULT)
-try:
-    print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
-    iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-    print("✅ IVA Consulta Crew initialized successfully")
-    print(f"   - {custom_llm.get_model_info()}")
-    print(f"   - {custom_rag_tool.get_status_info()}")
-except Exception as e:
-    print(f"❌ Error initializing IVA Consulta Crew: {e}")
-    print("🔄 Attempting to initialize SAP Crew as fallback...")
+# Initialize crews based on RAG_ROLE
+iva_consulta_crew = None
+sap_crew = None
+default_crew = None
+
+# Initialize IVA Consulta crew (default)
+if RAG_ROLE == "iva_consulta":
     try:
-        iva_consulta_crew = SapCrew(custom_llm, custom_rag_tool)
-        print("✅ SAP Crew fallback initialized successfully")
-    except Exception as fallback_error:
-        print(f"❌ Fallback initialization also failed: {fallback_error}")
-        iva_consulta_crew = None
+        print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
+        iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+        default_crew = iva_consulta_crew
+        print("✅ IVA Consulta Crew initialized successfully")
+        print(f"   - {custom_llm.get_model_info()}")
+        print(f"   - {custom_rag_tool.get_status_info()}")
+    except Exception as e:
+        print(f"❌ Error initializing IVA Consulta Crew: {e}")
+        print("🔄 Attempting to initialize SAP Crew as fallback...")
+        # Reinitialize RAG tool with SAP data path for fallback
+        fallback_data_path = ROLE_DATA_PATHS.get("sap")
+        if fallback_data_path:
+            print(f"🔄 Reinitializing RAG tool with SAP data path: {fallback_data_path}")
+            try:
+                custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
+                print(f"✅ RAG tool reinitialized with SAP data path")
+            except Exception as rag_error:
+                print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
+        
+        try:
+            sap_crew = SapCrew(custom_llm, custom_rag_tool)
+            default_crew = sap_crew
+            print("✅ SAP Crew initialized as fallback")
+        except Exception as fallback_error:
+            print(f"❌ Fallback initialization also failed: {fallback_error}")
+            default_crew = None
 
-# Initialize the SAP crew instance (for compatibility)
-try:
-    print("🤖 Initializing SAP Crew...")
-    sap_crew = SapCrew(custom_llm, custom_rag_tool)
-    print("✅ SAP Crew initialized successfully")
-except Exception as e:
-    print(f"❌ Error initializing SAP Crew: {e}")
-    sap_crew = None
+# Initialize SAP crew (default)
+elif RAG_ROLE == "sap":
+    try:
+        print("🤖 Initializing SAP Crew (DEFAULT)...")
+        sap_crew = SapCrew(custom_llm, custom_rag_tool)
+        default_crew = sap_crew
+        print("✅ SAP Crew initialized successfully")
+        print(f"   - {custom_llm.get_model_info()}")
+        print(f"   - {custom_rag_tool.get_status_info()}")
+    except Exception as e:
+        print(f"❌ Error initializing SAP Crew: {e}")
+        print("🔄 Attempting to initialize IVA Consulta Crew as fallback...")
+        # Reinitialize RAG tool with IVA Consulta data path for fallback
+        fallback_data_path = ROLE_DATA_PATHS.get("iva_consulta")
+        if fallback_data_path:
+            print(f"🔄 Reinitializing RAG tool with IVA Consulta data path: {fallback_data_path}")
+            try:
+                custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
+                print(f"✅ RAG tool reinitialized with IVA Consulta data path")
+            except Exception as rag_error:
+                print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
+        
+        try:
+            iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+            default_crew = iva_consulta_crew
+            print("✅ IVA Consulta Crew initialized as fallback")
+        except Exception as fallback_error:
+            print(f"❌ Fallback initialization also failed: {fallback_error}")
+            default_crew = None
 
-# # Initialize the insurance crew instance
-# try:
-#     print("🤖 Initializing Insurance Crew...")
-#     insurance_crew = InsuranceCrew(custom_llm, custom_rag_tool)
-#     print("✅ Insurance Crew initialized successfully")
-#     print(f"   - {custom_llm.get_model_info()}")
-#     print(f"   - {custom_rag_tool.get_status_info()}")
-# except Exception as e:
-#     print(f"❌ Error initializing Insurance Crew: {e}")
-#     insurance_crew = None
+else:
+    print(f"⚠️  Unknown RAG_ROLE '{RAG_ROLE}', defaulting to IVA Consulta")
+    try:
+        print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
+        iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+        default_crew = iva_consulta_crew
+        print("✅ IVA Consulta Crew initialized successfully")
+    except Exception as e:
+        print(f"❌ Error initializing IVA Consulta Crew: {e}")
+        default_crew = None
+
+# Initialize the other crew as well if not already initialized (for flexibility)
+if RAG_ROLE == "iva_consulta" and sap_crew is None:
+    try:
+        sap_data_path = ROLE_DATA_PATHS.get("sap")
+        if sap_data_path:
+            print("🤖 Initializing SAP Crew (secondary)...")
+            # Create a separate RAG tool instance for SAP if needed, or reuse
+            sap_crew = SapCrew(custom_llm, custom_rag_tool)
+            print("✅ SAP Crew initialized successfully")
+    except Exception as e:
+        print(f"⚠️  Could not initialize SAP Crew (secondary): {e}")
+
+elif RAG_ROLE == "sap" and iva_consulta_crew is None:
+    try:
+        iva_data_path = ROLE_DATA_PATHS.get("iva_consulta")
+        if iva_data_path:
+            print("🤖 Initializing IVA Consulta Crew (secondary)...")
+            iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+            print("✅ IVA Consulta Crew initialized successfully")
+    except Exception as e:
+        print(f"⚠️  Could not initialize IVA Consulta Crew (secondary): {e}")
+
 
 
 
@@ -258,7 +335,7 @@ async def call_crewai_agent(user_message: str, agent_type: str = "iva_consulta_a
 
         print("✅ Message passed all compliance checks")
 
-        # Use IVA Consulta crew as default
+        # Determine which crew to use based on agent_type or default
         if agent_type == "iva_consulta_agent" and iva_consulta_crew is not None:
             print("🤖 Using IVA Consulta crew...")
             crew_instance = iva_consulta_crew.create_crew_with_message(user_message)
@@ -266,8 +343,12 @@ async def call_crewai_agent(user_message: str, agent_type: str = "iva_consulta_a
             print("🤖 Using SAP crew...")
             crew_instance = sap_crew.create_crew_with_message(user_message)
         else:
-            # Fallback to IVA Consulta crew if available
-            if iva_consulta_crew is not None:
+            # Use default crew based on RAG_ROLE
+            if default_crew is not None:
+                crew_name = "IVA Consulta" if RAG_ROLE == "iva_consulta" else "SAP"
+                print(f"🤖 Using default {crew_name} crew (based on RAG_ROLE)...")
+                crew_instance = default_crew.create_crew_with_message(user_message)
+            elif iva_consulta_crew is not None:
                 print("🤖 Using IVA Consulta crew as fallback...")
                 crew_instance = iva_consulta_crew.create_crew_with_message(user_message)
             elif sap_crew is not None:
@@ -382,7 +463,9 @@ def chat():
             return jsonify({"error": "No message provided"}), 400
 
         user_message: str = data["message"]
-        agent_type: str = data.get("agent_type", "iva_consulta_agent")  # Default to IVA Consulta
+        # Default agent type based on RAG_ROLE
+        default_agent_type = "iva_consulta_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant"
+        agent_type: str = data.get("agent_type", default_agent_type)
         print(f"Received message: {user_message} (agent: {agent_type})")
 
         # Execute the CrewAI agent call
@@ -503,7 +586,8 @@ if __name__ == "__main__":
     print("🏛️  IVA Consulta endpoint: /iva-consulta")
     print("🤖 CrewAI multi-agent system ready")
     print(f"📄 VAT documents: {data_path}")
-    print("🎯 Default agent: IVA Consulta VAT Specialist")
+    print(f"🎯 Default agent: {RAG_ROLE.upper()} ({'IVA Consulta VAT Specialist' if RAG_ROLE == 'iva_consulta' else 'SAP Consultant'})")
+    print(f"📂 Using data path: {RAG_DATA_PATH}")
     print("🛡️  EU AI Act compliance guardrails enabled")
     print(f"🧠 {custom_llm.get_model_info() if custom_llm else 'LLM: Unknown'}")
     if custom_rag_tool and custom_rag_tool.is_available():

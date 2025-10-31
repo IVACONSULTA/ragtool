@@ -110,16 +110,24 @@ class CustomLlm:
 class CustomRagTool:
     """Custom RAG tool initialization and management class."""
 
-    def __init__(self):
-        """Initialize the CustomRagTool class."""
+    def __init__(self, data_path: str = None):
+        """Initialize the CustomRagTool class.
+        
+        Args:
+            data_path: Optional custom data path. If None, uses default from config.
+        """
         self.rag_tool = None
         self.config = None
         self.processor = None
         self.storage_path = None
-        self.data_path = None
+        self.data_path = data_path  # Store custom data path if provided
 
-    def initialize_rag_tool(self):
-        """Initialize RAG tool with configuration and fallback handling."""
+    def initialize_rag_tool(self, data_path: str = None):
+        """Initialize RAG tool with configuration and fallback handling.
+        
+        Args:
+            data_path: Optional data path override. If provided, uses this instead of stored data_path or config default.
+        """
         try:
             self.config = get_rag_config()
             print(f"RagTool configuration: {self.config}")
@@ -129,6 +137,20 @@ class CustomRagTool:
 
             self.processor = FilesRagTool(self.config, self.storage_path)
 
+            # Determine which data path to use: parameter > instance variable > config default
+            actual_data_path = data_path if data_path is not None else (self.data_path if self.data_path is not None else get_data_path())
+            
+            # If we're switching data paths, reset the processor to force reprocessing
+            if actual_data_path != self.data_path and self.data_path is not None:
+                print(f"🔄 Switching data path from {self.data_path} to {actual_data_path}")
+                # Reset processor to force new database
+                if self.processor:
+                    self.processor.rag_tool = None
+            
+            # Update stored data path
+            if actual_data_path is not None:
+                self.data_path = actual_data_path
+
             # Try to load existing ChromaDB first
             raw_rag_tool = self.processor.get_rag_tool()
 
@@ -137,7 +159,6 @@ class CustomRagTool:
                 print(
                     "🔄 No existing RagTool found. Processing PDFs for the first time..."
                 )
-                self.data_path = get_data_path()  # Using centralized config function
 
                 if os.path.exists(self.data_path):
                     # Check if data_path is a directory or a file
@@ -223,11 +244,20 @@ class CustomRagTool:
         status = "ENABLED" if self.is_available() else "DISABLED"
         return f"RAG Tool: {status}"
 
-    def refresh_rag_tool(self):
-        """Force refresh/re-initialization of the RAG tool."""
+    def refresh_rag_tool(self, data_path: str = None):
+        """Force refresh/re-initialization of the RAG tool.
+        
+        Args:
+            data_path: Optional data path to use for reinitialization.
+        """
         print("🔄 Refreshing RAG tool...")
         self.rag_tool = None
-        return self.initialize_rag_tool()
+        if self.processor:
+            self.processor.rag_tool = None
+        # If data_path provided, update stored data_path
+        if data_path is not None:
+            self.data_path = data_path
+        return self.initialize_rag_tool(data_path=data_path)
 
     def get_detailed_status(self) -> dict:
         """Get detailed status information."""
@@ -492,91 +522,6 @@ class IVAConsultaCrew:
             description=description or "Provide SAP consulting services",
             expected_output="A comprehensive response about SAP consulting",
             agent=self.senior_sap_consultant(),
-        )
-
-
-@CrewBase
-class InsuranceCrew:
-    """Insurance Coverage Assistant Crew"""
-
-    agents_config = "agents.yaml"
-    tasks_config = "tasks.yaml"
-
-    def __init__(
-        self, custom_llm_instance: CustomLlm, custom_rag_tool_instance: CustomRagTool
-    ):
-        """Initialize InsuranceCrew with CustomLlm and CustomRagTool instances."""
-        self.custom_llm = custom_llm_instance
-        self.custom_rag_tool = custom_rag_tool_instance
-
-    @agent
-    def senior_coverage_assistant(self) -> Agent:
-        """Create the senior coverage assistant agent with proper configuration."""
-        try:
-            # Determine tools to use based on RAG availability
-            tools = []
-            if self.custom_rag_tool.is_available():
-                tools.append(self.custom_rag_tool.get_rag_tool())
-                print("✅ RAG tool available - agent will use RAG capabilities")
-            else:
-                print("⚠️  No RAG tool available - agent will use base knowledge only")
-
-            return Agent(
-                config=self.agents_config["senior_coverage_assistant"],
-                verbose=is_running_locally(),
-                allow_delegation=False,
-                llm=self.custom_llm.get_llm(),
-                tools=tools,
-                max_iterations=10,
-                max_retry_limit=5,
-            )
-        except Exception as e:
-            print(f"❌ Error creating senior coverage assistant: {e}")
-            # Fallback agent creation
-            return Agent(
-                role="Senior Insurance Coverage Assistant",
-                goal="Determine whether something is covered or not under insurance policies",
-                backstory="You are an expert insurance agent designed to assist with coverage queries.",
-                verbose=False,
-                allow_delegation=False,
-                llm=self.custom_llm.get_llm(),
-                tools=[],
-                max_iterations=5,
-                max_retry_limit=2,
-            )
-
-    @task
-    def coverage_analysis_task(self, description: str = None) -> Task:
-        """Create the coverage analysis task."""
-        if description:
-            # Create task with custom description for dynamic user messages
-            return Task(
-                description=description,
-                expected_output="A comprehensive response to the user's question about insurance coverage, including specific details about coverage, limitations, and any relevant policy information. The response should be clear, accurate, and helpful to the user.",
-                agent=self.senior_coverage_assistant(),
-            )
-        else:
-            # Use configuration from YAML
-            return Task(
-                config=self.tasks_config["coverage_analysis_task"],
-                agent=self.senior_coverage_assistant(),
-            )
-
-    @crew
-    def crew(self) -> Crew:
-        """Create the insurance crew."""
-        return Crew(
-            agents=[self.senior_coverage_assistant()],
-            tasks=[self.coverage_analysis_task()],
-            verbose=is_running_locally(),
-        )
-
-    def create_crew_with_message(self, user_message: str) -> Crew:
-        """Create the insurance crew with a custom user message."""
-        return Crew(
-            agents=[self.senior_coverage_assistant()],
-            tasks=[self.coverage_analysis_task(description=user_message)],
-            verbose=is_running_locally(),
         )
 
 

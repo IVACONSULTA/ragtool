@@ -1,23 +1,4 @@
 # Configuration file for CrewAI tasks
-coverage_analysis_task:
-  description: >
-    Analyze the insurance coverage question provided by the user.
-    Provide a comprehensive response about whether the specific item or situation is covered under the policy.
-    Use your knowledge and any available policy documents to give accurate information.
-  expected_output: >
-    A comprehensive response to the user's question about insurance coverage,
-    including specific details about coverage, limitations, and any relevant policy information.
-    The response should be clear, accurate, and helpful to the user.
-  agent: senior_coverage_assistant
-
-sap_consultation_task:
-  description: >
-    Provide SAP consulting services to the user.
-  expected_output: >
-    A comprehensive response to the user's question about SAP consulting,
-    including specific details about SAP consulting, limitations, and any relevant SAP information.
-    The response should be clear, accurate, and helpful to the user.
-  agent: senior_sap_consultant
 
 vat_consultation_task:
   description: >
@@ -33,3 +14,12 @@ vat_consultation_task:
     relevant to the user's question. If referencing another country, clearly specify the jurisdiction.
     The response should be practical, accurate, and directly helpful for business decision-making.
   agent: iva_consulta_agent
+
+sap_consultation_task:
+  description: >
+    Provide SAP consulting services to the user.
+  expected_output: >
+    A comprehensive response to the user's question about SAP consulting,
+    including specific details about SAP consulting, limitations, and any relevant SAP information.
+    The response should be clear, accurate, and helpful to the user.
+  agent: senior_sap_consultant
