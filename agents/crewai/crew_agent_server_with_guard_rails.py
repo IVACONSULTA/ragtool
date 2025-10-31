@@ -489,10 +489,10 @@ def chat():
             return jsonify({"error": "No message provided"}), 400
 
         user_message: str = data["message"]
+        context_country: str = data.get("context_country", "Spain")
         # agent_type is optional - if not provided, uses active_crew based on RAG_ROLE
         agent_type: str = data.get("agent_type")  # Can be None to use default
         # context_country is optional - provides country context for the query
-        context_country: str = data.get("context_country")  # Can be None
         
         if agent_type:
             print(f"Received message: {user_message} (agent: {agent_type})")
