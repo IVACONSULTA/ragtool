@@ -361,13 +361,25 @@ class SapCrew:
             verbose=is_running_locally(),
         )
     
-    def create_crew_with_message(self, user_message: str) -> Crew:
-        """Create the SAP crew with a custom user message."""
+    def create_crew_with_message(self, user_message: str, context_country: str = None) -> Crew:
+        """Create the SAP crew with a custom user message.
+        
+        Args:
+            user_message: The user's question/message
+            context_country: Optional country context to provide jurisdictional context
+        """
         try:
-            print(f"🔍 Creating SAP crew with message: {user_message}")
+            # Build task description with optional country context
+            task_description = user_message
+            if context_country:
+                task_description = f"Context: The user is asking in the context of {context_country}. {user_message}"
+                print(f"🔍 Creating SAP crew with message and country context: {context_country}")
+            else:
+                print(f"🔍 Creating SAP crew with message: {user_message}")
+            
             return Crew(
                 agents=[self.senior_sap_consultant()],
-                tasks=[self.sap_consultation_task(description=user_message)],
+                tasks=[self.sap_consultation_task(description=task_description)],
                 verbose=is_running_locally(),
             )
         except Exception as e:
@@ -468,11 +480,24 @@ class IVAConsultaCrew:
             verbose=is_running_locally(),
         )
 
-    def create_crew_with_message(self, user_message: str) -> Crew:
-        """Create the IVA Consulta crew with a custom user message."""
+    def create_crew_with_message(self, user_message: str, context_country: str = None) -> Crew:
+        """Create the IVA Consulta crew with a custom user message.
+        
+        Args:
+            user_message: The user's question/message
+            context_country: Optional country context to provide jurisdictional context for VAT queries
+        """
+        # Build task description with optional country context
+        task_description = user_message
+        if context_country:
+            task_description = f"Context: The user is asking about VAT regulations in the context of {context_country}. {user_message}"
+            print(f"🔍 Creating IVA Consulta crew with message and country context: {context_country}")
+        else:
+            print(f"🔍 Creating IVA Consulta crew with message: {user_message}")
+        
         return Crew(
             agents=[self.iva_consulta_agent()],
-            tasks=[self.vat_consultation_task(description=user_message)],
+            tasks=[self.vat_consultation_task(description=task_description)],
             verbose=is_running_locally(),
         )
 

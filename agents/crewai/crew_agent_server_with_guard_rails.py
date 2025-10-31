@@ -8,7 +8,7 @@ Simple HTTP server that provides a /chat endpoint for direct access to the CrewA
 
 Endpoints:
 - GET /health - Health check
-- POST /chat { message: string } - Send message to CrewAI RAG agent
+- POST /chat { message: string, agent_type?: string, context_country?: string } - Send message to CrewAI RAG agent
 """
 
 import asyncio
@@ -311,12 +311,13 @@ def verify_api_key():
 
 
 @trace_async_function("call_crewai_agent")
-async def call_crewai_agent(user_message: str, agent_type: str = None) -> str:
+async def call_crewai_agent(user_message: str, agent_type: str = None, context_country: str = None) -> str:
     """Call the CrewAI agent with the user's question.
     
     Args:
         user_message: The user's question/message
         agent_type: Optional agent type. If not provided, uses active_crew based on RAG_ROLE
+        context_country: Optional country context to provide jurisdictional context for the query
         
     Returns:
         The agent's response as a string
@@ -376,7 +377,7 @@ async def call_crewai_agent(user_message: str, agent_type: str = None) -> str:
 
         # Create crew instance with user message and execute
         print("🤖 Executing CrewAI task...")
-        crew_instance = selected_crew.create_crew_with_message(user_message)
+        crew_instance = selected_crew.create_crew_with_message(user_message, context_country)
         task_output = await crew_instance.kickoff_async()
 
         response_content = str(task_output)
@@ -395,7 +396,11 @@ async def call_crewai_agent(user_message: str, agent_type: str = None) -> str:
             actual_agent_type,
             user_message,
             response_content,
-            {"compliance_checked": True, "response_length": len(response_content)}
+            {
+                "compliance_checked": True,
+                "response_length": len(response_content),
+                "context_country": context_country if context_country else None
+            }
         )
         
         # Log monitoring summary if LangSmith is enabled
@@ -486,13 +491,19 @@ def chat():
         user_message: str = data["message"]
         # agent_type is optional - if not provided, uses active_crew based on RAG_ROLE
         agent_type: str = data.get("agent_type")  # Can be None to use default
+        # context_country is optional - provides country context for the query
+        context_country: str = data.get("context_country")  # Can be None
+        
         if agent_type:
             print(f"Received message: {user_message} (agent: {agent_type})")
         else:
             print(f"Received message: {user_message} (using default agent based on RAG_ROLE)")
+        
+        if context_country:
+            print(f"📍 Country context: {context_country}")
 
         # Execute the CrewAI agent call
-        result: str = asyncio.run(call_crewai_agent(user_message, agent_type))
+        result: str = asyncio.run(call_crewai_agent(user_message, agent_type, context_country))
 
         # Log successful chat interaction to LangSmith
         if langsmith_manager.is_enabled():
@@ -504,6 +515,7 @@ def chat():
                     "endpoint": "/chat",
                     "api_key_provided": api_key is not None,
                     "response_length": len(result),
+                    "context_country": context_country if context_country else None,
                     "timestamp": datetime.now().isoformat()
                 }
             )
@@ -521,7 +533,7 @@ def chat():
             }
         )
     except Exception as exc:
-        print(f"Error in chat endpoint: {exc}")
+        print(f"❌ Error in chat endpoint: {exc}")
         
         # Log error to LangSmith
         if langsmith_manager.is_enabled():
