@@ -25,5 +25,5 @@ langchain-community>=0.3.0
 
 docx2txt
 
-# Include development requirements
--r requirements-dev.txt
+# Include production requirements
+-r requirements.txt
