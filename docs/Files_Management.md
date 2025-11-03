@@ -448,6 +448,15 @@ This new system makes your RAG tool much more efficient and production-ready! ðŸ
 
 # Bugs & Fixes
 
+## Database is Locked:
+
 pkill -9 -f "files_manager.py"
 pkill -9 -f "crew_agent_server"
 rm -rf db && mkdir db
+
+## Check Virtual environment in Use:
+
+python3
+
+import sys
+print(sys.prefix)
