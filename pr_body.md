@@ -1,129 +1,322 @@
 ## 📝 Description
 
-This PR implements comprehensive OWASP Top 10 security measures for the SapRagTool Flask application, providing enterprise-grade security protection against common web vulnerabilities and attack vectors.
+This PR represents the **initial release** of the RagIvaconsulta Agent - a production-ready CrewAI-powered RAG agent for VAT (IVA) consultation with comprehensive EU AI Act compliance, LangSmith monitoring, and Railway deployment capabilities.
 
 ## 🎯 What does this PR do?
 
-- [x] Feature addition
-- [ ] Bug fix
-- [x] Documentation update
-- [ ] Code refactoring
-- [ ] Other: **Security Enhancement**
+- [x] Feature addition - **Complete RAG Agent Implementation**
+- [x] Documentation update - **Comprehensive setup and deployment guides**
+- [x] Security Enhancement - **EU AI Act compliance guardrails**
+- [x] Infrastructure - **CI/CD pipeline and deployment configuration**
 
-## 🔍 Changes Made
+## 🚀 Key Features
 
-- **A1 - Injection Prevention**: Implemented comprehensive input validation and sanitization
+### Core Agent Functionality
 
-  - SQL injection pattern detection and blocking
-  - XSS attack prevention with script tag filtering
-  - Command injection protection with shell command pattern detection
-  - Path traversal protection with directory traversal blocking
+- **CrewAI Multi-Agent System**: IVA Consulta (VAT specialist) and SAP consultant agents with YAML-based configuration
+- **Advanced RAG Capabilities**:
+  - ChromaDB vector storage for efficient document retrieval
+  - Support for multiple file formats (PDF, TXT, DOCX, MD, HTML)
+  - Intelligent document processing with chunking and embeddings
+  - Files management system with metadata tracking
+- **Dual Agent Roles**:
+  - `iva_consulta`/`vat_agent`: VAT documentation specialist (default)
+  - `sap`: SAP integration consultant
+- **Flexible Configuration**: Role-based data path selection and environment-specific settings
 
-- **A2 - Authentication & Session Management**: Added robust API security framework
+### EU AI Act Compliance
 
-  - Secure API key validation with constant-time comparison
-  - Per-IP rate limiting to prevent abuse
-  - Session management with secure creation and validation
-  - Failed attempt tracking with IP blocking after repeated failures
+- **Prohibited Practices Prevention**: Built-in guardrails preventing manipulative AI practices
+- **Risk Assessment Framework**: Automatic classification and compliance validation
+- **Compliance Guardrails Module**: Real-time validation of user requests against EU AI Act Article 5
+- **Comprehensive Documentation**: Complete compliance guidelines and implementation guides
 
-- **A3 - Sensitive Data Exposure**: Enhanced data protection measures
+### Monitoring & Observability
 
-  - Sensitive data encryption at rest
-  - Secure environment variable management
-  - API key protection with secure generation and validation
+- **LangSmith Integration**:
+  - Automatic LLM tracing and cost tracking
+  - Token usage monitoring and performance metrics
+  - Error tracking and debugging capabilities
+  - Custom run annotation and metadata
+- **Monitoring Dashboard**: Real-time visibility into agent performance
+- **Health Check Endpoints**: Production-ready health monitoring
 
-- **A4 - XXE Prevention**: Implemented safe XML processing
+### Production-Ready Infrastructure
 
-  - Defused XML parsing to prevent external entity attacks
+- **Railway Deployment**:
+  - Automatic environment detection (Railway vs Local)
+  - Pre-configured `railway.json` with health checks
+  - `Procfile` for seamless deployment
+- **CI/CD Pipeline**:
+  - Automated testing on pull requests
+  - Code structure validation
+  - Linting and formatting checks
+  - Script syntax validation
+- **Environment Management**:
+  - Configuration sets for different LLM providers (OpenAI, Gemini)
+  - Flexible environment variable handling
+  - Multiple data path support
 
-- **A10 - Logging and Monitoring**: Added comprehensive security monitoring
+### API & Server
 
-  - Security event logging with detailed audit trails
-  - Real-time security monitoring and alerting
-  - Suspicious activity detection and reporting
+- **Flask REST API**:
+  - `/health` - Health check with detailed system status
+  - `/chat` - Main agent interaction endpoint with compliance validation
+  - `/` - API documentation and capabilities
+- **CORS Support**: Configurable for Railway and local development
+- **Rate Limiting**: Built-in protection with Flask-Limiter
+- **Security**: API key validation and production-ready security measures
 
-- **Flask Integration Layer**: Created seamless security integration
+## 🔍 Major Components Added
 
-  - Decorator-based security enforcement
-  - Easy-to-use endpoint protection
-  - Configurable security levels per endpoint
+### Agent System (`agents/`)
 
-- **Security Testing Suite**: Implemented automated security testing
+```
+agents/
+├── crewai/
+│   ├── crew_agent_server_with_guard_rails.py  # Main Flask server with guardrails
+│   ├── crew_entities.py                        # Agent and tool definitions
+│   ├── agents.yaml                              # Agent configurations
+│   └── tasks.yaml                               # Task definitions
+├── rag/
+│   ├── ragtool.py                               # Base RAG tool implementation
+│   ├── files_ragtool.py                         # Multi-format file processor
+│   └── rag_wrapper.py                           # CrewAI compatibility wrapper
+├── guardrails/
+│   └── compliance_guardrails.py                 # EU AI Act validation
+├── utils/
+│   ├── config.py                                # Configuration management
+│   └── files_manager.py                         # CLI for file processing
+└── langsmith_integration.py                      # LangSmith monitoring
+```
 
-  - Comprehensive test coverage for all security measures
-  - Automated vulnerability testing
-  - Security validation scripts
+### Compliance Framework (`.cursor/rules/compliance/`)
 
-- **Documentation**: Added complete security documentation
-  - OWASP Top 10 implementation guide
-  - Security rules and best practices
-  - Step-by-step integration instructions
+- EU AI Act high-risk classification guidelines
+- Prohibited practices prevention rules
+- Risk management framework (Articles 9, 13, 60, 72)
+- Copyright compliance for private use
+
+### Documentation (`docs/`)
+
+- Configuration guides (environment setup, API keys)
+- Files management documentation
+- LangSmith integration and monitoring guides
+- Compliance module documentation
+- Manual content addition guides
+
+### Infrastructure
+
+- **CI/CD**: GitHub Actions workflow with comprehensive testing
+- **Railway**: Deployment configuration and health checks
+- **Development Tools**:
+  - Makefile with common commands
+  - Pre-commit hooks for code quality
+  - Testing framework with pytest
 
 ## 🧪 Testing
 
-- [x] I have tested this locally
-- [x] All tests pass
-- [x] No breaking changes
+- [x] Tested locally with both OpenAI and Gemini models
+- [x] All core features validated
+- [x] ChromaDB initialization and file processing verified
+- [x] API endpoints tested (health check, chat)
+- [x] EU AI Act compliance validation working
+- [x] LangSmith tracing operational
+- [x] Railway deployment configuration validated
+- [x] CI pipeline passes
 
-## 📸 Screenshots (if applicable)
+## 📋 Configuration
 
-<!-- Security implementation doesn't require UI screenshots -->
+### Required Environment Variables
 
-## 📋 Checklist
+```bash
+# LLM Configuration (choose one)
+CONFIG_SET=gemini-2.0-flash  # or gpt-4o-mini
 
-- [x] Code follows project style guidelines
-- [x] Self-review completed
-- [x] Code is commented where necessary
-- [x] Documentation updated (if needed)
+# API Keys
+OPENAI_API_KEY=your_openai_key_here     # For OpenAI models
+GEMINI_API_KEY=your_gemini_key_here     # For Gemini models
+GOOGLE_API_KEY=your_google_key_here     # Alternative for Gemini
+
+# LangSmith Monitoring (optional but recommended)
+LANGSMITH_API_KEY=your_langsmith_key_here
+LANGSMITH_PROJECT=your_project_name
+LANGCHAIN_TRACING_V2=true
+
+# Agent Configuration
+RAG_ROLE=vat_agent                      # or iva_consulta, sap
+DATA_FILE_PATH=./data/raw
+CHROMA_DB_PATH=./db
+
+# Railway (auto-set on Railway platform)
+PORT=8001
+RAILWAY_PUBLIC_DOMAIN=your-domain.railway.app
+```
+
+### Supported File Formats
+
+- PDF documents (with OCR preprocessing)
+- Plain text files (.txt)
+- Markdown files (.md)
+- Word documents (.docx)
+- HTML files (.html)
+- URLs (web scraping)
 
 ## 🚀 Deployment Notes
 
-**Required Environment Variables:**
+### Railway Deployment
+
+1. Connect GitHub repository to Railway
+2. Configure environment variables in Railway dashboard
+3. Railway auto-detects configuration from `railway.json`
+4. Health checks run on `/health` endpoint
+5. Automatic deployment on push to main
+
+### Local Development
 
 ```bash
-# Security Configuration
-API_KEY=your_secure_api_key_here
-SECRET_KEY=your_secret_key_here
-FLASK_ENV=production  # or development
+# Setup
+cp .env.example .env
+# Edit .env with your API keys
 
-# Optional: Custom security settings
-RATE_LIMIT_WINDOW=300
-MAX_REQUESTS_PER_WINDOW=100
-SESSION_TIMEOUT=3600
+# Install dependencies
+pip install -r requirements-dev.txt
+
+# Process documents
+python agents/utils/files_manager.py
+
+# Start server
+python agents/crewai/crew_agent_server_with_guard_rails.py
+
+# Or use Makefile
+make dev-server
 ```
 
-**New Dependencies Added:**
+### First-Time Setup
 
-- `cryptography>=41.0.0`
-- `defusedxml>=0.7.1`
-- `safety>=2.3.0`
+The agent automatically:
 
-**Integration Steps:**
+1. Detects environment (Railway vs Local)
+2. Initializes ChromaDB if needed
+3. Processes documents in `data/raw/`
+4. Wraps RAG tool for CrewAI compatibility
+5. Starts Flask server with health checks
 
-1. Install new security dependencies
-2. Add required environment variables
-3. Update Flask application to use security decorators
-4. Run security tests to validate implementation
+## 📦 Dependencies
+
+### Core Dependencies
+
+- `crewai[google-genai]>=0.121.0` - Multi-agent framework
+- `crewai-tools>=0.45.0` - RAG and tool integrations
+- `flask>=3.0.0` - HTTP server
+- `flask-cors>=4.0.0` - CORS support
+- `flask-limiter>=3.8.0` - Rate limiting
+- `chromadb>=0.4.0` - Vector database
+- `langchain>=0.1.0` - LLM framework
+- `langsmith>=0.1.0` - Monitoring and tracing
+
+### Development Dependencies
+
+- `pytest>=7.0.0` - Testing framework
+- `flake8>=6.0.0` - Code linting
+- `black>=23.0.0` - Code formatting
+- `isort>=5.12.0` - Import sorting
+
+## 📸 Key Capabilities Demonstrated
+
+### 1. Agent Interaction
+
+```bash
+curl -X POST http://localhost:8001/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "¿Cuál es el tipo de IVA reducido en España?"}'
+```
+
+### 2. Health Monitoring
+
+```bash
+curl http://localhost:8001/health
+```
+
+Returns comprehensive system status including:
+
+- RAG tool availability
+- LLM configuration
+- LangSmith integration status
+- Environment type
+- Data paths
+
+### 3. Compliance Validation
+
+Automatically validates all requests against EU AI Act:
+
+- Rejects manipulative practices
+- Prevents subliminal techniques
+- Blocks social scoring requests
+- Ensures transparent AI interaction
+
+## 🔐 Security & Compliance
+
+- ✅ EU AI Act Article 5 compliance (Prohibited Practices)
+- ✅ Risk classification framework
+- ✅ Input validation and sanitization
+- ✅ Rate limiting and abuse prevention
+- ✅ Secure API key management
+- ✅ Environment-specific security configurations
+- ✅ Comprehensive audit logging
+
+## 📚 Documentation Added
+
+- `README.md` - Complete setup and usage guide
+- `GUARDRAILS_IVA_CONSULTA_API.md` - Compliance API documentation
+- `IVA_CONSULTA_API.md` - VAT agent API reference
+- `docs/Configuration_Guide.md` - Environment setup
+- `docs/Files_Management.md` - Document processing guide
+- `docs/Langsmith_Integration.md` - Monitoring setup
+- `docs/Compliance_Module.md` - EU AI Act implementation
+- `.cursor/rules/` - Comprehensive development and compliance rules
+
+## 🎓 Example Use Cases
+
+1. **VAT Consultation**: Query Spanish VAT rates and regulations
+2. **SAP Integration**: Get guidance on SAP integration patterns
+3. **Document Search**: Retrieve relevant information from processed documents
+4. **Compliance-Safe AI**: Interact with AI while maintaining EU AI Act compliance
 
 ## 📞 Additional Notes
 
-This security implementation provides enterprise-grade protection while maintaining ease of use through decorator-based integration. The security measures are:
+This initial release establishes a solid foundation for a production-ready RAG agent with:
 
-- **Non-intrusive**: Easy to integrate with existing code
-- **Configurable**: Security levels can be adjusted per endpoint
-- **Comprehensive**: Covers all OWASP Top 10 vulnerabilities
-- **Well-tested**: Includes automated security testing suite
-- **Well-documented**: Complete implementation and usage guides
+- **Modularity**: Easy to extend with new agents and tools
+- **Compliance-First**: Built with EU AI Act compliance from the ground up
+- **Observable**: Comprehensive monitoring and debugging capabilities
+- **Deployment-Ready**: Pre-configured for Railway with CI/CD pipeline
+- **Well-Documented**: Extensive documentation for developers and users
+- **Maintainable**: Clean code structure with development tools
 
-The security framework is designed to be production-ready and follows industry best practices for Flask applications deployed on cloud platforms like Railway, OpenOcean, and Langraph.
+The agent is ready for:
 
-**Security Features Summary:**
+- ✅ Production deployment on Railway
+- ✅ Integration with front-end applications
+- ✅ Extension with additional agent roles
+- ✅ Scaling with more documents and data sources
+- ✅ Monitoring and performance optimization
 
-- ✅ Input validation and sanitization
-- ✅ Authentication and authorization
-- ✅ Rate limiting and abuse prevention
-- ✅ Data encryption and protection
-- ✅ Security logging and monitoring
-- ✅ XSS and injection attack prevention
-- ✅ Session management and security
-- ✅ Comprehensive testing and validation
+## 🔗 Related Issues
+
+- Closes #[issue-number] (if applicable)
+
+## 👥 Contributors
+
+Initial implementation by the RagIvaconsulta development team.
+
+---
+
+**Merge Checklist:**
+
+- [x] All tests pass
+- [x] Documentation is complete
+- [x] CI/CD pipeline is green
+- [x] Code follows project guidelines
+- [x] Security and compliance measures verified
+- [x] Ready for production deployment
