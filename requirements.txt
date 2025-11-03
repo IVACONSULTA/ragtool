@@ -2,7 +2,8 @@
 acp-sdk>=0.9.1
 
 # AI Agent Frameworks
-crewai[google-genai]>=0.121.0
+crewai>=0.121.0
+crewai[google-genai]
 crewai-tools>=0.45.0
 
 # Vector Database
@@ -25,5 +26,3 @@ langchain-community>=0.3.0
 
 docx2txt
 
-# Include production requirements
--r requirements.txt

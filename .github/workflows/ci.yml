@@ -27,7 +27,7 @@ jobs:
       LLM_MODEL: gpt-4o-mini
       EMBEDDING_MODEL: text-embedding-3-small
       CHROMA_DB_PATH: ./test_db
-      DATA_FILE_PATH: ./utils/data/test.pdf
+      DATA_FILE_PATH: ./data/raw/test.pdf
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -48,8 +48,10 @@ jobs:
       - name: Check code structure
         run: |
           echo "Checking Python syntax for all modules..."
-          python -m py_compile agents/crewai/crew_agent_server.py
+          python -m py_compile agents/crewai/crew_agent_server_with_guard_rails.py
+          python -m py_compile agents/crewai/crew_entities.py
           python -m py_compile agents/rag/files_ragtool.py
+          python -m py_compile agents/rag/ragtool.py
           python -m py_compile agents/rag/rag_wrapper.py
           python -m py_compile agents/utils/config.py
           python -m py_compile agents/utils/files_manager.py
@@ -82,21 +84,21 @@ jobs:
       - name: Run linting
         run: |
           echo "Running Python linting..."
-          python -m flake8 --select=E9,F63,F7,F82 --show-source --statistics agents/ utils/
+          python -m flake8 --select=E9,F63,F7,F82 --show-source --statistics agents/
           echo "Running import sorting check..."
-          python -m isort --check-only --diff agents/ utils/ || echo "Import sorting issues found (non-blocking)"
+          python -m isort --check-only --diff agents/ || echo "Import sorting issues found (non-blocking)"
         continue-on-error: true
       - name: Test scripts
         run: |
           echo "Testing shell scripts..."
-          chmod +x scripts/run_agent.sh scripts/run_pdf_processor.sh
+          chmod +x scripts/run_agent.sh scripts/run_files_manager.sh
           # Test script syntax (don't execute, just validate)
           bash -n scripts/run_agent.sh
-          bash -n scripts/run_pdf_processor.sh
+          bash -n scripts/run_files_manager.sh
           echo "✅ Shell scripts syntax validated"
         continue-on-error: true
       - name: Cleanup test environment
         run: |
           echo "Cleaning up test environment..."
           rm -rf test_db
-          rm -f utils/data/test.pdf
+          rm -f data/raw/test.pdf
