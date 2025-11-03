@@ -59,14 +59,14 @@ railway_private_domain = os.getenv("RAILWAY_PRIVATE_DOMAIN")
 
 app = Flask(__name__)
 
-CORS(
-    app,
-    origins=[
-        "http://localhost:8003",  # Local development
-        f"https://{railway_public_domain}"  # Railway Public Domain
-        f"https://{railway_private_domain}",  # Railway Private Domain
-    ],
-)
+# Build CORS origins list, filtering out None values
+cors_origins = ["http://localhost:8003"]  # Local development
+if railway_public_domain:
+    cors_origins.append(f"https://{railway_public_domain}")
+if railway_private_domain:
+    cors_origins.append(f"https://{railway_private_domain}")
+
+CORS(app, origins=cors_origins)
 
 limiter = Limiter(
     get_remote_address, app=app, default_limits=["100 per hour", "20 per minute"]
