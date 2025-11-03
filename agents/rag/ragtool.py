@@ -23,7 +23,7 @@ from crewai_tools import RagTool
 class BaseRagTool:
     """
     Generic RagTool class that wraps CrewAI's RagTool.
-    
+
     This class provides common RAG functionality that can be extended
     by specific document type processors (e.g., PDFRagTool).
     """
@@ -57,7 +57,7 @@ class BaseRagTool:
         # Get chunk parameters with defaults if not present
         chunk_size = self.rag_config.get("chunk_size", 1200)
         chunk_overlap = self.rag_config.get("chunk_overlap", 200)
-        
+
         return RagTool(
             config=self._get_core_config(),
             chunk_size=chunk_size,
@@ -134,24 +134,30 @@ class BaseRagTool:
             # Create document loader based on data type
             if data_type == "text_file":
                 from langchain_community.document_loaders import TextLoader
+
                 loader = TextLoader(document_path)
             elif data_type == "pdf_file":
                 from langchain_community.document_loaders import PyPDFLoader
+
                 loader = PyPDFLoader(document_path)
             elif data_type == "csv_file":
                 from langchain_community.document_loaders import CSVLoader
+
                 loader = CSVLoader(document_path)
             elif data_type == "json_file":
                 from langchain_community.document_loaders import JSONLoader
+
                 loader = JSONLoader(document_path)
             elif data_type == "html_file":
                 from langchain_community.document_loaders import BSHTMLLoader
+
                 loader = BSHTMLLoader(document_path)
             else:
                 # Default to text loader for unknown types
                 from langchain_community.document_loaders import TextLoader
+
                 loader = TextLoader(document_path)
-            
+
             # Load documents and add to RAG tool
             documents = loader.load()
             for doc in documents:

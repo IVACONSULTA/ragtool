@@ -36,7 +36,7 @@ import hashlib
 import json
 import os
 from datetime import datetime
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from crewai_tools import RagTool
 
@@ -101,85 +101,81 @@ class FilesRagTool(BaseRagTool):
     def _get_supported_extensions_dict() -> Dict[str, str]:
         """
         Get dictionary of supported file extensions and their corresponding data types.
-        
+
         Returns:
             Dict[str, str]: Dictionary mapping file extensions to data types
         """
         return {
             # Document files
-            '.pdf': 'pdf_file',
-            '.docx': 'docx',
-            '.doc': 'docx_file',
-            '.txt': 'text_file',
-            '.md': 'text_file',
-            '.mdx': 'mdx_file',
-            '.xml': 'xml_file',
-            '.csv': 'csv_file',
-            '.json': 'json_file',
-            '.html': 'html_file',
-            '.htm': 'html_file',
-            
+            ".pdf": "pdf_file",
+            ".docx": "docx",
+            ".doc": "docx_file",
+            ".txt": "text_file",
+            ".md": "text_file",
+            ".mdx": "mdx_file",
+            ".xml": "xml_file",
+            ".csv": "csv_file",
+            ".json": "json_file",
+            ".html": "html_file",
+            ".htm": "html_file",
             # Image files
-            '.jpg': 'image_file',
-            '.jpeg': 'image_file',
-            '.png': 'image_file',
-            '.gif': 'image_file',
-            '.bmp': 'image_file',
-            '.tiff': 'image_file',
-            '.webp': 'image_file',
+            ".jpg": "image_file",
+            ".jpeg": "image_file",
+            ".png": "image_file",
+            ".gif": "image_file",
+            ".bmp": "image_file",
+            ".tiff": "image_file",
+            ".webp": "image_file",
         }
 
     def _get_data_type_from_path(self, file_path: str) -> str:
         """
         Determine data type from file path or extension.
-        
+
         Args:
             file_path: Path to the file or URL
-            
+
         Returns:
             str: Data type for CrewAI RagTool
         """
         # Handle URLs
-        if file_path.startswith(('http://', 'https://')):
-            if 'youtube.com' in file_path or 'youtu.be' in file_path:
-                return 'youtube_video'
-            elif 'github.com' in file_path:
-                return 'github'
+        if file_path.startswith(("http://", "https://")):
+            if "youtube.com" in file_path or "youtu.be" in file_path:
+                return "youtube_video"
+            elif "github.com" in file_path:
+                return "github"
             else:
-                return 'web_page'
-        
+                return "web_page"
+
         # Handle directories
         if os.path.isdir(file_path):
-            return 'directory'
-        
+            return "directory"
+
         # Handle files by extension
         _, ext = os.path.splitext(file_path.lower())
-        return FilesRagTool._get_supported_extensions_dict().get(ext, 'file')
+        return FilesRagTool._get_supported_extensions_dict().get(ext, "file")
 
     def _is_supported_file(self, file_path: str) -> bool:
         """
         Check if file is supported for processing.
-        
+
         Args:
             file_path: Path to the file
-            
+
         Returns:
             bool: True if file is supported
         """
         # URLs are always supported
-        if file_path.startswith(('http://', 'https://')):
+        if file_path.startswith(("http://", "https://")):
             return True
-        
+
         # Directories are supported
         if os.path.isdir(file_path):
             return True
-        
+
         # Check file extension
         _, ext = os.path.splitext(file_path.lower())
         return ext in FilesRagTool._get_supported_extensions_dict()
-    
-    
-    
 
     def initialize_ragtool_and_process_files(
         self, file_paths: List[str], force_reprocess: bool = False
@@ -212,7 +208,9 @@ class FilesRagTool(BaseRagTool):
                     continue
 
                 # For URLs and directories, don't check file existence
-                if file_path.startswith(('http://', 'https://')) or os.path.isdir(file_path):
+                if file_path.startswith(("http://", "https://")) or os.path.isdir(
+                    file_path
+                ):
                     file_key = file_path
                     file_hash = "url_or_directory"  # Special hash for non-files
                 else:
@@ -229,12 +227,14 @@ class FilesRagTool(BaseRagTool):
                     or metadata["processed_files"][file_key]["hash"] != file_hash
                 ):
                     data_type = self._get_data_type_from_path(file_path)
-                    files_to_process.append({
-                        "path": file_path, 
-                        "key": file_key, 
-                        "hash": file_hash,
-                        "data_type": data_type
-                    })
+                    files_to_process.append(
+                        {
+                            "path": file_path,
+                            "key": file_key,
+                            "hash": file_hash,
+                            "data_type": data_type,
+                        }
+                    )
                     print(f"📄 Will process: {file_path} (type: {data_type})")
                 else:
                     print(f"✅ Already processed: {file_path}")
@@ -244,40 +244,57 @@ class FilesRagTool(BaseRagTool):
                 print(f"🔄 Processing {len(files_to_process)} files...")
                 failed_to_process = []
                 successful_count = 0
-                
+
                 for file_to_process in files_to_process:
                     try:
                         print(f"📄 Processing {file_to_process['path']}...")
 
                         # Check if it's a JSON file and validate for web page links
                         if file_to_process["data_type"] == "json_file":
-                            with open(file_to_process["path"], 'r') as f:
+                            with open(file_to_process["path"], "r") as f:
                                 json_data = json.load(f)
-            
+
                             validation_result = self.validate_web_page_links(json_data)
-                            
-                            if validation_result['valid_links']:
-                                success, successful_count, failed_to_process, metadata = self.process_json_file( metadata, failed_to_process, validation_result)
+
+                            if validation_result["valid_links"]:
+                                (
+                                    success,
+                                    successful_count,
+                                    failed_to_process,
+                                    metadata,
+                                ) = self.process_json_file(
+                                    metadata, failed_to_process, validation_result
+                                )
                                 if not success:
                                     failed_to_process.append(file_to_process["path"])
                             else:
                                 # No valid links found, process as regular file
-                                if not self.add_document(file_to_process["path"], data_type=file_to_process["data_type"]):
+                                if not self.add_document(
+                                    file_to_process["path"],
+                                    data_type=file_to_process["data_type"],
+                                ):
                                     failed_to_process.append(file_to_process["path"])
                                 else:
                                     # Update metadata
-                                    metadata["processed_files"][file_to_process["key"]] = {
+                                    metadata["processed_files"][
+                                        file_to_process["key"]
+                                    ] = {
                                         "hash": file_to_process["hash"],
                                         "processed_at": datetime.now().isoformat(),
                                         "path": file_to_process["path"],
-                                        "data_type": file_to_process["data_type"]
+                                        "data_type": file_to_process["data_type"],
                                     }
                                     successful_count += 1
-                                    print(f"✅ Successfully processed: {file_to_process['path']}")
+                                    print(
+                                        f"✅ Successfully processed: {file_to_process['path']}"
+                                    )
                         else:
                             # Regular processing for non-JSON files
-                            success = self.add_document(file_to_process["path"], data_type=file_to_process["data_type"])
-                            
+                            success = self.add_document(
+                                file_to_process["path"],
+                                data_type=file_to_process["data_type"],
+                            )
+
                             if not success:
                                 failed_to_process.append(file_to_process["path"])
                             else:
@@ -286,10 +303,12 @@ class FilesRagTool(BaseRagTool):
                                     "hash": file_to_process["hash"],
                                     "processed_at": datetime.now().isoformat(),
                                     "path": file_to_process["path"],
-                                    "data_type": file_to_process["data_type"]
+                                    "data_type": file_to_process["data_type"],
                                 }
                                 successful_count += 1
-                                print(f"✅ Successfully processed: {file_to_process['path']}")
+                                print(
+                                    f"✅ Successfully processed: {file_to_process['path']}"
+                                )
 
                     except Exception as e:
                         failed_to_process.append(file_to_process["path"])
@@ -306,9 +325,9 @@ class FilesRagTool(BaseRagTool):
                 if failed_to_process:
                     print(f"   ❌ Failed to process: {len(failed_to_process)} files")
                     print(f"   📝 Failed files: {', '.join(failed_to_process)}")
-                    
+
                     # Check if any failed files are URLs and provide tips
-                    failed_urls = [f for f in failed_to_process if f.startswith('http')]
+                    failed_urls = [f for f in failed_to_process if f.startswith("http")]
                     if failed_urls:
                         self.print_web_scraping_tips(failed_urls)
                 else:
@@ -411,21 +430,21 @@ class FilesRagTool(BaseRagTool):
         """Print information about supported file types."""
         print("\n📋 Supported File Types:")
         print("=" * 50)
-        
+
         # Group by category
         categories = {
-            "Documents": ['.pdf', '.docx', '.doc', '.txt', '.md', '.mdx', '.xml'],
-            "Data": ['.csv', '.json'],
-            "Web": ['.html', '.htm'],
-            "Images": ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'],
+            "Documents": [".pdf", ".docx", ".doc", ".txt", ".md", ".mdx", ".xml"],
+            "Data": [".csv", ".json"],
+            "Web": [".html", ".htm"],
+            "Images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"],
         }
-        
+
         for category, extensions in categories.items():
             print(f"\n{category}:")
             for ext in extensions:
                 data_type = FilesRagTool._get_supported_extensions_dict()[ext]
                 print(f"  {ext} → {data_type}")
-        
+
         print(f"\n🌐 URLs: web_page, youtube_video, github")
         print(f"📁 Directories: directory")
         print(f"📚 Other sources: Gmail, Slack, Discord, etc.")
@@ -433,10 +452,10 @@ class FilesRagTool(BaseRagTool):
     def validate_web_page_links(self, json_data: Union[str, List[Dict]]) -> Dict:
         """
         Validate JSON data containing web page links.
-        
+
         Args:
             json_data: JSON string or list of dictionaries containing link data
-            
+
         Returns:
             Dict with validation results:
             - 'valid': bool indicating if all elements are valid
@@ -444,142 +463,159 @@ class FilesRagTool(BaseRagTool):
             - 'invalid_links': list of invalid link dictionaries with error details
             - 'errors': list of general validation errors
         """
-        result = {
-            'valid': True,
-            'valid_links': [],
-            'invalid_links': [],
-            'errors': []
-        }
-        
+        result = {"valid": True, "valid_links": [], "invalid_links": [], "errors": []}
+
         try:
             # Convert JSON string to dictionary if needed
             if isinstance(json_data, str):
                 data = json.loads(json_data)
             else:
                 data = json_data
-                
+
             # Ensure data is a list
             if not isinstance(data, list):
-                result['valid'] = False
-                result['errors'].append("JSON data must be a list of link objects")
+                result["valid"] = False
+                result["errors"].append("JSON data must be a list of link objects")
                 return result
-                
+
             # Validate each element
             for i, element in enumerate(data):
                 if not isinstance(element, dict):
-                    result['invalid_links'].append({
-                        'index': i,
-                        'element': element,
-                        'error': 'Element must be a dictionary'
-                    })
-                    result['valid'] = False
+                    result["invalid_links"].append(
+                        {
+                            "index": i,
+                            "element": element,
+                            "error": "Element must be a dictionary",
+                        }
+                    )
+                    result["valid"] = False
                     continue
-                    
+
                 # Check for required properties
-                if 'data_type' not in element:
-                    result['invalid_links'].append({
-                        'index': i,
-                        'element': element,
-                        'error': 'Missing required property: data_type'
-                    })
-                    result['valid'] = False
-                elif element['data_type'] != 'web_page':
-                    result['invalid_links'].append({
-                        'index': i,
-                        'element': element,
-                        'error': f"data_type must be 'web_page', got: {element['data_type']}"
-                    })
-                    result['valid'] = False
-                    
-                if 'url' not in element:
-                    result['invalid_links'].append({
-                        'index': i,
-                        'element': element,
-                        'error': 'Missing required property: url'
-                    })
-                    result['valid'] = False
-                elif not isinstance(element['url'], str) or not element['url'].strip():
-                    result['invalid_links'].append({
-                        'index': i,
-                        'element': element,
-                        'error': 'url must be a non-empty string'
-                    })
-                    result['valid'] = False
-                    
+                if "data_type" not in element:
+                    result["invalid_links"].append(
+                        {
+                            "index": i,
+                            "element": element,
+                            "error": "Missing required property: data_type",
+                        }
+                    )
+                    result["valid"] = False
+                elif element["data_type"] != "web_page":
+                    result["invalid_links"].append(
+                        {
+                            "index": i,
+                            "element": element,
+                            "error": f"data_type must be 'web_page', got: {element['data_type']}",
+                        }
+                    )
+                    result["valid"] = False
+
+                if "url" not in element:
+                    result["invalid_links"].append(
+                        {
+                            "index": i,
+                            "element": element,
+                            "error": "Missing required property: url",
+                        }
+                    )
+                    result["valid"] = False
+                elif not isinstance(element["url"], str) or not element["url"].strip():
+                    result["invalid_links"].append(
+                        {
+                            "index": i,
+                            "element": element,
+                            "error": "url must be a non-empty string",
+                        }
+                    )
+                    result["valid"] = False
+
                 # If element passed all validations, add to valid_links
-                if (element.get('data_type') == 'web_page' and 
-                    'url' in element and 
-                    isinstance(element['url'], str) and 
-                    element['url'].strip()):
-                    result['valid_links'].append(element)
-                    
+                if (
+                    element.get("data_type") == "web_page"
+                    and "url" in element
+                    and isinstance(element["url"], str)
+                    and element["url"].strip()
+                ):
+                    result["valid_links"].append(element)
+
         except json.JSONDecodeError as e:
-            result['valid'] = False
-            result['errors'].append(f"Invalid JSON format: {str(e)}")
+            result["valid"] = False
+            result["errors"].append(f"Invalid JSON format: {str(e)}")
         except Exception as e:
-            result['valid'] = False
-            result['errors'].append(f"Unexpected error during validation: {str(e)}")
-            
+            result["valid"] = False
+            result["errors"].append(f"Unexpected error during validation: {str(e)}")
+
         return result
 
-    def process_json_file(self, metadata: Dict, failed_to_process: List, validation_result: Dict) -> Tuple[bool, int, List, Dict]:
+    def process_json_file(
+        self, metadata: Dict, failed_to_process: List, validation_result: Dict
+    ) -> Tuple[bool, int, List, Dict]:
         """
         Process a JSON file, extracting and processing web page links if found.
-        
+
         Args:
             metadata: Dictionary containing processed files metadata
             failed_to_process: List to track failed files
             validation_result: Dictionary containing validation results with valid_links
-            
+
         Returns:
             Tuple of (success, successful_count, failed_to_process, metadata)
         """
         successful_count = 0
         retry_count = 0  # Number of retries for failed URLs
-        
+
         try:
-            print(f"🔗 Found {len(validation_result['valid_links'])} valid web page links in JSON file")
-            
+            print(
+                f"🔗 Found {len(validation_result['valid_links'])} valid web page links in JSON file"
+            )
+
             # Process each valid link
-            for link in validation_result['valid_links']:
+            for link in validation_result["valid_links"]:
                 print(f"🌐 Processing web page: {link['url']}")
-                
+
                 # Try to add document to DataBase with retry logic
-                success = self._add_document_with_retry(link["url"], data_type="web_page", max_retries=retry_count)
-                
+                success = self._add_document_with_retry(
+                    link["url"], data_type="web_page", max_retries=retry_count
+                )
+
                 if not success:
                     failed_to_process.append(link["url"])
-                    print(f"❌ Failed to process after {retry_count} retries: {link['url']}")
+                    print(
+                        f"❌ Failed to process after {retry_count} retries: {link['url']}"
+                    )
                 else:
                     # Update metadata for the URL
                     url_key = f"url_{hashlib.md5(link['url'].encode()).hexdigest()}"
                     metadata["processed_files"][url_key] = {
-                        "hash": hashlib.md5(link['url'].encode()).hexdigest(),
+                        "hash": hashlib.md5(link["url"].encode()).hexdigest(),
                         "processed_at": datetime.now().isoformat(),
-                        "path": link['url'],
-                        "data_type": "web_page"
+                        "path": link["url"],
+                        "data_type": "web_page",
                     }
                     successful_count += 1
                     print(f"✅ Successfully processed: {link['url']}")
-            
+
         except Exception as json_error:
             print(f"⚠️  Error processing JSON file: {json_error}")
             return False, successful_count, failed_to_process, metadata
-        
+
         if successful_count > 0:
             return True, successful_count, failed_to_process, metadata
         else:
             return False, successful_count, failed_to_process, metadata
 
-    def _add_document_with_retry(self, document_path: str, data_type: str = "file", max_retries: int = 2) -> bool:
+    def _add_document_with_retry(
+        self, document_path: str, data_type: str = "file", max_retries: int = 2
+    ) -> bool:
         """
         Add a document to the RAG tool with retry logic for web pages.
-        
+
         Args:
             document_path: Path to the document to add
             data_type: Type of data being added
             max_retries: Maximum number of retry attempts
-            
+
         Returns:
             bool: True if successful
         """
@@ -590,81 +626,95 @@ class FilesRagTool(BaseRagTool):
         for attempt in range(max_retries + 1):
             try:
                 if attempt > 0:
-                    print(f"🔄 Retry attempt {attempt}/{max_retries} for {document_path}")
+                    print(
+                        f"🔄 Retry attempt {attempt}/{max_retries} for {document_path}"
+                    )
                     # Add delay between retries
                     import time
+
                     time.sleep(2 * attempt)  # Exponential backoff
-                
+
                 # Use the base class method which handles document loaders properly
                 return self.add_document(document_path, data_type)
-                
+
             except Exception as e:
                 error_msg = str(e)
-                print(f"❌ Error adding document {document_path} (attempt {attempt + 1}): {e}")
-                
+                print(
+                    f"❌ Error adding document {document_path} (attempt {attempt + 1}): {e}"
+                )
+
                 # Check if it's a 403 Forbidden error
                 if "403" in error_msg or "Forbidden" in error_msg:
                     print(f"🚫 Website blocked access (403 Forbidden): {document_path}")
                     if attempt < max_retries:
-                        print(f"💡 This website may have anti-bot protection. Retrying with delay...")
+                        print(
+                            f"💡 This website may have anti-bot protection. Retrying with delay..."
+                        )
                     else:
-                        print(f"⚠️  Website consistently blocks access. Consider manual processing.")
+                        print(
+                            f"⚠️  Website consistently blocks access. Consider manual processing."
+                        )
                         break
-                
+
                 # Check if it's a connection error
-                elif "Connection aborted" in error_msg or "RemoteDisconnected" in error_msg:
+                elif (
+                    "Connection aborted" in error_msg
+                    or "RemoteDisconnected" in error_msg
+                ):
                     print(f"🌐 Connection issue: {document_path}")
                     if attempt < max_retries:
                         print(f"💡 Retrying due to connection issue...")
                     else:
-                        print(f"⚠️  Persistent connection issues. Website may be temporarily unavailable.")
+                        print(
+                            f"⚠️  Persistent connection issues. Website may be temporarily unavailable."
+                        )
                         break
-                
+
                 # For other errors, don't retry
                 else:
                     print(f"❌ Non-retryable error: {error_msg}")
                     break
-        
+
         return False
 
     def print_web_scraping_tips(self, failed_urls: List[str]):
         """
         Print helpful tips for handling failed web scraping attempts.
-        
+
         Args:
             failed_urls: List of URLs that failed to process
         """
         if not failed_urls:
             return
-            
+
         print(f"\n💡 Web Scraping Tips for {len(failed_urls)} failed URLs:")
         print("=" * 60)
-        
+
         for url in failed_urls:
             print(f"\n🔗 {url}")
-            
+
             if "sap.com" in url:
                 print("   💡 SAP websites often have strict anti-bot protection")
                 print("   📋 Consider using SAP's official APIs or documentation")
                 print("   🔍 Try accessing the content manually and saving as PDF")
-                
+
             elif "taxtech500.com" in url:
                 print("   💡 This site may require user authentication")
                 print("   📋 Consider creating an account and accessing manually")
                 print("   🔍 Try using browser developer tools to extract content")
-                
+
             elif "sapinsider.org" in url:
                 print("   💡 This site may have subscription requirements")
                 print("   📋 Check if you need a SAP Insider account")
                 print("   🔍 Try accessing through a different browser or VPN")
-                
+
             else:
                 print("   💡 General tips for blocked websites:")
                 print("   📋 Try accessing manually and saving content locally")
                 print("   🔍 Use browser developer tools to extract text content")
                 print("   🌐 Consider using a different network or VPN")
                 print("   ⏰ Try again later as the site may be temporarily blocking")
-        
+
         print(f"\n📝 Alternative approaches:")
         print("   1. Save web pages as PDF files and add them to the data/raw folder")
         print("   2. Copy and paste content into text files")
@@ -677,7 +727,9 @@ def main():
     """CLI interface for file processing."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Process various file types for ChromaDB")
+    parser = argparse.ArgumentParser(
+        description="Process various file types for ChromaDB"
+    )
     parser.add_argument(
         "--action",
         choices=["process", "add", "add-url", "list", "reset", "supported"],
@@ -741,7 +793,7 @@ def main():
                 file_path = os.path.join(data_dir, f)
                 if processor._is_supported_file(file_path):
                     all_files.append(file_path)
-            
+
             if all_files:
                 success = processor.initialize_ragtool_and_process_files(
                     all_files, args.force

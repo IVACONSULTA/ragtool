@@ -23,6 +23,10 @@ from crewai.project import CrewBase, agent, crew, task
 # Add project root to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
+from agents.rag.files_ragtool import (  # Import file processor for database management
+    FilesRagTool,
+)
+
 # Configuration imports
 from agents.utils.config import (
     get_data_path,
@@ -30,9 +34,6 @@ from agents.utils.config import (
     get_rag_config,
     get_storage_path,
     print_config_info,
-)
-from agents.rag.files_ragtool import (  # Import file processor for database management
-    FilesRagTool,
 )
 
 
@@ -112,7 +113,7 @@ class CustomRagTool:
 
     def __init__(self, data_path: str = None):
         """Initialize the CustomRagTool class.
-        
+
         Args:
             data_path: Optional custom data path. If None, uses default from config.
         """
@@ -124,7 +125,7 @@ class CustomRagTool:
 
     def initialize_rag_tool(self, data_path: str = None):
         """Initialize RAG tool with configuration and fallback handling.
-        
+
         Args:
             data_path: Optional data path override. If provided, uses this instead of stored data_path or config default.
         """
@@ -138,15 +139,21 @@ class CustomRagTool:
             self.processor = FilesRagTool(self.config, self.storage_path)
 
             # Determine which data path to use: parameter > instance variable > config default
-            actual_data_path = data_path if data_path is not None else (self.data_path if self.data_path is not None else get_data_path())
-            
+            actual_data_path = (
+                data_path
+                if data_path is not None
+                else (self.data_path if self.data_path is not None else get_data_path())
+            )
+
             # If we're switching data paths, reset the processor to force reprocessing
             if actual_data_path != self.data_path and self.data_path is not None:
-                print(f"🔄 Switching data path from {self.data_path} to {actual_data_path}")
+                print(
+                    f"🔄 Switching data path from {self.data_path} to {actual_data_path}"
+                )
                 # Reset processor to force new database
                 if self.processor:
                     self.processor.rag_tool = None
-            
+
             # Update stored data path
             if actual_data_path is not None:
                 self.data_path = actual_data_path
@@ -167,14 +174,20 @@ class CustomRagTool:
                         supported_files = []
                         for filename in os.listdir(self.data_path):
                             file_path = os.path.join(self.data_path, filename)
-                            if os.path.isfile(file_path) and self.processor._is_supported_file(file_path):
+                            if os.path.isfile(
+                                file_path
+                            ) and self.processor._is_supported_file(file_path):
                                 supported_files.append(file_path)
-                        
+
                         if supported_files:
-                            print(f"📄 Will process: {self.data_path} (type: directory)")
+                            print(
+                                f"📄 Will process: {self.data_path} (type: directory)"
+                            )
                             print(f"🔄 Processing {len(supported_files)} files...")
-                            success = self.processor.initialize_ragtool_and_process_files(
-                                supported_files
+                            success = (
+                                self.processor.initialize_ragtool_and_process_files(
+                                    supported_files
+                                )
                             )
                         else:
                             print(f"⚠️  No supported files found in {self.data_path}")
@@ -186,12 +199,10 @@ class CustomRagTool:
                         success = self.processor.initialize_ragtool_and_process_files(
                             [self.data_path]
                         )
-                    
+
                     if success:
                         raw_rag_tool = self.processor.rag_tool
-                        print(
-                            f"✅ Successfully processed and loaded: {self.data_path}"
-                        )
+                        print(f"✅ Successfully processed and loaded: {self.data_path}")
                     else:
                         print("❌ Failed to process files")
                         raw_rag_tool = None
@@ -246,7 +257,7 @@ class CustomRagTool:
 
     def refresh_rag_tool(self, data_path: str = None):
         """Force refresh/re-initialization of the RAG tool.
-        
+
         Args:
             data_path: Optional data path to use for reinitialization.
         """
@@ -269,42 +280,51 @@ class CustomRagTool:
             "processor_loaded": self.processor is not None,
         }
 
+
 @CrewBase
 class SapCrew:
     """SAP Consulting Crew"""
 
     agents_config = "sap_agents.yaml"
     tasks_config = "sap_tasks.yaml"
-    
-    def __init__(self, custom_llm_instance: CustomLlm, custom_rag_tool_instance: CustomRagTool):
+
+    def __init__(
+        self, custom_llm_instance: CustomLlm, custom_rag_tool_instance: CustomRagTool
+    ):
         """Initialize SapCrew with CustomLlm and CustomRagTool instances."""
         self.custom_llm = custom_llm_instance
         self.custom_rag_tool = custom_rag_tool_instance
-        
+
         # Check if YAML files exist
         current_dir = os.path.dirname(__file__)
         agents_yaml_path = os.path.join(current_dir, "agents.yaml")
         tasks_yaml_path = os.path.join(current_dir, "tasks.yaml")
-        
+
         print(f"🔍 Checking YAML files:")
-        print(f"   - Agents YAML: {agents_yaml_path} (exists: {os.path.exists(agents_yaml_path)})")
-        print(f"   - Tasks YAML: {tasks_yaml_path} (exists: {os.path.exists(tasks_yaml_path)})")
-        
+        print(
+            f"   - Agents YAML: {agents_yaml_path} (exists: {os.path.exists(agents_yaml_path)})"
+        )
+        print(
+            f"   - Tasks YAML: {tasks_yaml_path} (exists: {os.path.exists(tasks_yaml_path)})"
+        )
+
         print("✅ SapCrew initialized successfully")
-        
+
     @agent
     def senior_sap_consultant(self) -> Agent:
         """Create the senior SAP consultant agent with proper configuration."""
         try:
             print("🔍 Creating senior SAP consultant agent...")
-            
+
             # Determine tools to use based on RAG availability
             tools = []
             if self.custom_rag_tool.is_available():
                 tools.append(self.custom_rag_tool.get_rag_tool())
                 print("✅ RAG tool available - SAP agent will use RAG capabilities")
             else:
-                print("⚠️  No RAG tool available - SAP agent will use base knowledge only")
+                print(
+                    "⚠️  No RAG tool available - SAP agent will use base knowledge only"
+                )
 
             print(f"🔍 Agent config: {self.agents_config}")
             print(f"🔍 LLM: {self.custom_llm.get_llm()}")
@@ -335,7 +355,7 @@ class SapCrew:
                 max_iterations=5,
                 max_retry_limit=2,
             )
-    
+
     @task
     def sap_consultation_task(self, description: str = None) -> Task:
         """Create the SAP consultation task."""
@@ -351,7 +371,7 @@ class SapCrew:
             print(f"   Error type: {type(e).__name__}")
             print(f"   Error details: {str(e)}")
             raise e
-    
+
     @crew
     def crew(self) -> Crew:
         """Create the SAP crew."""
@@ -360,10 +380,12 @@ class SapCrew:
             tasks=[self.sap_consultation_task()],
             verbose=is_running_locally(),
         )
-    
-    def create_crew_with_message(self, user_message: str, context_country: str = None) -> Crew:
+
+    def create_crew_with_message(
+        self, user_message: str, context_country: str = None
+    ) -> Crew:
         """Create the SAP crew with a custom user message.
-        
+
         Args:
             user_message: The user's question/message
             context_country: Optional country context to provide jurisdictional context
@@ -373,10 +395,12 @@ class SapCrew:
             task_description = user_message
             if context_country:
                 task_description = f"Context: The user is asking in the context of {context_country}. {user_message}"
-                print(f"🔍 Creating SAP crew with message and country context: {context_country}")
+                print(
+                    f"🔍 Creating SAP crew with message and country context: {context_country}"
+                )
             else:
                 print(f"🔍 Creating SAP crew with message: {user_message}")
-            
+
             return Crew(
                 agents=[self.senior_sap_consultant()],
                 tasks=[self.sap_consultation_task(description=task_description)],
@@ -387,6 +411,7 @@ class SapCrew:
             print(f"   Error type: {type(e).__name__}")
             print(f"   Error details: {str(e)}")
             raise e
+
 
 @CrewBase
 class IVAConsultaCrew:
@@ -401,16 +426,17 @@ class IVAConsultaCrew:
         """Initialize IVAConsultaCrew with CustomLlm and CustomRagTool instances."""
         self.custom_llm = custom_llm_instance
         self.custom_rag_tool = custom_rag_tool_instance
-        
+
         # Load agents and tasks from YAML files
-        import yaml
         from pathlib import Path
-        
+
+        import yaml
+
         agents_dir = Path(__file__).parent
         try:
-            with open(agents_dir / "agents.yaml", 'r', encoding='utf-8') as file:
+            with open(agents_dir / "agents.yaml", "r", encoding="utf-8") as file:
                 self.agents_config = yaml.safe_load(file)
-            with open(agents_dir / "tasks.yaml", 'r', encoding='utf-8') as file:
+            with open(agents_dir / "tasks.yaml", "r", encoding="utf-8") as file:
                 self.tasks_config = yaml.safe_load(file)
             print("✅ IVA Consulta crew loaded agents and tasks from YAML")
         except Exception as e:
@@ -426,9 +452,13 @@ class IVAConsultaCrew:
             tools = []
             if self.custom_rag_tool.is_available():
                 tools.append(self.custom_rag_tool.get_rag_tool())
-                print("✅ RAG tool available - IVA Consulta agent will use RAG capabilities")
+                print(
+                    "✅ RAG tool available - IVA Consulta agent will use RAG capabilities"
+                )
             else:
-                print("⚠️  No RAG tool available - IVA Consulta agent will use base knowledge only")
+                print(
+                    "⚠️  No RAG tool available - IVA Consulta agent will use base knowledge only"
+                )
 
             return Agent(
                 config=self.agents_config["iva_consulta_agent"],
@@ -480,9 +510,11 @@ class IVAConsultaCrew:
             verbose=is_running_locally(),
         )
 
-    def create_crew_with_message(self, user_message: str, context_country: str = None) -> Crew:
+    def create_crew_with_message(
+        self, user_message: str, context_country: str = None
+    ) -> Crew:
         """Create the IVA Consulta crew with a custom user message.
-        
+
         Args:
             user_message: The user's question/message
             context_country: Optional country context to provide jurisdictional context for VAT queries
@@ -491,10 +523,12 @@ class IVAConsultaCrew:
         task_description = user_message
         if context_country:
             task_description = f"Context: The user is asking about VAT regulations in the context of {context_country}. {user_message}"
-            print(f"🔍 Creating IVA Consulta crew with message and country context: {context_country}")
+            print(
+                f"🔍 Creating IVA Consulta crew with message and country context: {context_country}"
+            )
         else:
             print(f"🔍 Creating IVA Consulta crew with message: {user_message}")
-        
+
         return Crew(
             agents=[self.iva_consulta_agent()],
             tasks=[self.vat_consultation_task(description=task_description)],

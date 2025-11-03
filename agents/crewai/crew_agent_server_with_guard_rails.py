@@ -21,19 +21,23 @@ import nest_asyncio
 # Add project root to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-# Import custom agent types
-from agents.crewai.crew_entities import CustomLlm, CustomRagTool, SapCrew, IVAConsultaCrew, is_running_locally
-
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+# Import custom agent types
+from agents.crewai.crew_entities import (
+    CustomLlm,
+    CustomRagTool,
+    IVAConsultaCrew,
+    SapCrew,
+    is_running_locally,
+)
+
 # Add project root to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-from agents.utils.config import get_data_path
-
 # Import compliance guardrails from guardrails package
 from agents.guardrails.compliance_guardrails import (
     ComplianceViolationError,
@@ -43,11 +47,12 @@ from agents.guardrails.compliance_guardrails import (
 # Import LangSmith integration
 from agents.langsmith_integration import (
     get_langsmith_manager,
-    trace_async_function,
     log_agent_interaction,
     log_error,
     log_monitoring_summary,
+    trace_async_function,
 )
+from agents.utils.config import get_data_path
 
 nest_asyncio.apply()
 
@@ -78,7 +83,9 @@ limiter = Limiter(
 
 # Read RAG role and data path from environment
 RAG_ROLE = os.getenv("RAG_ROLE", "iva_consulta").lower()  # Default: iva_consulta
-RAG_DATA_PATH = os.getenv("RAG_DATA_PATH")  # Optional: can be None to use config default
+RAG_DATA_PATH = os.getenv(
+    "RAG_DATA_PATH"
+)  # Optional: can be None to use config default
 
 # Define role-specific data paths if RAG_DATA_PATH not provided
 ROLE_DATA_PATHS = {
@@ -93,7 +100,9 @@ if RAG_DATA_PATH is None:
     if RAG_DATA_PATH is None:
         # Unknown role - use config default
         RAG_DATA_PATH = get_data_path()
-        print(f"📁 Unknown role '{RAG_ROLE}', using config default path: {RAG_DATA_PATH}")
+        print(
+            f"📁 Unknown role '{RAG_ROLE}', using config default path: {RAG_DATA_PATH}"
+        )
     else:
         print(f"📁 Using role-based data path for '{RAG_ROLE}': {RAG_DATA_PATH}")
 else:
@@ -115,45 +124,45 @@ try:
     print("🤖 Initializing Custom LLM...")
     custom_llm = CustomLlm()
     llm = custom_llm.initialize_llm()
-    
+
     # Wrap LLM with LangSmith tracing if available
     if langsmith_manager.is_enabled():
         try:
             print("🔍 Wrapping LLM with LangSmith tracing...")
             # Set environment variables for automatic tracing
             os.environ["LANGCHAIN_TRACING_V2"] = "true"
-            
+
             # Get config values with proper fallbacks
             endpoint = langsmith_manager.config.get("endpoint")
             api_key = langsmith_manager.config.get("api_key")
             project = langsmith_manager.config.get("project")
-            
+
             if endpoint:
                 os.environ["LANGCHAIN_ENDPOINT"] = endpoint
             else:
                 os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-                
+
             if api_key:
                 os.environ["LANGCHAIN_API_KEY"] = api_key
             else:
                 print("⚠️  No LangSmith API key found, LLM tracing may not work")
-                
+
             if project:
                 os.environ["LANGCHAIN_PROJECT"] = project
             else:
                 os.environ["LANGCHAIN_PROJECT"] = "ivaconsulta-rag-tool"
-            
+
             # Enable comprehensive monitoring
             print("📊 Enabling comprehensive LLM monitoring...")
             print("   - Cost tracking enabled")
             print("   - Token usage monitoring enabled")
             print("   - Performance metrics tracking enabled")
             print("   - Error tracking enabled")
-                
+
             print("✅ LangSmith environment variables set for automatic LLM tracing")
         except Exception as e:
             print(f"⚠️  Could not set up LLM tracing: {e}")
-    
+
     print(f"✅ Custom LLM initialized successfully: {custom_llm.get_model_info()}")
 
 except Exception as e:
@@ -201,13 +210,15 @@ if RAG_ROLE in ["iva_consulta", "vat_agent"]:
         # Reinitialize RAG tool with SAP data path for fallback
         fallback_data_path = ROLE_DATA_PATHS.get("sap")
         if fallback_data_path:
-            print(f"🔄 Reinitializing RAG tool with SAP data path: {fallback_data_path}")
+            print(
+                f"🔄 Reinitializing RAG tool with SAP data path: {fallback_data_path}"
+            )
             try:
                 custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
                 print(f"✅ RAG tool reinitialized with SAP data path")
             except Exception as rag_error:
                 print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
-        
+
         try:
             sap_crew = SapCrew(custom_llm, custom_rag_tool)
             active_crew = sap_crew
@@ -231,13 +242,15 @@ elif RAG_ROLE == "sap":
         # Reinitialize RAG tool with IVA Consulta data path for fallback
         fallback_data_path = ROLE_DATA_PATHS.get("iva_consulta")
         if fallback_data_path:
-            print(f"🔄 Reinitializing RAG tool with IVA Consulta data path: {fallback_data_path}")
+            print(
+                f"🔄 Reinitializing RAG tool with IVA Consulta data path: {fallback_data_path}"
+            )
             try:
                 custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
                 print(f"✅ RAG tool reinitialized with IVA Consulta data path")
             except Exception as rag_error:
                 print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
-        
+
         try:
             iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
             active_crew = iva_consulta_crew
@@ -276,8 +289,6 @@ elif RAG_ROLE == "sap" and iva_consulta_crew is None:
         print(f"⚠️  Could not initialize IVA Consulta Crew (secondary): {e}")
 
 
-
-
 #################################################################################
 #                             Helper functions                                  #
 #################################################################################
@@ -287,11 +298,11 @@ def verify_api_key():
     """Verify API key for production environments and security testing."""
     # Check if security testing mode is enabled
     security_test_mode = os.getenv("SECURITY_TEST_MODE", "false").lower() == "true"
-    
+
     if not is_running_locally() or security_test_mode:
         api_key = request.headers.get("X-API-Key")
         expected_key = os.getenv("API_KEY")
-        
+
         if not api_key:
             print("❌ No API key provided in request headers")
             return None, (
@@ -316,19 +327,20 @@ def verify_api_key():
         return None, None
 
 
-
 @trace_async_function("call_crewai_agent")
-async def call_crewai_agent(user_message: str, agent_type: str = None, context_country: str = None) -> str:
+async def call_crewai_agent(
+    user_message: str, agent_type: str = None, context_country: str = None
+) -> str:
     """Call the CrewAI agent with the user's question.
-    
+
     Args:
         user_message: The user's question/message
         agent_type: Optional agent type. If not provided, uses active_crew based on RAG_ROLE
         context_country: Optional country context to provide jurisdictional context for the query
-        
+
     Returns:
         The agent's response as a string
-        
+
     Raises:
         ComplianceViolationError: If message violates EU AI Act compliance rules
         Exception: If agent is not available or other errors occur
@@ -338,7 +350,7 @@ async def call_crewai_agent(user_message: str, agent_type: str = None, context_c
         error_msg = "The agent is not available at the moment. Please try again later."
         print(f"❌ {error_msg}")
         raise Exception(error_msg)
-    
+
     try:
         print(f"📝 Processing question: {user_message}")
 
@@ -353,7 +365,7 @@ async def call_crewai_agent(user_message: str, agent_type: str = None, context_c
             log_error(
                 ComplianceViolationError(compliance_result),
                 "compliance_check",
-                {"user_message": user_message, "violation": compliance_result}
+                {"user_message": user_message, "violation": compliance_result},
             )
 
             raise ComplianceViolationError(compliance_result)
@@ -363,7 +375,7 @@ async def call_crewai_agent(user_message: str, agent_type: str = None, context_c
         # Select crew based on agent_type or use active_crew (initialized once at startup)
         selected_crew = None
         crew_name = ""
-        
+
         if agent_type == "iva_consulta_agent" and iva_consulta_crew is not None:
             selected_crew = iva_consulta_crew
             crew_name = "IVA Consulta"
@@ -374,28 +386,40 @@ async def call_crewai_agent(user_message: str, agent_type: str = None, context_c
             # Use active_crew (initialized once based on RAG_ROLE)
             selected_crew = active_crew
             crew_name = "IVA Consulta" if RAG_ROLE == "iva_consulta" else "SAP"
-        
+
         if selected_crew is None:
-            error_msg = "The agent is not available at the moment. Please try again later."
+            error_msg = (
+                "The agent is not available at the moment. Please try again later."
+            )
             print(f"❌ {error_msg}")
             raise Exception(error_msg)
-        
+
         print(f"🤖 Using {crew_name} crew...")
 
         # Create crew instance with user message and execute
         print("🤖 Executing CrewAI task...")
-        crew_instance = selected_crew.create_crew_with_message(user_message, context_country)
+        crew_instance = selected_crew.create_crew_with_message(
+            user_message, context_country
+        )
         task_output = await crew_instance.kickoff_async()
 
         response_content = str(task_output)
-        
+
         # For IVA Consulta agent, ensure response is within 600 characters
-        if (agent_type == "iva_consulta_agent" or 
-            (agent_type is None and RAG_ROLE == "iva_consulta")) and len(response_content) > 600:
+        if (
+            agent_type == "iva_consulta_agent"
+            or (agent_type is None and RAG_ROLE == "iva_consulta")
+        ) and len(response_content) > 600:
             response_content = response_content[:597] + "..."
             print(f"⚠️  Response truncated to 600 characters for IVA Consulta agent")
-        
-        actual_agent_type = agent_type if agent_type else (f"{RAG_ROLE}_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant")
+
+        actual_agent_type = (
+            agent_type
+            if agent_type
+            else (
+                f"{RAG_ROLE}_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant"
+            )
+        )
         print(f"✅ Response generated: {len(response_content)} characters")
 
         # Log successful agent interaction to LangSmith
@@ -406,15 +430,15 @@ async def call_crewai_agent(user_message: str, agent_type: str = None, context_c
             {
                 "compliance_checked": True,
                 "response_length": len(response_content),
-                "context_country": context_country if context_country else None
-            }
+                "context_country": context_country if context_country else None,
+            },
         )
-        
+
         # Log monitoring summary if LangSmith is enabled
         if langsmith_manager.is_enabled():
             print("\n📊 Current LLM Usage Summary:")
             log_monitoring_summary()
-            
+
         return response_content
 
     except ComplianceViolationError:
@@ -431,8 +455,8 @@ async def call_crewai_agent(user_message: str, agent_type: str = None, context_c
             {
                 "user_message": user_message,
                 "error_type": type(e).__name__,
-                "timestamp": datetime.now().isoformat()
-            }
+                "timestamp": datetime.now().isoformat(),
+            },
         )
 
         # Return user-friendly error message
@@ -459,7 +483,7 @@ def health():
     langsmith_status = {
         "enabled": langsmith_manager.is_enabled(),
         "project": langsmith_manager.config.get("project", "N/A"),
-        "client_available": langsmith_manager.get_client() is not None
+        "client_available": langsmith_manager.get_client() is not None,
     }
 
     return jsonify(
@@ -500,17 +524,21 @@ def chat():
         # agent_type is optional - if not provided, uses active_crew based on RAG_ROLE
         agent_type: str = data.get("agent_type")  # Can be None to use default
         # context_country is optional - provides country context for the query
-        
+
         if agent_type:
             print(f"Received message: {user_message} (agent: {agent_type})")
         else:
-            print(f"Received message: {user_message} (using default agent based on RAG_ROLE)")
-        
+            print(
+                f"Received message: {user_message} (using default agent based on RAG_ROLE)"
+            )
+
         if context_country:
             print(f"📍 Country context: {context_country}")
 
         # Execute the CrewAI agent call
-        result: str = asyncio.run(call_crewai_agent(user_message, agent_type, context_country))
+        result: str = asyncio.run(
+            call_crewai_agent(user_message, agent_type, context_country)
+        )
 
         # Log successful chat interaction to LangSmith
         if langsmith_manager.is_enabled():
@@ -523,15 +551,19 @@ def chat():
                     "api_key_provided": api_key is not None,
                     "response_length": len(result),
                     "context_country": context_country if context_country else None,
-                    "timestamp": datetime.now().isoformat()
-                }
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
 
         # Determine actual agent type for response
-        actual_agent_type = agent_type if agent_type else (
-            "iva_consulta_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant"
+        actual_agent_type = (
+            agent_type
+            if agent_type
+            else (
+                "iva_consulta_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant"
+            )
         )
-        
+
         return jsonify(
             {
                 "response": result,
@@ -541,21 +573,22 @@ def chat():
         )
     except Exception as exc:
         print(f"❌ Error in chat endpoint: {exc}")
-        
+
         # Log error to LangSmith
         if langsmith_manager.is_enabled():
             log_error(
                 exc,
                 "chat_endpoint",
                 {
-                    "user_message": data.get("message", "N/A") if 'data' in locals() else "N/A",
+                    "user_message": (
+                        data.get("message", "N/A") if "data" in locals() else "N/A"
+                    ),
                     "error_type": type(exc).__name__,
-                    "timestamp": datetime.now().isoformat()
-                }
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
 
         return jsonify({"error": str(exc)}), 500
-
 
 
 @app.route("/", methods=["GET"])
@@ -564,10 +597,7 @@ def index():
         {
             "server": "CrewAI RAG Agent Server with Guardrails",
             "version": "1.0.0",
-            "endpoints": {
-                "health": "/health", 
-                "chat": "/chat"
-            },
+            "endpoints": {"health": "/health", "chat": "/chat"},
             "status": "running",
             "timestamp": datetime.now().isoformat(),
             "description": "CrewAI-powered multi-agent system with RAG capabilities and EU AI Act compliance - Default: IVA Consulta VAT Specialist",
@@ -576,8 +606,8 @@ def index():
             "agents": {
                 "iva_consulta_agent": "VAT and indirect taxation specialist (DEFAULT)",
                 "sap_consultant": "SAP consulting specialist",
-                "senior_coverage_assistant": "Insurance coverage specialist"
-            }
+                "senior_coverage_assistant": "Insurance coverage specialist",
+            },
         }
     )
 
@@ -600,7 +630,11 @@ if __name__ == "__main__":
     print("💬 Chat endpoint: /chat")
     print("🤖 CrewAI multi-agent system ready")
     print(f"📄 VAT documents: {data_path}")
-    agent_type_name = 'IVA Consulta VAT Specialist' if RAG_ROLE in ['iva_consulta', 'vat_agent'] else 'SAP Consultant'
+    agent_type_name = (
+        "IVA Consulta VAT Specialist"
+        if RAG_ROLE in ["iva_consulta", "vat_agent"]
+        else "SAP Consultant"
+    )
     print(f"🎯 Default agent: {RAG_ROLE.upper()} ({agent_type_name})")
     print(f"📂 Using data path: {RAG_DATA_PATH}")
     print("🛡️  EU AI Act compliance guardrails enabled")
@@ -609,10 +643,12 @@ if __name__ == "__main__":
         print("✅ RAG capabilities enabled")
     else:
         print("⚠️  RAG capabilities disabled - using base knowledge only")
-    
+
     # LangSmith status
     if langsmith_manager.is_enabled():
-        print(f"🔍 LangSmith tracing enabled for project: {langsmith_manager.config.get('project', 'N/A')}")
+        print(
+            f"🔍 LangSmith tracing enabled for project: {langsmith_manager.config.get('project', 'N/A')}"
+        )
     else:
         print("⚠️  LangSmith tracing disabled (set LANGSMITH_API_KEY to enable)")
 
@@ -625,7 +661,13 @@ if __name__ == "__main__":
         debug_mode = False  # Disabled to prevent ChromaDB lock issues
         use_reloader = False  # Explicitly disable reloader
         print(f"🔄 Starting Flask app on host=0.0.0.0, port={port}, debug={debug_mode}")
-        app.run(host="0.0.0.0", port=port, debug=debug_mode, use_reloader=use_reloader, threaded=True)
+        app.run(
+            host="0.0.0.0",
+            port=port,
+            debug=debug_mode,
+            use_reloader=use_reloader,
+            threaded=True,
+        )
     except KeyboardInterrupt:
         print("\n👋 Server stopped. Goodbye!")
     except Exception as e:

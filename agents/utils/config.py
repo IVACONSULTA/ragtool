@@ -235,8 +235,9 @@ class ConfigurationSet:
             if not self.langsmith_api_key:
                 errors.append("LangSmith API key is required when LangSmith is enabled")
             if not self.langsmith_project:
-                errors.append("LangSmith project name is required when LangSmith is enabled")
-
+                errors.append(
+                    "LangSmith project name is required when LangSmith is enabled"
+                )
 
         return len(errors) == 0, errors
 
@@ -371,7 +372,6 @@ class ConfigurationManager:
                 langsmith_api_key=os.getenv("LANGSMITH_API_KEY"),
                 langsmith_project=os.getenv("LANGSMITH_PROJECT", "sap-rag-tool-dev"),
                 langsmith_endpoint=os.getenv("LANGCHAIN_ENDPOINT"),
-
             ),
             "gpt-4o-mini": ConfigurationSet(
                 name="gpt-4o-mini",
@@ -651,7 +651,6 @@ def running_in_railway() -> bool:
 
 
 def get_data_path(filename: str = "SAP_Cloud_Platform.pdf") -> str:
-
     """
     Get data file path based on environment.
 
@@ -691,6 +690,7 @@ def get_storage_path(custom_path: Optional[str] = None) -> str:
     current_config = _config_manager.get_current_configuration_set()
     return current_config.get_storage_path()
 
+
 def get_langsmith_config() -> Dict[str, Any]:
     """
     Get LangSmith configuration.
@@ -700,6 +700,7 @@ def get_langsmith_config() -> Dict[str, Any]:
     """
     current_config = _config_manager.get_current_configuration_set()
     return current_config.get_langsmith_config()
+
 
 def print_config_info():
     """
@@ -731,16 +732,19 @@ def print_config_info():
         print(f"Chunk Overlap: {current_config.chunk_overlap}")
         print(f"Data Path: {current_config.get_data_path()}")
         print(f"Storage Path: {current_config.get_storage_path()}")
-        
+
         # LangSmith configuration
         langsmith_config = current_config.get_langsmith_config()
-        print(f"LangSmith Enabled: {'✅ Yes' if langsmith_config['enabled'] else '❌ No'}")
-        if langsmith_config['enabled']:
+        print(
+            f"LangSmith Enabled: {'✅ Yes' if langsmith_config['enabled'] else '❌ No'}"
+        )
+        if langsmith_config["enabled"]:
             print(f"LangSmith Project: {langsmith_config['project']}")
-            print(f"LangSmith API Key: {'✅ Set' if langsmith_config['api_key'] else '❌ Missing'}")
-            if langsmith_config['endpoint']:
+            print(
+                f"LangSmith API Key: {'✅ Set' if langsmith_config['api_key'] else '❌ Missing'}"
+            )
+            if langsmith_config["endpoint"]:
                 print(f"LangSmith Endpoint: {langsmith_config['endpoint']}")
-
 
         if env_info["is_running_in_railway"]:
             print(f"Railway Environment: {env_info['railway_environment']}")

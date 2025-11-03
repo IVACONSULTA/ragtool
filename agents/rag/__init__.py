@@ -12,9 +12,9 @@ Modules:
 # Import main classes for easy access
 # Handle missing dependencies gracefully
 try:
-    from .ragtool import BaseRagTool
     from .files_ragtool import FilesRagTool
     from .rag_wrapper import RagToolWrapper, create_rag_wrapper
+    from .ragtool import BaseRagTool
 
     __all__ = ["BaseRagTool", "FilesRagTool", "RagToolWrapper", "create_rag_wrapper"]
 except ImportError:
