@@ -445,3 +445,9 @@ print('Metadata:', processor.list_processed_files())
 ```
 
 This new system makes your RAG tool much more efficient and production-ready! 🚀
+
+# Bugs & Fixes
+
+pkill -9 -f "files_manager.py"
+pkill -9 -f "crew_agent_server"
+rm -rf db && mkdir db

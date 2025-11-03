@@ -83,13 +83,19 @@ RAG_DATA_PATH = os.getenv("RAG_DATA_PATH")  # Optional: can be None to use confi
 # Define role-specific data paths if RAG_DATA_PATH not provided
 ROLE_DATA_PATHS = {
     "iva_consulta": "./data/raw",  # VAT documents directory
+    "vat_agent": "./data/raw",  # VAT agent (alias for iva_consulta)
     "sap": "./data/raw_sap",  # SAP documents directory
 }
 
 # Get data path: env var > role-based default > config default
 if RAG_DATA_PATH is None:
     RAG_DATA_PATH = ROLE_DATA_PATHS.get(RAG_ROLE)
-    print(f"📁 Using role-based data path for '{RAG_ROLE}': {RAG_DATA_PATH}")
+    if RAG_DATA_PATH is None:
+        # Unknown role - use config default
+        RAG_DATA_PATH = get_data_path()
+        print(f"📁 Unknown role '{RAG_ROLE}', using config default path: {RAG_DATA_PATH}")
+    else:
+        print(f"📁 Using role-based data path for '{RAG_ROLE}': {RAG_DATA_PATH}")
 else:
     print(f"📁 Using custom data path from RAG_DATA_PATH: {RAG_DATA_PATH}")
 
@@ -181,7 +187,7 @@ active_crew = None  # The active crew to use for requests
 # The active_crew will be used as the default for all requests
 
 # Initialize IVA Consulta crew (default)
-if RAG_ROLE == "iva_consulta":
+if RAG_ROLE in ["iva_consulta", "vat_agent"]:
     try:
         print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
         iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
@@ -242,6 +248,7 @@ elif RAG_ROLE == "sap":
 
 else:
     print(f"⚠️  Unknown RAG_ROLE '{RAG_ROLE}', defaulting to IVA Consulta")
+    RAG_ROLE = "iva_consulta"  # Normalize to known role
     try:
         print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
         iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
@@ -593,7 +600,8 @@ if __name__ == "__main__":
     print("💬 Chat endpoint: /chat")
     print("🤖 CrewAI multi-agent system ready")
     print(f"📄 VAT documents: {data_path}")
-    print(f"🎯 Default agent: {RAG_ROLE.upper()} ({'IVA Consulta VAT Specialist' if RAG_ROLE == 'iva_consulta' else 'SAP Consultant'})")
+    agent_type_name = 'IVA Consulta VAT Specialist' if RAG_ROLE in ['iva_consulta', 'vat_agent'] else 'SAP Consultant'
+    print(f"🎯 Default agent: {RAG_ROLE.upper()} ({agent_type_name})")
     print(f"📂 Using data path: {RAG_DATA_PATH}")
     print("🛡️  EU AI Act compliance guardrails enabled")
     print(f"🧠 {custom_llm.get_model_info() if custom_llm else 'LLM: Unknown'}")
@@ -612,10 +620,12 @@ if __name__ == "__main__":
     print("⏹️  Press Ctrl+C to stop the server\n")
 
     try:
-        # Use debug=False for production
-        debug_mode = is_running_locally()
+        # Use debug=False for production and to avoid ChromaDB lock issues
+        # Debug mode causes Flask to reload, which can cause ChromaDB resource conflicts
+        debug_mode = False  # Disabled to prevent ChromaDB lock issues
+        use_reloader = False  # Explicitly disable reloader
         print(f"🔄 Starting Flask app on host=0.0.0.0, port={port}, debug={debug_mode}")
-        app.run(host="0.0.0.0", port=port, debug=debug_mode, threaded=True)
+        app.run(host="0.0.0.0", port=port, debug=debug_mode, use_reloader=use_reloader, threaded=True)
     except KeyboardInterrupt:
         print("\n👋 Server stopped. Goodbye!")
     except Exception as e:
