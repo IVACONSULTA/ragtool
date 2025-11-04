@@ -8,7 +8,10 @@ It addresses validation errors that can occur with newer CrewAI versions.
 from typing import Any, Type
 
 from crewai.tools.base_tool import BaseTool
+
 from pydantic import BaseModel, Field, field_validator, model_validator
+
+
 
 
 class RagToolInputSchema(BaseModel):
@@ -16,9 +19,11 @@ class RagToolInputSchema(BaseModel):
 
     query: str = Field(description="The search query for the knowledge base")
 
+
     @model_validator(mode="before")
     @classmethod
     def validate_input(cls, data):
+
         """
         Handle various input formats that CrewAI might send.
         CrewAI sometimes sends dict objects instead of strings.
@@ -55,6 +60,7 @@ class RagToolInputSchema(BaseModel):
         return str(v).strip()
 
 
+
 class RagToolWrapper(BaseTool):
     """
     Wrapper for RagTool that ensures proper input validation.
@@ -67,6 +73,7 @@ class RagToolWrapper(BaseTool):
     description: str = (
         "Search for information in the knowledge base. Use this tool to find relevant information about SAP consulting, insurance coverage, waiting periods, and policy details. "
         "Call with: knowledge_base(query='your search query')"
+
     )
     args_schema: Type[BaseModel] = RagToolInputSchema
 
@@ -90,9 +97,7 @@ class RagToolWrapper(BaseTool):
                         return self._run(str(arg["description"]))
                     elif "action" in arg and "query" in arg:
                         # Handle action-based calls - ignore action, use query
-                        print(
-                            f"🔍 Ignoring action '{arg.get('action')}', using query: {arg.get('query')}"
-                        )
+                        print(f"🔍 Ignoring action '{arg.get('action')}', using query: {arg.get('query')}")
                         return self._run(str(arg["query"]))
                     else:
                         # Try to find any string value
@@ -141,38 +146,37 @@ class RagToolWrapper(BaseTool):
         try:
             # Import LangSmith integration
             from agents.langsmith_integration import get_langsmith_manager
-
+            
             langsmith_manager = get_langsmith_manager()
-
+            
             if langsmith_manager.is_enabled():
                 print("🔍 Setting up LangSmith tracing for RAG tool...")
-
+                
                 # Set environment variables for automatic tracing
                 import os
-
                 os.environ["LANGCHAIN_TRACING_V2"] = "true"
-
+                
                 # Get config values
                 endpoint = langsmith_manager.config.get("endpoint")
                 api_key = langsmith_manager.config.get("api_key")
                 project = langsmith_manager.config.get("project", "sap-rag-tool-dev")
-
+                
                 if endpoint:
                     os.environ["LANGCHAIN_ENDPOINT"] = endpoint
                 else:
                     os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-
+                    
                 if api_key:
                     os.environ["LANGCHAIN_API_KEY"] = api_key
-
+                    
                 os.environ["LANGCHAIN_PROJECT"] = project
-
+                
                 self._langsmith_enabled = True
                 print(f"✅ LangSmith tracing enabled for RAG tool (project: {project})")
             else:
                 print("⚠️  LangSmith tracing disabled for RAG tool")
                 self._langsmith_enabled = False
-
+                
         except Exception as e:
             print(f"⚠️  Could not set up LangSmith tracing for RAG tool: {e}")
             self._langsmith_enabled = False
@@ -217,11 +221,11 @@ class RagToolWrapper(BaseTool):
 
             print(f"🔍 Searching knowledge base for: {query}")
 
+
             # Log RAG operation to LangSmith if available
             if self._langsmith_enabled:
                 try:
                     from agents.langsmith_integration import log_rag_operation
-
                     log_rag_operation("search", query, "Starting RAG search...")
                 except Exception as e:
                     print(f"⚠️  Could not log RAG operation to LangSmith: {e}")
@@ -234,17 +238,12 @@ class RagToolWrapper(BaseTool):
                 result = str(result)
 
             print(f"✅ Found knowledge base results ({len(result)} characters)")
-
+            
             # Log successful RAG operation to LangSmith if available
             if self._langsmith_enabled:
                 try:
                     from agents.langsmith_integration import log_rag_operation
-
-                    log_rag_operation(
-                        "search",
-                        query,
-                        result[:500] + "..." if len(result) > 500 else result,
-                    )
+                    log_rag_operation("search", query, result[:500] + "..." if len(result) > 500 else result)
                 except Exception as e:
                     print(f"⚠️  Could not log RAG result to LangSmith: {e}")
             return result
@@ -252,12 +251,11 @@ class RagToolWrapper(BaseTool):
         except Exception as e:
             error_msg = f"Error searching knowledge base: {str(e)}"
             print(f"❌ RAG Tool Error: {error_msg}")
-
+            
             # Log error to LangSmith if available
             if self._langsmith_enabled:
                 try:
                     from agents.langsmith_integration import log_error
-
                     log_error(e, "rag_tool_search", {"query": str(query)})
                 except Exception as log_e:
                     print(f"⚠️  Could not log RAG error to LangSmith: {log_e}")
