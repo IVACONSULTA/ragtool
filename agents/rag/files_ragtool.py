@@ -1,10 +1,10 @@
 """
-Files RagTool for ChromaDB
+Files RagTool for Vector Database (Qdrant Local)
 
-This module handles processing various file types and managing the ChromaDB vector database
+This module handles processing various file types and managing the Qdrant vector database
 separately from the main agent server. This allows for:
 - One-time processing of various file types
-- Efficient loading of existing ChromaDB
+- Efficient loading of existing vector database
 - Easy addition of new documents
 
 FilesRagTool extends the generic BaseRagTool class with file processing functionality.
@@ -46,7 +46,7 @@ from .ragtool import BaseRagTool
 
 
 class FilesRagTool(BaseRagTool):
-    """Handles various file types processing and ChromaDB management."""
+    """Handles various file types processing and vector database (Qdrant local) management."""
 
     def __init__(self, rag_config: Dict, storage_path: str = "./db"):
         """
@@ -54,7 +54,7 @@ class FilesRagTool(BaseRagTool):
 
         Args:
             rag_config: Configuration for LLM and embedding models
-            storage_path: Path where ChromaDB will be stored
+            storage_path: Path where the vector database (Qdrant local storage) will be stored
         """
         super().__init__(rag_config, storage_path)
         # Store processed_files.json in data/processed directory for better organization
@@ -185,7 +185,7 @@ class FilesRagTool(BaseRagTool):
         self, file_paths: List[str], force_reprocess: bool = False
     ) -> bool:
         """
-        Process various file types and add them to ChromaDB.
+        Process various file types and add them to the vector database.
 
         Args:
             file_paths: List of file paths to process
@@ -324,7 +324,7 @@ class FilesRagTool(BaseRagTool):
 
     def get_rag_tool(self) -> Optional[RagTool]:
         """
-        Load existing ChromaDB without reprocessing files.
+        Load existing vector database without reprocessing files.
 
         Returns:
             RagTool instance if successful, None otherwise
@@ -352,7 +352,7 @@ class FilesRagTool(BaseRagTool):
 
     def add_new_file(self, file_path: str) -> bool:
         """
-        Add a new file to the existing ChromaDB.
+        Add a new file to the existing vector database.
 
         Args:
             file_path: Path to the new file
@@ -364,7 +364,7 @@ class FilesRagTool(BaseRagTool):
 
     def add_new_url(self, url: str, data_type: str = None) -> bool:
         """
-        Add a new URL to the existing ChromaDB.
+        Add a new URL to the existing vector database.
 
         Args:
             url: URL to add
@@ -383,13 +383,13 @@ class FilesRagTool(BaseRagTool):
 
     def reset_database(self) -> bool:
         """
-        Reset the ChromaDB by removing all data and clearing processed files metadata.
+        Reset the vector database by removing all data and clearing processed files metadata.
         Use with caution!
 
         Returns:
             bool: True if successful
         """
-        # Use base class method to reset ChromaDB
+        # Use base class method to reset vector database
         if not super().reset_database():
             return False
 
@@ -677,7 +677,7 @@ def main():
     """CLI interface for file processing."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Process various file types for ChromaDB")
+    parser = argparse.ArgumentParser(description="Process various file types for vector database (Qdrant local)")
     parser.add_argument(
         "--action",
         choices=["process", "add", "add-url", "list", "reset", "supported"],
@@ -691,7 +691,7 @@ def main():
         "--force", action="store_true", help="Force reprocess all files"
     )
     parser.add_argument(
-        "--storage", default="./chroma_db", help="ChromaDB storage path"
+        "--storage", default="./db", help="Vector database storage path (Qdrant local)"
     )
 
     args = parser.parse_args()
@@ -735,6 +735,7 @@ def main():
         data_dir = os.path.join(
             os.path.dirname(os.path.dirname(__file__)), "data", "raw"
         )
+        print(f"Data directory: {data_dir}")
         if os.path.exists(data_dir):
             all_files = []
             for f in os.listdir(data_dir):

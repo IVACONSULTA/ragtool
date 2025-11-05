@@ -1,0 +1,11 @@
+# Add these lines to your ~/.zshrc file for RagIvaconsulta project
+
+# RagIvaconsulta - Force local database storage
+export CREWAI_STORAGE_DIR="$HOME/Desktop/Code/RagIvaconsulta/db"
+export CHROMA_DB_PATH="$HOME/Desktop/Code/RagIvaconsulta/db"
+
+# Optional: Create an alias to automatically set these when entering the project
+alias cdrag='cd $HOME/Desktop/Code/RagIvaconsulta && export CREWAI_STORAGE_DIR="./db" && export CHROMA_DB_PATH="./db"'
+
+# After adding these lines, run: source ~/.zshrc
+

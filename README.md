@@ -6,13 +6,13 @@ A CrewAI-powered insurance policy agent that uses RAG (Retrieval Augmented Gener
 
 - **CrewAI Integration**: Powered by CrewAI for intelligent agent conversations
 - **EU AI Act Compliance**: Built-in guardrails ensuring compliance with EU AI Act regulations
-- **Advanced RAG Capabilities**: Smart PDF processing with ChromaDB vector storage
+- **Advanced RAG Capabilities**: Smart PDF processing with FAISS vector database
 - **LangSmith Monitoring**: Comprehensive tracing, debugging, and performance monitoring
 - **HTTP API**: Simple REST endpoints for health checks and chat interactions
 - **Railway Ready**: Pre-configured for easy deployment to Railway with auto-detection
 - **Smart Environment Detection**: Automatically adjusts behavior for local vs production environments
 - **Intelligent PDF Management**: Automated processing, reset, and reprocessing capabilities
-- **Persistent Vector Storage**: ChromaDB for efficient document retrieval
+- **Persistent Vector Storage**: FAISS for efficient and scalable document retrieval
 - **Configuration Management**: Environment-based configuration with validation
 - **Production Optimized**: Automated deployment workflows and health monitoring
 
@@ -67,7 +67,8 @@ python -m pip install --upgrade pip
 
 =======
 python -m pip install --upgrade pip
-```
+
+````
 
 #### On Windows:
 
@@ -80,8 +81,7 @@ python -m venv .venv
 
 # Upgrade pip
 python -m pip install --upgrade pip
-```
-
+````
 
 ### 3. Install Dependencies
 
@@ -126,7 +126,6 @@ python utils/files_manager.py --list
 ```
 
 For detailed PDF management, see [PDF_Management.md](PDF_Management.md).
-
 
 ### 6. Set Up LangSmith Monitoring (Optional)
 
@@ -377,7 +376,6 @@ For detailed information about the compliance system, see:
 - `agents/guardrails/compliance_guardrails.py` - Implementation details
 - `agents/guardrails/test_guardrails.py` - Test examples and validation
 
-
 ## 🔍 LangSmith Monitoring & Debugging
 
 RagTool includes comprehensive **LangSmith integration** for monitoring, debugging, and performance analysis of your AI agent.
@@ -425,7 +423,6 @@ For complete LangSmith integration details, see:
 - **[LANGSMITH_INTEGRATION.md](docs/LANGSMITH_INTEGRATION.md)** - Complete integration guide
 - **Setup Script**: `python scripts/setup_langsmith.py`
 - **Health Check**: Includes LangSmith status in `/health` endpoint
-
 
 ## 🔧 Agent Communication
 

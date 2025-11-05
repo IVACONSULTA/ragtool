@@ -110,7 +110,9 @@ from typing import Any, Dict, Optional
 try:
     from dotenv import load_dotenv
 
-    load_dotenv()
+    # Try .env_local first (for local development), then .env
+    if not load_dotenv('.env_local'):
+        load_dotenv()
 except ImportError:
     # dotenv not available, skip loading .env file
     pass
@@ -359,10 +361,10 @@ class ConfigurationManager:
                 llm_provider="gemini",
                 llm_model="gemini-2.0-flash",
                 llm_max_tokens=2048,
-                rag_provider="google",
+                rag_provider="google-generativeai",
                 rag_model="gemini-2.0-flash",
-                embedding_provider="google",
-                embedding_model="gemini-embedding-001",
+                embedding_provider="google-generativeai",
+                embedding_model="models/embedding-001",
                 chunk_size=1200,
                 chunk_overlap=200,
                 chroma_db_path="./db",

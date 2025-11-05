@@ -34,7 +34,7 @@ class BaseRagTool:
 
         Args:
             rag_config: Configuration for LLM and embedding models
-            storage_path: Path where ChromaDB will be stored
+            storage_path: Path where the vector database (Qdrant local storage) will be stored
         """
         self.rag_config = rag_config
         self.storage_path = storage_path
@@ -50,6 +50,10 @@ class BaseRagTool:
         # Remove chunk parameters from core config as they're passed separately
         core_config.pop("chunk_size", None)
         core_config.pop("chunk_overlap", None)
+        
+        # Let CrewAI use default ChromaDB configuration
+        # ChromaDB will be used in persistent mode via storage_path parameter
+        
         return core_config
 
     def _initialize_rag_tool(self) -> RagTool:
@@ -81,21 +85,21 @@ class BaseRagTool:
             return False
 
     def check_if_database_path_exists(self) -> bool:
-        """Check if ChromaDB database already exists."""
+        """Check if vector database already exists."""
         path_exists = (
             os.path.exists(self.storage_path) and len(os.listdir(self.storage_path)) > 0
         )
 
         if not path_exists:
-            print("\n⚠️  No existing ChromaDB found")
+            print("\n⚠️  No existing vector database found")
             return False
         else:
-            print("\n✅ ChromaDB found")
+            print("\n✅ Vector database found")
             return True
 
     def get_rag_tool(self) -> Optional[RagTool]:
         """
-        Load existing ChromaDB.
+        Load existing vector database.
 
         Returns:
             RagTool instance if successful, None otherwise
@@ -105,10 +109,10 @@ class BaseRagTool:
             if not self.check_if_database_path_exists():
                 return None
 
-            print("🔄 Loading existing ChromaDB...")
+            print("🔄 Loading existing vector database...")
             self.rag_tool = self._initialize_rag_tool()
 
-            print("✅ ChromaDB loaded successfully")
+            print("✅ Vector database loaded successfully")
             return self.rag_tool
 
         except Exception as e:
@@ -183,7 +187,7 @@ class BaseRagTool:
 
     def reset_database(self) -> bool:
         """
-        Reset the ChromaDB by removing all data.
+        Reset the vector database by removing all data.
 
         Returns:
             bool: True if successful
@@ -191,12 +195,12 @@ class BaseRagTool:
         try:
             import shutil
 
-            # Reset ChromaDB storage
+            # Reset vector database storage
             if os.path.exists(self.storage_path):
                 shutil.rmtree(self.storage_path)
-                print("✅ ChromaDB reset successfully")
+                print("✅ Vector database reset successfully")
             else:
-                print("ℹ️  No ChromaDB to reset")
+                print("ℹ️  No vector database to reset")
 
             return True
         except Exception as e:
