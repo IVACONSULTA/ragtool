@@ -27,7 +27,7 @@ jobs:
       LLM_MODEL: gpt-4o-mini
       EMBEDDING_MODEL: text-embedding-3-small
       CHROMA_DB_PATH: ./test_db
-      DATA_FILE_PATH: ./data/raw/test.pdf
+      RAG_DATA_PATH: ./data/raw/test.pdf
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python

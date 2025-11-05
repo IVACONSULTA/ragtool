@@ -256,11 +256,32 @@ class ConfigurationSet:
 
     def get_data_path(self) -> str:
         """Get the full path to the data file."""
-        # Use custom path if specified
+        # Priority 1: RAG_DATA_PATH environment variable (highest priority)
+        rag_data_path = os.getenv("RAG_DATA_PATH")
+        if rag_data_path:
+            # If RAG_DATA_PATH is a directory, append the filename
+            if os.path.isdir(rag_data_path):
+                return os.path.join(rag_data_path, self.data_filename)
+            # If it's already a full path to a file, return as is
+            elif os.path.isfile(rag_data_path):
+                return rag_data_path
+            # Otherwise, treat as directory and append filename
+            else:
+                return os.path.join(rag_data_path, self.data_filename)
+        
+        # Priority 2: Use custom path from configuration set if specified
         if self.data_file_path:
-            return self.data_file_path
+            # If data_file_path is a directory, append the filename
+            if os.path.isdir(self.data_file_path):
+                return os.path.join(self.data_file_path, self.data_filename)
+            # If it's already a full path to a file, return as is
+            elif os.path.isfile(self.data_file_path):
+                return self.data_file_path
+            # Otherwise, treat as directory and append filename
+            else:
+                return os.path.join(self.data_file_path, self.data_filename)
 
-        # Default paths based on environment
+        # Priority 3: Default paths based on environment
         if self.is_running_in_railway():
             # On Railway, try multiple possible locations
             possible_paths = [

@@ -145,7 +145,7 @@ LANGCHAIN_TRACING_V2=true
 
 # Agent Configuration
 RAG_ROLE=vat_agent                      # or iva_consulta, sap
-DATA_FILE_PATH=./data/raw
+RAG_DATA_PATH=./data/raw
 CHROMA_DB_PATH=./db
 
 # Railway (auto-set on Railway platform)

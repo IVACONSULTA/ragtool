@@ -431,14 +431,6 @@ class LangSmithManager:
         cost_summary = data["cost_summary"]
         llm_metrics = data["llm_metrics"]
 
-        print("\n📊 LangSmith Monitoring Summary")
-        print("=" * 50)
-        print(f"💰 Total Cost: ${cost_summary['total_cost']:.4f}")
-        print(f"🔢 Total Tokens: {cost_summary['total_tokens']:,}")
-        print(f"📞 Total Calls: {llm_metrics['total_calls']}")
-        print(f"⚡ Average Latency: {llm_metrics['average_latency']:.2f}s")
-        print(f"❌ Error Rate: {llm_metrics['error_rate']:.2%}")
-
         if cost_summary["calls_by_model"]:
             print("\n📈 Usage by Model:")
             for model, stats in cost_summary["calls_by_model"].items():

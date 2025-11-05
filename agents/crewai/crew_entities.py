@@ -57,7 +57,7 @@ class CustomLlm:
             print_config_info()
 
             self.config = get_llm_config()
-            print(f"LLM configuration: {self.config}")
+            print(f"\n\nLLM configuration: {self.config}")
 
             llm_model = self.config["llm_model"]
             llm_provider = self.config["llm_provider"]

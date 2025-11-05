@@ -51,6 +51,7 @@ from agents.langsmith_integration import (
     log_error,
     log_monitoring_summary,
     trace_async_function,
+    trace_function,
 )
 from agents.utils.config import get_data_path
 
@@ -82,38 +83,44 @@ limiter = Limiter(
 #                    Agent Initialization                                       #
 #################################################################################
 
-# Read RAG role and data path from environment
-RAG_ROLE = os.getenv("RAG_ROLE", "iva_consulta").lower()  # Default: iva_consulta
-RAG_DATA_PATH = os.getenv(
-    "RAG_DATA_PATH"
-)  # Optional: can be None to use config default
+# Read agent role and data path from environment
+AGENT_ROLE = os.getenv("AGENT_ROLE", "VAT_AGENT")  # Default: VAT_AGENT
+# Normalize to lowercase for internal use
+AGENT_ROLE = AGENT_ROLE.lower() if AGENT_ROLE else "vat_agent"
+
+# Read RAG_DATA_PATH from environment (can be a directory or file path)
+RAG_DATA_PATH_ENV = os.getenv("RAG_DATA_PATH")
 
 # Define role-specific data paths if RAG_DATA_PATH not provided
 ROLE_DATA_PATHS = {
-    "iva_consulta": "./data/raw",  # VAT documents directory
-    "vat_agent": "./data/raw",  # VAT agent (alias for iva_consulta)
-    "sap": "./data/raw_sap",  # SAP documents directory
+    "vat_agent": "./data/raw",  # VAT agent
+    "sap_agent": "./data/raw_sap",  # SAP agent
 }
 
 # Get data path: env var > role-based default > config default
-if RAG_DATA_PATH is None:
-    RAG_DATA_PATH = ROLE_DATA_PATHS.get(RAG_ROLE)
-    if RAG_DATA_PATH is None:
-        # Unknown role - use config default
-        RAG_DATA_PATH = get_data_path()
-        print(
-            f"📁 Unknown role '{RAG_ROLE}', using config default path: {RAG_DATA_PATH}"
-        )
-    else:
-        print(f"📁 Using role-based data path for '{RAG_ROLE}': {RAG_DATA_PATH}")
+# Note: RAG_DATA_PATH from env is used as directory, config.get_data_path() returns full file path
+if RAG_DATA_PATH_ENV:
+    # Use RAG_DATA_PATH from environment as directory
+    RAG_DATA_PATH = RAG_DATA_PATH_ENV
+    print(f"\n\n📁 Using data path from RAG_DATA_PATH env var: {RAG_DATA_PATH}")
+elif AGENT_ROLE in ROLE_DATA_PATHS:
+    # Use role-based default directory
+    RAG_DATA_PATH = ROLE_DATA_PATHS.get(AGENT_ROLE)
+    print(f"📁 Using role-based data path for '{AGENT_ROLE}': {RAG_DATA_PATH}")
 else:
-    print(f"📁 Using custom data path from RAG_DATA_PATH: {RAG_DATA_PATH}")
+    # Unknown role - get directory from config (config.get_data_path() returns full file path)
+    config_file_path = get_data_path()
+    # Extract directory from full file path
+    RAG_DATA_PATH = os.path.dirname(config_file_path) if os.path.isfile(config_file_path) else config_file_path
+    print(
+        f"📁 Unknown role '{AGENT_ROLE}', using config default path: {RAG_DATA_PATH}"
+    )
 
-print(f"🎯 RAG Role: {RAG_ROLE}")
+print(f"🎯 Agent Role: {AGENT_ROLE.upper()}")
 print(f"📂 Data Path: {RAG_DATA_PATH}")
 
 # Initialize LangSmith integration
-print("🔍 Initializing LangSmith integration...")
+
 langsmith_manager = get_langsmith_manager()
 if langsmith_manager.is_enabled():
     print("✅ LangSmith tracing enabled")
@@ -122,7 +129,7 @@ else:
 
 # Initialize CustomLlm instance
 try:
-    print("🤖 Initializing Custom LLM...")
+    print("\n\n🤖 Initializing Custom LLM...")
     custom_llm = CustomLlm()
     llm = custom_llm.initialize_llm()
 
@@ -176,7 +183,7 @@ except Exception as e:
 
 # Initialize CustomRagTool instance with role-based data path
 try:
-    print(f"🤖 Initializing Custom RAG Tool for '{RAG_ROLE}' role...")
+    print(f"\n\n🤖 Initializing Custom RAG Tool for '{AGENT_ROLE.upper()}' role...")
     custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
     rag_tool = custom_rag_tool.initialize_rag_tool(data_path=RAG_DATA_PATH)
     print(f"✅ Custom RAG Tool initialized: {custom_rag_tool.get_status_info()}")
@@ -187,19 +194,19 @@ except Exception as e:
     rag_tool = None
     print("✅ Custom RAG Tool fallback initialized: RAG Tool: DISABLED")
 
-# Initialize crews based on RAG_ROLE
+# Initialize crews based on AGENT_ROLE
 # These crews are initialized once at startup
 iva_consulta_crew = None
 sap_crew = None
 active_crew = None  # The active crew to use for requests
 
-# Initialize crews based on RAG_ROLE
+# Initialize crews based on AGENT_ROLE
 # The active_crew will be used as the default for all requests
 
-# Initialize IVA Consulta crew (default)
-if RAG_ROLE in ["iva_consulta", "vat_agent"]:
+# Initialize VAT Agent crew (default)
+if AGENT_ROLE == "vat_agent":
     try:
-        print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
+        print("\n\n🤖 Initializing IVA Consulta Crew (DEFAULT)...")
         iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
         active_crew = iva_consulta_crew
         print("✅ IVA Consulta Crew initialized successfully")
@@ -209,7 +216,7 @@ if RAG_ROLE in ["iva_consulta", "vat_agent"]:
         print(f"❌ Error initializing IVA Consulta Crew: {e}")
         print("🔄 Attempting to initialize SAP Crew as fallback...")
         # Reinitialize RAG tool with SAP data path for fallback
-        fallback_data_path = ROLE_DATA_PATHS.get("sap")
+        fallback_data_path = ROLE_DATA_PATHS.get("sap_agent")
         if fallback_data_path:
             print(
                 f"🔄 Reinitializing RAG tool with SAP data path: {fallback_data_path}"
@@ -228,10 +235,10 @@ if RAG_ROLE in ["iva_consulta", "vat_agent"]:
             print(f"❌ Fallback initialization also failed: {fallback_error}")
             active_crew = None
 
-# Initialize SAP crew (default)
-elif RAG_ROLE == "sap":
+# Initialize SAP Agent crew (default)
+elif AGENT_ROLE == "sap_agent":
     try:
-        print("🤖 Initializing SAP Crew (DEFAULT)...")
+        print("\n\n🤖 Initializing SAP Crew (DEFAULT)...")
         sap_crew = SapCrew(custom_llm, custom_rag_tool)
         active_crew = sap_crew
         print("✅ SAP Crew initialized successfully")
@@ -240,15 +247,15 @@ elif RAG_ROLE == "sap":
     except Exception as e:
         print(f"❌ Error initializing SAP Crew: {e}")
         print("🔄 Attempting to initialize IVA Consulta Crew as fallback...")
-        # Reinitialize RAG tool with IVA Consulta data path for fallback
-        fallback_data_path = ROLE_DATA_PATHS.get("iva_consulta")
+        # Reinitialize RAG tool with VAT agent data path for fallback
+        fallback_data_path = ROLE_DATA_PATHS.get("vat_agent")
         if fallback_data_path:
             print(
-                f"🔄 Reinitializing RAG tool with IVA Consulta data path: {fallback_data_path}"
+                f"🔄 Reinitializing RAG tool with VAT agent data path: {fallback_data_path}"
             )
             try:
                 custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
-                print(f"✅ RAG tool reinitialized with IVA Consulta data path")
+                print(f"✅ RAG tool reinitialized with VAT agent data path")
             except Exception as rag_error:
                 print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
 
@@ -261,8 +268,8 @@ elif RAG_ROLE == "sap":
             active_crew = None
 
 else:
-    print(f"⚠️  Unknown RAG_ROLE '{RAG_ROLE}', defaulting to IVA Consulta")
-    RAG_ROLE = "iva_consulta"  # Normalize to known role
+    print(f"\n\n⚠️  Unknown AGENT_ROLE '{AGENT_ROLE}', defaulting to VAT Agent")
+    AGENT_ROLE = "vat_agent"  # Normalize to known role
     try:
         print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
         iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
@@ -273,17 +280,17 @@ else:
         active_crew = None
 
 # Initialize the other crew as well if not already initialized (for flexibility)
-if RAG_ROLE == "iva_consulta" and sap_crew is None:
+if AGENT_ROLE == "vat_agent" and sap_crew is None:
     try:
-        print("🤖 Initializing SAP Crew (secondary)...")
+        print("\n\n🤖 Initializing SAP Crew (secondary)...")
         sap_crew = SapCrew(custom_llm, custom_rag_tool)
         print("✅ SAP Crew initialized successfully")
     except Exception as e:
         print(f"⚠️  Could not initialize SAP Crew (secondary): {e}")
 
-elif RAG_ROLE == "sap" and iva_consulta_crew is None:
+elif AGENT_ROLE == "sap_agent" and iva_consulta_crew is None:
     try:
-        print("🤖 Initializing IVA Consulta Crew (secondary)...")
+        print("\n\n🤖 Initializing IVA Consulta Crew (secondary)...")
         iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
         print("✅ IVA Consulta Crew initialized successfully")
     except Exception as e:
@@ -328,7 +335,7 @@ def verify_api_key():
         return None, None
 
 
-@trace_async_function("call_crewai_agent")
+
 async def call_crewai_agent(
     user_message: str, agent_type: str = None, context_country: str = None
 ) -> str:
@@ -336,7 +343,7 @@ async def call_crewai_agent(
 
     Args:
         user_message: The user's question/message
-        agent_type: Optional agent type. If not provided, uses active_crew based on RAG_ROLE
+        agent_type: Optional agent type. If not provided, uses active_crew based on AGENT_ROLE
         context_country: Optional country context to provide jurisdictional context for the query
 
     Returns:
@@ -384,9 +391,9 @@ async def call_crewai_agent(
             selected_crew = sap_crew
             crew_name = "SAP"
         else:
-            # Use active_crew (initialized once based on RAG_ROLE)
+            # Use active_crew (initialized once based on AGENT_ROLE)
             selected_crew = active_crew
-            crew_name = "IVA Consulta" if RAG_ROLE == "iva_consulta" else "SAP"
+            crew_name = "IVA Consulta" if AGENT_ROLE == "vat_agent" else "SAP"
 
         if selected_crew is None:
             error_msg = (
@@ -402,14 +409,34 @@ async def call_crewai_agent(
         crew_instance = selected_crew.create_crew_with_message(
             user_message, context_country
         )
-        task_output = await crew_instance.kickoff_async()
+        
+        # Trace the agent role execution if LangSmith is enabled
+        if langsmith_manager.is_enabled():
+            try:
+                from langsmith import trace
+                agent_trace_name = f"agent_{crew_name.lower().replace(' ', '_')}"
+                with trace(name=agent_trace_name, run_type="chain") as agent_run:
+                    agent_run.inputs = {"user_message": user_message, "crew_name": crew_name}
+                    if context_country:
+                        agent_run.inputs["context_country"] = context_country
+                    
+                    task_output = await crew_instance.kickoff_async()
+                    
+                    agent_run.outputs = {"response": str(task_output)}
+            except Exception as e:
+                print(f"⚠️  Could not trace agent execution: {e}")
+                # Fallback: execute without tracing
+                task_output = await crew_instance.kickoff_async()
+        else:
+            # Execute without tracing if LangSmith is disabled
+            task_output = await crew_instance.kickoff_async()
 
         response_content = str(task_output)
 
         # For IVA Consulta agent, ensure response is within 600 characters
         if (
             agent_type == "iva_consulta_agent"
-            or (agent_type is None and RAG_ROLE == "iva_consulta")
+            or (agent_type is None and AGENT_ROLE == "vat_agent")
         ) and len(response_content) > 600:
             response_content = response_content[:597] + "..."
             print(f"⚠️  Response truncated to 600 characters for IVA Consulta agent")
@@ -418,7 +445,7 @@ async def call_crewai_agent(
             agent_type
             if agent_type
             else (
-                f"{RAG_ROLE}_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant"
+                "iva_consulta_agent" if AGENT_ROLE == "vat_agent" else "sap_consultant"
             )
         )
         print(f"✅ Response generated: {len(response_content)} characters")
@@ -473,7 +500,7 @@ async def call_crewai_agent(
 #                             Endpoints                                         #
 #################################################################################
 
-
+@trace_function("call_health_endpoint")
 @app.route("/health", methods=["GET"])
 def health():
     # Health endpoint can be accessed without API key for monitoring
@@ -507,7 +534,7 @@ def health():
         }
     )
 
-
+@trace_async_function("call_chat_endpoint")
 @app.route("/chat", methods=["POST"])
 @limiter.limit("15 per minute")
 def chat():
@@ -522,7 +549,7 @@ def chat():
 
         user_message: str = data["message"]
         context_country: str = data.get("context_country", "Spain")
-        # agent_type is optional - if not provided, uses active_crew based on RAG_ROLE
+        # agent_type is optional - if not provided, uses active_crew based on AGENT_ROLE
         agent_type: str = data.get("agent_type")  # Can be None to use default
         # context_country is optional - provides country context for the query
 
@@ -530,7 +557,7 @@ def chat():
             print(f"Received message: {user_message} (agent: {agent_type})")
         else:
             print(
-                f"Received message: {user_message} (using default agent based on RAG_ROLE)"
+                f"Received message: {user_message} (using default agent based on AGENT_ROLE: {AGENT_ROLE.upper()})"
             )
 
         if context_country:
@@ -541,27 +568,16 @@ def chat():
             call_crewai_agent(user_message, agent_type, context_country)
         )
 
-        # Log successful chat interaction to LangSmith
-        if langsmith_manager.is_enabled():
-            log_agent_interaction(
-                "chat_endpoint",
-                user_message,
-                result,
-                {
-                    "endpoint": "/chat",
-                    "api_key_provided": api_key is not None,
-                    "response_length": len(result),
-                    "context_country": context_country if context_country else None,
-                    "timestamp": datetime.now().isoformat(),
-                },
-            )
+        # Note: Agent interaction is already logged by call_crewai_agent() 
+        # and endpoint is traced by @trace_async_function decorator above
+        # No need for duplicate logging here
 
         # Determine actual agent type for response
         actual_agent_type = (
             agent_type
             if agent_type
             else (
-                "iva_consulta_agent" if RAG_ROLE == "iva_consulta" else "sap_consultant"
+                "iva_consulta_agent" if AGENT_ROLE == "vat_agent" else "sap_consultant"
             )
         )
 
@@ -591,7 +607,7 @@ def chat():
 
         return jsonify({"error": str(exc)}), 500
 
-
+@trace_async_function("call_index_endpoint")
 @app.route("/", methods=["GET"])
 def index():
     return jsonify(
@@ -624,7 +640,7 @@ if __name__ == "__main__":
     environment_type = "LOCAL" if is_running_locally() else "RAILWAY"
     data_path = get_data_path()
 
-    print("🚀 Starting CrewAI RAG Agent Server with Guardrails...")
+    print("🚀 Starting CrewAI RAG Agent Server with Guardrails...\n\n")
     print(f"🌍 Environment: {environment_type}")
     print(f"📍 Server will be available on port: {port}")
     print("🔗 Health check: /health")
@@ -633,11 +649,11 @@ if __name__ == "__main__":
     print(f"📄 VAT documents: {data_path}")
     agent_type_name = (
         "IVA Consulta VAT Specialist"
-        if RAG_ROLE in ["iva_consulta", "vat_agent"]
+        if AGENT_ROLE == "vat_agent"
         else "SAP Consultant"
     )
-    print(f"🎯 Default agent: {RAG_ROLE.upper()} ({agent_type_name})")
-    print(f"📂 Using data path: {RAG_DATA_PATH}")
+    print(f"\n\n🎯 Default agent: {AGENT_ROLE.upper()} ({agent_type_name})")
+    print(f"\n\n📂 Using data path: {RAG_DATA_PATH}")
     print("🛡️  EU AI Act compliance guardrails enabled")
     print(f"🧠 {custom_llm.get_model_info() if custom_llm else 'LLM: Unknown'}")
     if custom_rag_tool and custom_rag_tool.is_available():
