@@ -13,4 +13,6 @@ echo " --force -> Force reprocess all Files"
 echo " --reset -> Reset database (careful!)"
 echo "------------------------------------------------ \n"
 
-python3 files_manager_runner.py $1
+
+/Users/macnolo/.pyenv/versions/3.11.14/bin/python  files_manager_runner.py $1
+# python3 files_manager_runner.py $1

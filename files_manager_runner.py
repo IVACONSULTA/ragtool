@@ -46,11 +46,14 @@ def main():
             python_exe = venv_path / "bin" / "python"
 
         if python_exe.exists():
+            print(f"🚀 Running script with Python: {python_exe}")
             cmd = [str(python_exe), str(script_path)] + sys.argv[1:]
         else:
+            print("🚀 Running script with sys.executable: {sys.executable}")
             cmd = [sys.executable, str(script_path)] + sys.argv[1:]
     else:
         # Use current Python interpreter
+        print("🚀 Running script with sys.executable: {sys.executable}")
         cmd = [sys.executable, str(script_path)] + sys.argv[1:]
 
     try:

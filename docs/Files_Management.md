@@ -460,3 +460,10 @@ python3
 
 import sys
 print(sys.prefix)
+
+##If Python local is not sat
+
+# with pyenv
+
+/Users/macnolo/.pyenv/versions/3.11.14/bin/python <command>
+/Users/macnolo/.pyenv/versions/3.11.14/bin/python -m pip install "crewai>=0.11.2"

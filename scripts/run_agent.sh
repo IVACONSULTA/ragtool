@@ -11,7 +11,7 @@ fi
 
 # Run the agent server
 python agents/crewai/crew_agent_server_with_guard_rails.py
-# python agents/crewai/crew_agent_server.py
+#python agents/crewai/crew_agent_server.py
 
 
 echo "☁️ CrewAI agent server stopped."

@@ -2,7 +2,7 @@
 #acp-sdk>=0.9.1
 
 # AI Agent Frameworks
-crewai
+crewai>=0.11.2
 crewai[google-genai]
 crewai-tools
 

@@ -54,6 +54,7 @@ from agents.langsmith_integration import (
 )
 from agents.utils.config import get_data_path
 
+#asyncio.apply()
 nest_asyncio.apply()
 
 # Load environment variables if present
