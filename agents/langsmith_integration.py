@@ -451,7 +451,7 @@ class LangSmithManager:
             for error_type, count in llm_metrics["error_types"].items():
                 print(f"  {error_type}: {count} occurrences")
 
-    def log_rag_operation(self, operation: str, query: str, result: Any):
+    def log_rag_operation(self, operation: str, query: str, result: Any, metadata: Optional[Dict] = None):
         """
         Log a RAG operation to LangSmith.
 
@@ -459,6 +459,7 @@ class LangSmithManager:
             operation: Type of RAG operation (e.g., "search", "retrieve")
             query: The search query
             result: The operation result
+            metadata: Optional metadata dictionary to include in the trace
         """
         if not self.is_enabled():
             return
@@ -468,6 +469,8 @@ class LangSmithManager:
             with trace(name=f"rag_{operation}", run_type="tool") as run:
                 run.inputs = {"query": query}
                 run.outputs = {"result": str(result)}
+                if metadata:
+                    run.extra = metadata
         except Exception as e:
             print(f"⚠️  Failed to log RAG operation to LangSmith: {e}")
 
