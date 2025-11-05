@@ -107,7 +107,7 @@ def init_db_and_process_files(data_path: str, processor):
         )
         print(f"💡 Expected location: {os.path.abspath(data_dir)}")
         return 1
-
+    
     # Find all supported files
     supported_files = []
     unsupported_files = []
@@ -119,6 +119,7 @@ def init_db_and_process_files(data_path: str, processor):
         else:
             unsupported_files.append(file_path)
 
+
     if len(unsupported_files) > 0:
 
         print(f"📄 Found {len(unsupported_files)} unsupported files:")
@@ -129,6 +130,7 @@ def init_db_and_process_files(data_path: str, processor):
             print(f"   - {filename} ({data_type})")
         print()
         print("These files will not be processed.")
+
 
     if not supported_files:
         print(f"\n📄 No supported files found in {data_dir}")
@@ -179,7 +181,9 @@ Examples:
         """,
     )
 
-    parser.add_argument("--add", metavar="FILE", help="Add a new file to the database")
+    parser.add_argument(
+        "--add", metavar="FILE", help="Add a new file to the database"
+    )
     parser.add_argument("--list", action="store_true", help="List all processed files")
     parser.add_argument(
         "--force", action="store_true", help="Force reprocess all files"
@@ -212,7 +216,7 @@ Examples:
         print("❌ FilesRagTool is not available. Please install required dependencies:")
         print("   pip install crewai crewai-tools")
         return
-
+    
     config = get_config()
     processor = FilesRagTool(config, args.storage)
 
