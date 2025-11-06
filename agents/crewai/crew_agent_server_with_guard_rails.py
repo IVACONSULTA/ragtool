@@ -14,6 +14,7 @@ Endpoints:
 import asyncio
 import os
 import sys
+import threading
 from datetime import datetime
 
 import nest_asyncio
@@ -80,6 +81,23 @@ limiter = Limiter(
 )
 
 #################################################################################
+#                    Initialization State Management                            #
+#################################################################################
+
+# Global initialization state
+initialization_complete = False
+initialization_error = None
+initialization_status = "starting"
+
+# Global variables for initialized components
+custom_llm = None
+custom_rag_tool = None
+iva_consulta_crew = None
+sap_crew = None
+active_crew = None
+langsmith_manager = None
+
+#################################################################################
 #                    Agent Initialization                                       #
 #################################################################################
 
@@ -119,182 +137,199 @@ else:
 print(f"🎯 Agent Role: {AGENT_ROLE.upper()}")
 print(f"📂 Data Path: {RAG_DATA_PATH}")
 
-# Initialize LangSmith integration
 
-langsmith_manager = get_langsmith_manager()
-if langsmith_manager.is_enabled():
-    print("✅ LangSmith tracing enabled")
-else:
-    print("⚠️  LangSmith tracing disabled (set LANGSMITH_API_KEY to enable)")
+def initialize_agents_background():
+    """Initialize all agents in a background thread to allow server to start immediately."""
+    global initialization_complete, initialization_error, initialization_status
+    global custom_llm, custom_rag_tool, iva_consulta_crew, sap_crew, active_crew, langsmith_manager
+    
+    try:
+        initialization_status = "initializing_langsmith"
+        print("\n🔄 Starting background initialization...")
+        
+        # Initialize LangSmith integration
+        langsmith_manager = get_langsmith_manager()
+        if langsmith_manager.is_enabled():
+            print("✅ LangSmith tracing enabled")
+        else:
+            print("⚠️  LangSmith tracing disabled (set LANGSMITH_API_KEY to enable)")
 
-# Initialize CustomLlm instance
-try:
-    print("\n\n🤖 Initializing Custom LLM...")
-    custom_llm = CustomLlm()
-    llm = custom_llm.initialize_llm()
-
-    # Wrap LLM with LangSmith tracing if available
-    if langsmith_manager.is_enabled():
+        # Initialize CustomLlm instance
+        initialization_status = "initializing_llm"
         try:
-            print("🔍 Wrapping LLM with LangSmith tracing...")
-            # Set environment variables for automatic tracing
-            os.environ["LANGCHAIN_TRACING_V2"] = "true"
+            print("\n\n🤖 Initializing Custom LLM...")
+            custom_llm = CustomLlm()
+            llm = custom_llm.initialize_llm()
 
-            # Get config values with proper fallbacks
-            endpoint = langsmith_manager.config.get("endpoint")
-            api_key = langsmith_manager.config.get("api_key")
-            project = langsmith_manager.config.get("project")
+            # Wrap LLM with LangSmith tracing if available
+            if langsmith_manager.is_enabled():
+                try:
+                    print("🔍 Wrapping LLM with LangSmith tracing...")
+                    # Set environment variables for automatic tracing
+                    os.environ["LANGCHAIN_TRACING_V2"] = "true"
 
-            if endpoint:
-                os.environ["LANGCHAIN_ENDPOINT"] = endpoint
-            else:
-                os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+                    # Get config values with proper fallbacks
+                    endpoint = langsmith_manager.config.get("endpoint")
+                    api_key = langsmith_manager.config.get("api_key")
+                    project = langsmith_manager.config.get("project")
 
-            if api_key:
-                os.environ["LANGCHAIN_API_KEY"] = api_key
-            else:
-                print("⚠️  No LangSmith API key found, LLM tracing may not work")
+                    if endpoint:
+                        os.environ["LANGCHAIN_ENDPOINT"] = endpoint
+                    else:
+                        os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
 
-            if project:
-                os.environ["LANGCHAIN_PROJECT"] = project
-            else:
-                os.environ["LANGCHAIN_PROJECT"] = "ivaconsulta-rag-tool"
+                    if api_key:
+                        os.environ["LANGCHAIN_API_KEY"] = api_key
+                    else:
+                        print("⚠️  No LangSmith API key found, LLM tracing may not work")
 
-            # Enable comprehensive monitoring
-            print("📊 Enabling comprehensive LLM monitoring...")
-            print("   - Cost tracking enabled")
-            print("   - Token usage monitoring enabled")
-            print("   - Performance metrics tracking enabled")
-            print("   - Error tracking enabled")
+                    if project:
+                        os.environ["LANGCHAIN_PROJECT"] = project
+                    else:
+                        os.environ["LANGCHAIN_PROJECT"] = "ivaconsulta-rag-tool"
 
-            print("✅ LangSmith environment variables set for automatic LLM tracing")
+                    # Enable comprehensive monitoring
+                    print("📊 Enabling comprehensive LLM monitoring...")
+                    print("   - Cost tracking enabled")
+                    print("   - Token usage monitoring enabled")
+                    print("   - Performance metrics tracking enabled")
+                    print("   - Error tracking enabled")
+
+                    print("✅ LangSmith environment variables set for automatic LLM tracing")
+                except Exception as e:
+                    print(f"⚠️  Could not set up LLM tracing: {e}")
+
+            print(f"✅ Custom LLM initialized successfully: {custom_llm.get_model_info()}")
+
         except Exception as e:
-            print(f"⚠️  Could not set up LLM tracing: {e}")
+            print(f"❌ Error initializing Custom LLM: {e}")
+            # Create fallback instance
+            custom_llm = CustomLlm()
+            custom_llm._initialize_fallback_llm()
+            llm = custom_llm.get_llm()
+            print(f"✅ Custom LLM fallback initialized: {custom_llm.get_model_info()}")
 
-    print(f"✅ Custom LLM initialized successfully: {custom_llm.get_model_info()}")
-
-except Exception as e:
-    print(f"❌ Error initializing Custom LLM: {e}")
-    # Create fallback instance
-    custom_llm = CustomLlm()
-    custom_llm._initialize_fallback_llm()
-    llm = custom_llm.get_llm()
-    print(f"✅ Custom LLM fallback initialized: {custom_llm.get_model_info()}")
-
-# Initialize CustomRagTool instance with role-based data path
-try:
-    print(f"\n\n🤖 Initializing Custom RAG Tool for '{AGENT_ROLE.upper()}' role...")
-    custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
-    rag_tool = custom_rag_tool.initialize_rag_tool(data_path=RAG_DATA_PATH)
-    print(f"✅ Custom RAG Tool initialized: {custom_rag_tool.get_status_info()}")
-except Exception as e:
-    print(f"❌ Error initializing Custom RAG Tool: {e}")
-    # Create fallback instance
-    custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
-    rag_tool = None
-    print("✅ Custom RAG Tool fallback initialized: RAG Tool: DISABLED")
-
-# Initialize crews based on AGENT_ROLE
-# These crews are initialized once at startup
-iva_consulta_crew = None
-sap_crew = None
-active_crew = None  # The active crew to use for requests
-
-# Initialize crews based on AGENT_ROLE
-# The active_crew will be used as the default for all requests
-
-# Initialize VAT Agent crew (default)
-if AGENT_ROLE == "vat_agent":
-    try:
-        print("\n\n🤖 Initializing IVA Consulta Crew (DEFAULT)...")
-        iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-        active_crew = iva_consulta_crew
-        print("✅ IVA Consulta Crew initialized successfully")
-        print(f"   - {custom_llm.get_model_info()}")
-        print(f"   - {custom_rag_tool.get_status_info()}")
-    except Exception as e:
-        print(f"❌ Error initializing IVA Consulta Crew: {e}")
-        print("🔄 Attempting to initialize SAP Crew as fallback...")
-        # Reinitialize RAG tool with SAP data path for fallback
-        fallback_data_path = ROLE_DATA_PATHS.get("sap_agent")
-        if fallback_data_path:
-            print(
-                f"🔄 Reinitializing RAG tool with SAP data path: {fallback_data_path}"
-            )
-            try:
-                custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
-                print(f"✅ RAG tool reinitialized with SAP data path")
-            except Exception as rag_error:
-                print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
-
+        # Initialize CustomRagTool instance with role-based data path
+        initialization_status = "initializing_rag"
         try:
-            sap_crew = SapCrew(custom_llm, custom_rag_tool)
-            active_crew = sap_crew
-            print("✅ SAP Crew initialized as fallback")
-        except Exception as fallback_error:
-            print(f"❌ Fallback initialization also failed: {fallback_error}")
-            active_crew = None
+            print(f"\n\n🤖 Initializing Custom RAG Tool for '{AGENT_ROLE.upper()}' role...")
+            custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
+            rag_tool = custom_rag_tool.initialize_rag_tool(data_path=RAG_DATA_PATH)
+            print(f"✅ Custom RAG Tool initialized: {custom_rag_tool.get_status_info()}")
+        except Exception as e:
+            print(f"❌ Error initializing Custom RAG Tool: {e}")
+            # Create fallback instance
+            custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
+            rag_tool = None
+            print("✅ Custom RAG Tool fallback initialized: RAG Tool: DISABLED")
 
-# Initialize SAP Agent crew (default)
-elif AGENT_ROLE == "sap_agent":
-    try:
-        print("\n\n🤖 Initializing SAP Crew (DEFAULT)...")
-        sap_crew = SapCrew(custom_llm, custom_rag_tool)
-        active_crew = sap_crew
-        print("✅ SAP Crew initialized successfully")
-        print(f"   - {custom_llm.get_model_info()}")
-        print(f"   - {custom_rag_tool.get_status_info()}")
-    except Exception as e:
-        print(f"❌ Error initializing SAP Crew: {e}")
-        print("🔄 Attempting to initialize IVA Consulta Crew as fallback...")
-        # Reinitialize RAG tool with VAT agent data path for fallback
-        fallback_data_path = ROLE_DATA_PATHS.get("vat_agent")
-        if fallback_data_path:
-            print(
-                f"🔄 Reinitializing RAG tool with VAT agent data path: {fallback_data_path}"
-            )
+        # Initialize crews based on AGENT_ROLE
+        initialization_status = "initializing_crews"
+        
+        # Initialize VAT Agent crew (default)
+        if AGENT_ROLE == "vat_agent":
             try:
-                custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
-                print(f"✅ RAG tool reinitialized with VAT agent data path")
-            except Exception as rag_error:
-                print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
+                print("\n\n🤖 Initializing IVA Consulta Crew (DEFAULT)...")
+                iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+                active_crew = iva_consulta_crew
+                print("✅ IVA Consulta Crew initialized successfully")
+                print(f"   - {custom_llm.get_model_info()}")
+                print(f"   - {custom_rag_tool.get_status_info()}")
+            except Exception as e:
+                print(f"❌ Error initializing IVA Consulta Crew: {e}")
+                print("🔄 Attempting to initialize SAP Crew as fallback...")
+                # Reinitialize RAG tool with SAP data path for fallback
+                fallback_data_path = ROLE_DATA_PATHS.get("sap_agent")
+                if fallback_data_path:
+                    print(
+                        f"🔄 Reinitializing RAG tool with SAP data path: {fallback_data_path}"
+                    )
+                    try:
+                        custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
+                        print(f"✅ RAG tool reinitialized with SAP data path")
+                    except Exception as rag_error:
+                        print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
 
-        try:
-            iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-            active_crew = iva_consulta_crew
-            print("✅ IVA Consulta Crew initialized as fallback")
-        except Exception as fallback_error:
-            print(f"❌ Fallback initialization also failed: {fallback_error}")
-            active_crew = None
+                try:
+                    sap_crew = SapCrew(custom_llm, custom_rag_tool)
+                    active_crew = sap_crew
+                    print("✅ SAP Crew initialized as fallback")
+                except Exception as fallback_error:
+                    print(f"❌ Fallback initialization also failed: {fallback_error}")
+                    active_crew = None
 
-else:
-    print(f"\n\n⚠️  Unknown AGENT_ROLE '{AGENT_ROLE}', defaulting to VAT Agent")
-    AGENT_ROLE = "vat_agent"  # Normalize to known role
-    try:
-        print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
-        iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-        active_crew = iva_consulta_crew
-        print("✅ IVA Consulta Crew initialized successfully")
+        # Initialize SAP Agent crew (default)
+        elif AGENT_ROLE == "sap_agent":
+            try:
+                print("\n\n🤖 Initializing SAP Crew (DEFAULT)...")
+                sap_crew = SapCrew(custom_llm, custom_rag_tool)
+                active_crew = sap_crew
+                print("✅ SAP Crew initialized successfully")
+                print(f"   - {custom_llm.get_model_info()}")
+                print(f"   - {custom_rag_tool.get_status_info()}")
+            except Exception as e:
+                print(f"❌ Error initializing SAP Crew: {e}")
+                print("🔄 Attempting to initialize IVA Consulta Crew as fallback...")
+                # Reinitialize RAG tool with VAT agent data path for fallback
+                fallback_data_path = ROLE_DATA_PATHS.get("vat_agent")
+                if fallback_data_path:
+                    print(
+                        f"🔄 Reinitializing RAG tool with VAT agent data path: {fallback_data_path}"
+                    )
+                    try:
+                        custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
+                        print(f"✅ RAG tool reinitialized with VAT agent data path")
+                    except Exception as rag_error:
+                        print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
+
+                try:
+                    iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+                    active_crew = iva_consulta_crew
+                    print("✅ IVA Consulta Crew initialized as fallback")
+                except Exception as fallback_error:
+                    print(f"❌ Fallback initialization also failed: {fallback_error}")
+                    active_crew = None
+
+        else:
+            print(f"\n\n⚠️  Unknown AGENT_ROLE '{AGENT_ROLE}', defaulting to VAT Agent")
+            AGENT_ROLE = "vat_agent"  # Normalize to known role
+            try:
+                print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
+                iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+                active_crew = iva_consulta_crew
+                print("✅ IVA Consulta Crew initialized successfully")
+            except Exception as e:
+                print(f"❌ Error initializing IVA Consulta Crew: {e}")
+                active_crew = None
+
+        # Initialize the other crew as well if not already initialized (for flexibility)
+        if AGENT_ROLE == "vat_agent" and sap_crew is None:
+            try:
+                print("\n\n🤖 Initializing SAP Crew (secondary)...")
+                sap_crew = SapCrew(custom_llm, custom_rag_tool)
+                print("✅ SAP Crew initialized successfully")
+            except Exception as e:
+                print(f"⚠️  Could not initialize SAP Crew (secondary): {e}")
+
+        elif AGENT_ROLE == "sap_agent" and iva_consulta_crew is None:
+            try:
+                print("\n\n🤖 Initializing IVA Consulta Crew (secondary)...")
+                iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+                print("✅ IVA Consulta Crew initialized successfully")
+            except Exception as e:
+                print(f"⚠️  Could not initialize IVA Consulta Crew (secondary): {e}")
+        
+        # Mark initialization as complete
+        initialization_status = "ready"
+        initialization_complete = True
+        print("\n✅ Background initialization complete! Server is ready to handle requests.")
+        
     except Exception as e:
-        print(f"❌ Error initializing IVA Consulta Crew: {e}")
-        active_crew = None
-
-# Initialize the other crew as well if not already initialized (for flexibility)
-if AGENT_ROLE == "vat_agent" and sap_crew is None:
-    try:
-        print("\n\n🤖 Initializing SAP Crew (secondary)...")
-        sap_crew = SapCrew(custom_llm, custom_rag_tool)
-        print("✅ SAP Crew initialized successfully")
-    except Exception as e:
-        print(f"⚠️  Could not initialize SAP Crew (secondary): {e}")
-
-elif AGENT_ROLE == "sap_agent" and iva_consulta_crew is None:
-    try:
-        print("\n\n🤖 Initializing IVA Consulta Crew (secondary)...")
-        iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-        print("✅ IVA Consulta Crew initialized successfully")
-    except Exception as e:
-        print(f"⚠️  Could not initialize IVA Consulta Crew (secondary): {e}")
+        initialization_error = str(e)
+        initialization_status = "failed"
+        print(f"\n❌ Background initialization failed: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 #################################################################################
@@ -505,39 +540,70 @@ async def call_crewai_agent(
 def health():
     # Health endpoint can be accessed without API key for monitoring
     environment_type = "LOCAL" if is_running_locally() else "RAILWAY"
-    data_path = get_data_path()
+    
+    # Determine overall health status based on initialization
+    if initialization_complete:
+        status = "healthy"
+        data_path = get_data_path()
+    elif initialization_error:
+        status = "unhealthy"
+        data_path = "N/A"
+    else:
+        status = "initializing"
+        data_path = "N/A"
 
-    # Get LangSmith status
+    # Get LangSmith status (only if initialized)
     langsmith_status = {
-        "enabled": langsmith_manager.is_enabled(),
-        "project": langsmith_manager.config.get("project", "N/A"),
-        "client_available": langsmith_manager.get_client() is not None,
+        "enabled": langsmith_manager.is_enabled() if langsmith_manager else False,
+        "project": langsmith_manager.config.get("project", "N/A") if langsmith_manager else "N/A",
+        "client_available": langsmith_manager.get_client() is not None if langsmith_manager else False,
     }
 
-    return jsonify(
-        {
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
-            "server": "CrewAI RAG Agent Server",
-            "version": "1.0.0",
-            "environment": environment_type,
-            "data_file": data_path,
-            "rag_enabled": custom_rag_tool.is_available() if custom_rag_tool else False,
-            "llm_model": custom_llm.get_model_info() if custom_llm else "Unknown",
-            "rag_status": (
-                custom_rag_tool.get_status_info()
-                if custom_rag_tool
-                else "RAG Tool: UNKNOWN"
-            ),
-            "langsmith": langsmith_status,
-            "description": f"CrewAI insurance policy agent running on {environment_type}",
-        }
-    )
+    response_data = {
+        "status": status,
+        "initialization_status": initialization_status,
+        "initialization_complete": initialization_complete,
+        "timestamp": datetime.now().isoformat(),
+        "server": "CrewAI RAG Agent Server",
+        "version": "1.0.0",
+        "environment": environment_type,
+        "data_file": data_path,
+        "rag_enabled": custom_rag_tool.is_available() if custom_rag_tool else False,
+        "llm_model": custom_llm.get_model_info() if custom_llm else "Initializing...",
+        "rag_status": (
+            custom_rag_tool.get_status_info()
+            if custom_rag_tool
+            else "Initializing..."
+        ),
+        "langsmith": langsmith_status,
+        "description": f"CrewAI insurance policy agent running on {environment_type}",
+    }
+    
+    # Add error info if initialization failed
+    if initialization_error:
+        response_data["initialization_error"] = initialization_error
+    
+    return jsonify(response_data)
 
 @trace_async_function("call_chat_endpoint")
 @app.route("/chat", methods=["POST"])
 @limiter.limit("15 per minute")
 def chat():
+    # Check if initialization is complete
+    if not initialization_complete:
+        if initialization_error:
+            return jsonify({
+                "error": "Server initialization failed",
+                "details": initialization_error,
+                "status": "unhealthy"
+            }), 503
+        else:
+            return jsonify({
+                "error": "Server is still initializing. Please try again in a moment.",
+                "initialization_status": initialization_status,
+                "status": "initializing"
+            }), 503
+    
     # Check API key in production
     api_key, auth_error = verify_api_key()
     if auth_error:
@@ -638,46 +704,40 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", 8001))
 
     environment_type = "LOCAL" if is_running_locally() else "RAILWAY"
-    data_path = get_data_path()
 
-    print("🚀 Starting CrewAI RAG Agent Server with Guardrails...\n\n")
+    print("🚀 Starting CrewAI RAG Agent Server with Guardrails...\n")
     print(f"🌍 Environment: {environment_type}")
     print(f"📍 Server will be available on port: {port}")
     print("🔗 Health check: /health")
     print("💬 Chat endpoint: /chat")
-    print("🤖 CrewAI multi-agent system ready")
-    print(f"📄 VAT documents: {data_path}")
+    
     agent_type_name = (
         "IVA Consulta VAT Specialist"
         if AGENT_ROLE == "vat_agent"
         else "SAP Consultant"
     )
-    print(f"\n\n🎯 Default agent: {AGENT_ROLE.upper()} ({agent_type_name})")
-    print(f"\n\n📂 Using data path: {RAG_DATA_PATH}")
+    print(f"🎯 Default agent: {AGENT_ROLE.upper()} ({agent_type_name})")
+    print(f"📂 Using data path: {RAG_DATA_PATH}")
     print("🛡️  EU AI Act compliance guardrails enabled")
-    print(f"🧠 {custom_llm.get_model_info() if custom_llm else 'LLM: Unknown'}")
-    if custom_rag_tool and custom_rag_tool.is_available():
-        print("✅ RAG capabilities enabled")
-    else:
-        print("⚠️  RAG capabilities disabled - using base knowledge only")
-
-    # LangSmith status
-    if langsmith_manager.is_enabled():
-        print(
-            f"🔍 LangSmith tracing enabled for project: {langsmith_manager.config.get('project', 'N/A')}"
-        )
-    else:
-        print("⚠️  LangSmith tracing disabled (set LANGSMITH_API_KEY to enable)")
-
     print('\n💡 Send POST requests to /chat with JSON: {"message": "your question"}')
     print("⏹️  Press Ctrl+C to stop the server\n")
+    
+    # Start background initialization thread
+    print("🔄 Starting background initialization thread...")
+    print("⚡ Server will start immediately and accept health checks")
+    print("⏳ Agent initialization will continue in the background\n")
+    
+    init_thread = threading.Thread(target=initialize_agents_background, daemon=True)
+    init_thread.start()
 
     try:
         # Use debug=False for production and to avoid ChromaDB lock issues
         # Debug mode causes Flask to reload, which can cause ChromaDB resource conflicts
         debug_mode = False  # Disabled to prevent ChromaDB lock issues
         use_reloader = False  # Explicitly disable reloader
-        print(f"🔄 Starting Flask app on host=0.0.0.0, port={port}, debug={debug_mode}")
+        print(f"✅ Starting Flask app on host=0.0.0.0, port={port}, debug={debug_mode}")
+        print(f"✅ Server is now listening and ready for healthchecks!")
+        print(f"⏳ Agent initialization continues in background...\n")
         app.run(
             host="0.0.0.0",
             port=port,
