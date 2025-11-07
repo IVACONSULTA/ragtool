@@ -142,6 +142,7 @@ def initialize_agents_background():
     """Initialize all agents in a background thread to allow server to start immediately."""
     global initialization_complete, initialization_error, initialization_status
     global custom_llm, custom_rag_tool, iva_consulta_crew, sap_crew, active_crew, langsmith_manager
+    global AGENT_ROLE
     
     try:
         initialization_status = "initializing_langsmith"
