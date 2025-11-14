@@ -296,7 +296,20 @@ class SapCrew:
         self.custom_rag_tool = custom_rag_tool_instance
 
         # Check if YAML files exist
-        current_dir = os.path.dirname(__file__)
+        # current_dir = os.path.dirname(__file__)
+                
+        current_dir = os.path(__file__).resolve().parent
+
+        agents_config_path, agents_used_fallback = resolve_config_path(
+            "sap_agents.yaml", "agents.yaml"
+        )
+        tasks_config_path, tasks_used_fallback = resolve_config_path(
+            "sap_tasks.yaml", "tasks.yaml"
+        )
+        self.original_agents_config_path = str(agents_config_path)
+        self.original_tasks_config_path = str(tasks_config_path)
+
+
         agents_yaml_path = os.path.join(current_dir, "agents.yaml")
         tasks_yaml_path = os.path.join(current_dir, "tasks.yaml")
 
@@ -309,6 +322,8 @@ class SapCrew:
         )
 
         print("✅ SapCrew initialized successfully")
+
+
 
     @agent
     def senior_sap_consultant(self) -> Agent:
@@ -411,6 +426,17 @@ class SapCrew:
             print(f"   Error type: {type(e).__name__}")
             print(f"   Error details: {str(e)}")
             raise e
+        
+    def resolve_config_path(
+            self, preferred_name: str, fallback_name: str
+        ) -> tuple[os.path, bool]:
+            preferred_path = (self.current_dir / preferred_name).resolve()
+            if preferred_path.exists():
+                return preferred_path, False
+            fallback_path = (self.current_dir / fallback_name).resolve()
+            if fallback_path.exists():
+                return fallback_path, True
+            return preferred_path, False
 
 
 @CrewBase
