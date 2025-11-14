@@ -13,6 +13,7 @@ env:
   REPOSITORY: ragtool # Your Artifact Registry Docker repository name
   IMAGE_NAME: ragtool-agent # Name for your Docker image (e.g., my-python-app)
 
+# Jobs
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
