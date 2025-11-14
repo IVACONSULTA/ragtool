@@ -13,8 +13,10 @@ Version: 1.0.0
 Author: CrewAI RAG Tool
 """
 
+import logging
 import os
 import sys
+from pathlib import Path
 
 # CrewAI imports
 from crewai import LLM, Agent, Crew, Task
@@ -295,6 +297,7 @@ class SapCrew:
         self.custom_llm = custom_llm_instance
         self.custom_rag_tool = custom_rag_tool_instance
 
+<<<<<<< HEAD
         # Check if YAML files exist
         # current_dir = os.path.dirname(__file__)
                 
@@ -312,15 +315,53 @@ class SapCrew:
 
         agents_yaml_path = os.path.join(current_dir, "agents.yaml")
         tasks_yaml_path = os.path.join(current_dir, "tasks.yaml")
+=======
+        current_dir = Path(__file__).resolve().parent
+>>>>>>> 2104aa3a783d10fdb467e55cdb76a8468b46aba8
 
-        print(f"🔍 Checking YAML files:")
+        def resolve_config_path(
+            preferred_name: str, fallback_name: str
+        ) -> tuple[Path, bool]:
+            preferred_path = (current_dir / preferred_name).resolve()
+            if preferred_path.exists():
+                return preferred_path, False
+
+            fallback_path = (current_dir / fallback_name).resolve()
+            if fallback_path.exists():
+                return fallback_path, True
+
+            return preferred_path, False
+
+        agents_config_path, agents_used_fallback = resolve_config_path(
+            "sap_agents.yaml", "agents.yaml"
+        )
+        tasks_config_path, tasks_used_fallback = resolve_config_path(
+            "sap_tasks.yaml", "tasks.yaml"
+        )
+
+        self.original_agents_config_path = str(agents_config_path)
+        self.original_tasks_config_path = str(tasks_config_path)
+
+        print("🔍 Checking YAML files:")
         print(
-            f"   - Agents YAML: {agents_yaml_path} (exists: {os.path.exists(agents_yaml_path)})"
+            f"   - Agents YAML: {agents_config_path} (exists: {agents_config_path.exists()})"
         )
         print(
-            f"   - Tasks YAML: {tasks_yaml_path} (exists: {os.path.exists(tasks_yaml_path)})"
+            f"   - Tasks YAML: {tasks_config_path} (exists: {tasks_config_path.exists()})"
         )
 
+        if agents_used_fallback:
+            logging.warning(
+                "SAP agents config not found at %s. Falling back to %s",
+                (current_dir / "sap_agents.yaml"),
+                agents_config_path,
+            )
+        if tasks_used_fallback:
+            logging.warning(
+                "SAP tasks config not found at %s. Falling back to %s",
+                (current_dir / "sap_tasks.yaml"),
+                tasks_config_path,
+            )
         print("✅ SapCrew initialized successfully")
 
 
