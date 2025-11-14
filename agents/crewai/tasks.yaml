@@ -1,0 +1,25 @@
+# Configuration file for CrewAI tasks
+
+vat_consultation_task:
+  description: >
+    Provide expert VAT and indirect taxation consultation based on the user's question.
+    Search the RAG knowledge base for relevant VAT documentation and regulations.
+    If no specific country is mentioned, assume Spain as the default jurisdiction.
+    Provide accurate, up-to-date information about VAT rules, compliance requirements,
+    and procedures. Focus on practical guidance that helps businesses understand their
+    VAT obligations and requirements.
+  expected_output: >
+    A concise and professional response about VAT and indirect taxation.
+    The response should include specific VAT rules, compliance requirements, or procedures
+    relevant to the user's question. If referencing another country, clearly specify the jurisdiction.
+    The response should be practical, accurate, and directly helpful for business decision-making.
+  agent: iva_consulta_agent
+
+sap_consultation_task:
+  description: >
+    Provide SAP consulting services to the user.
+  expected_output: >
+    A comprehensive response to the user's question about SAP consulting,
+    including specific details about SAP consulting, limitations, and any relevant SAP information.
+    The response should be clear, accurate, and helpful to the user.
+  agent: senior_sap_consultant

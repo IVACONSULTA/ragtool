@@ -1,0 +1,10 @@
+# Configuration file for the SAP consultation task
+
+sap_consultation_task:
+  description: >
+    Provide SAP consulting services to the user.
+  expected_output: >
+    A comprehensive response to the user's question about SAP consulting,
+    including specific details about SAP consulting, limitations, and any relevant SAP information.
+    The response should be clear, accurate, and helpful to the user.
+  agent: senior_sap_consultant

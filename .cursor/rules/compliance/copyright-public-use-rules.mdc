@@ -1,0 +1,321 @@
+# Public Use Rules for RagTool
+
+## EU Copyright Compliance - Public Use with Indexed Content
+
+**Document Version:** 1.0  
+**Last Updated:** December 2024  
+**Scope:** Public use of RagTool for information consultation and distribution  
+**Legal Basis:** EU Directives 2001/29/EC, 2019/790/EU, 2004/48/EC, Regulation 2017/1128
+
+---
+
+## 🟢 SAFE RULES - PUBLIC USE COMPLIANCE
+
+### Document and Link Indexing for Public Use - SAFE Practices
+
+#### ✅ **SAFE: Fully Licensed Content**
+
+- **Rule**: Only index content with comprehensive public use authorization
+- **Implementation**:
+  - Content with explicit public distribution rights
+  - Open licenses allowing public use (CC BY, CC BY-SA, etc.)
+  - Content owned by the organization
+  - Content with written public use agreements
+- **Verification**: Maintain licensing documentation and rights verification
+
+#### ✅ **SAFE: Research Organization TDM Exceptions**
+
+- **Rule**: Use text and data mining exceptions for qualifying research organizations
+- **Implementation**:
+  - Verify research organization status
+  - Ensure lawful access to works
+  - Respect rights holder opt-out mechanisms
+  - Use only for scientific research purposes
+- **Eligibility**: Universities, research institutes, cultural heritage institutions
+
+#### ✅ **SAFE: Cross-Border Portability Compliance**
+
+- **Rule**: Ensure EU residents can access content across borders
+- **Implementation**:
+  - Implement geo-blocking prevention
+  - Provide consistent access across EU member states
+  - Respect portability rights for EU residents
+- **Verification**: Regular portability testing and compliance monitoring
+
+#### ✅ **SAFE: Rights Management Information Preservation**
+
+- **Rule**: Preserve and display all rights management information
+- **Implementation**:
+  - Display copyright notices prominently
+  - Maintain author and publisher attribution
+  - Include source URLs and publication information
+  - Preserve licensing information
+- **Verification**: Automated rights management information validation
+
+### Public RAG Tool Usage - SAFE Practices
+
+#### ✅ **SAFE: Authorized Public Access**
+
+- **Rule**: Provide public access only to properly authorized content
+- **Implementation**:
+  - User authentication and authorization systems
+  - Clear terms of use and copyright notices
+  - Access logging and monitoring
+  - Regular rights verification
+- **Verification**: Comprehensive access control and audit systems
+
+#### ✅ **SAFE: Educational and Research Use**
+
+- **Rule**: Focus on educational and research purposes
+- **Implementation**:
+  - Educational institution partnerships
+  - Research collaboration agreements
+  - Academic use case prioritization
+  - Non-commercial research focus
+- **Verification**: Usage purpose documentation and monitoring
+
+#### ✅ **SAFE: Transparent Attribution**
+
+- **Rule**: Provide clear attribution for all content sources
+- **Implementation**:
+  - Source citation in all outputs
+  - Clear attribution requirements
+  - Licensing information display
+  - Rights holder acknowledgment
+- **Verification**: Automated attribution validation
+
+#### ✅ **SAFE: Opt-Out Mechanism Respect**
+
+- **Rule**: Implement and respect rights holder opt-out mechanisms
+- **Implementation**:
+  - Rights holder opt-out registration system
+  - Automated opt-out compliance
+  - Regular opt-out list updates
+  - Immediate opt-out enforcement
+- **Verification**: Continuous opt-out monitoring and compliance
+
+---
+
+## 🔴 PROHIBITED RULES - PUBLIC USE VIOLATIONS
+
+### Document and Link Indexing for Public Use - PROHIBITED Actions
+
+#### ❌ **PROHIBITED: Unauthorized Public Distribution**
+
+- **Rule**: Never make copyrighted content publicly available without authorization
+- **Prohibited Actions**:
+  - Indexing content without public distribution rights
+  - Making copyrighted works publicly accessible without permission
+  - Ignoring rights holder restrictions on public use
+  - Bypassing licensing requirements for public distribution
+- **Risk**: Communication to public copyright infringement with enhanced damages
+
+#### ❌ **PROHIBITED: Commercial Use Without Authorization**
+
+- **Rule**: Never use indexed content commercially without proper licensing
+- **Prohibited Actions**:
+  - Commercial exploitation of copyrighted content
+  - Monetizing public access to copyrighted works
+  - Providing commercial services based on unauthorized content
+  - Selling or licensing unauthorized content
+- **Risk**: Commercial copyright infringement with substantial damages
+
+#### ❌ **PROHIBITED: Database Rights Violations**
+
+- **Rule**: Never extract substantial parts of protected databases for public use
+- **Prohibited Actions**:
+  - Systematic extraction of database contents
+  - Public distribution of substantial database extractions
+  - Commercial use of database contents without authorization
+  - Circumventing database access controls
+- **Risk**: Database rights infringement and substantial financial penalties
+
+#### ❌ **PROHIBITED: Technical Protection Circumvention**
+
+- **Rule**: Never circumvent technical protection measures for public distribution
+- **Prohibited Actions**:
+  - Bypassing DRM or encryption for public access
+  - Removing technical protection for public distribution
+  - Creating tools to facilitate circumvention
+  - Distributing circumvention tools or methods
+- **Risk**: Anti-circumvention law violations with criminal penalties
+
+### Public RAG Tool Usage - PROHIBITED Actions
+
+#### ❌ **PROHIBITED: Unauthorized Communication to Public**
+
+- **Rule**: Never communicate copyrighted works to the public without authorization
+- **Prohibited Actions**:
+  - Making copyrighted content publicly accessible
+  - Providing public access to unauthorized works
+  - Ignoring communication to public rights
+  - Bypassing public distribution restrictions
+- **Risk**: Communication to public infringement with enhanced enforcement
+
+#### ❌ **PROHIBITED: Rights Management Information Removal**
+
+- **Rule**: Never remove or alter rights management information for public use
+- **Prohibited Actions**:
+  - Removing copyright notices from public content
+  - Altering author attribution in public outputs
+  - Modifying licensing information
+  - Stripping metadata for public distribution
+- **Risk**: Rights management information violations with enhanced penalties
+
+#### ❌ **PROHIBITED: Opt-Out Violations**
+
+- **Rule**: Never ignore rights holder opt-out requests for public use
+- **Prohibited Actions**:
+  - Continuing to use opted-out content publicly
+  - Ignoring opt-out notifications
+  - Delaying opt-out implementation
+  - Challenging valid opt-out requests
+- **Risk**: Willful copyright infringement with enhanced damages
+
+#### ❌ **PROHIBITED: Cross-Border Portability Violations**
+
+- **Rule**: Never implement geo-blocking that violates portability rights
+- **Prohibited Actions**:
+  - Blocking EU residents from accessing content
+  - Implementing discriminatory access based on location
+  - Violating portability rights for EU residents
+  - Creating artificial access restrictions
+- **Risk**: Portability regulation violations and enforcement action
+
+---
+
+## 🛡️ COMPLIANCE IMPLEMENTATION GUIDELINES
+
+### Pre-Public Use Checklist
+
+Before making any content publicly available, verify:
+
+- [ ] Content has explicit public distribution authorization
+- [ ] All rights holders have consented to public use
+- [ ] Rights management information is preserved
+- [ ] Opt-out mechanisms are implemented and respected
+- [ ] Cross-border portability compliance is ensured
+- [ ] Terms of use and copyright notices are displayed
+- [ ] User authentication and access controls are in place
+- [ ] Regular compliance monitoring is established
+
+### Public Use Monitoring Requirements
+
+Implement continuous monitoring for:
+
+- [ ] Rights holder authorization compliance
+- [ ] Opt-out mechanism respect
+- [ ] Cross-border portability compliance
+- [ ] Rights management information preservation
+- [ ] User access and authentication
+- [ ] Commercial use restrictions
+- [ ] Attribution and source citation
+- [ ] Technical protection respect
+
+### Regular Compliance Reviews
+
+Conduct monthly reviews of:
+
+- [ ] All indexed content licensing and authorization
+- [ ] Rights holder opt-out compliance
+- [ ] Public access controls and user management
+- [ ] Cross-border portability implementation
+- [ ] Rights management information integrity
+- [ ] Commercial use restrictions compliance
+- [ ] Attribution and citation accuracy
+- [ ] Technical protection compliance
+
+---
+
+## ⚠️ RISK MITIGATION STRATEGIES
+
+### High-Risk Mitigation
+
+1. **Comprehensive Licensing**: Obtain explicit public use authorization for all content
+2. **Rights Management System**: Implement robust rights holder management and opt-out systems
+3. **Access Controls**: Deploy comprehensive user authentication and authorization
+4. **Regular Audits**: Conduct frequent compliance assessments and rights verification
+
+### Medium-Risk Mitigation
+
+1. **Attribution Systems**: Implement automated attribution and citation systems
+2. **Portability Compliance**: Ensure cross-border access for EU residents
+3. **User Education**: Provide clear guidelines and training for all users
+4. **Technical Safeguards**: Deploy technical measures to prevent violations
+
+### Low-Risk Mitigation
+
+1. **Best Practices**: Follow industry best practices for public content distribution
+2. **Legal Updates**: Stay informed about legal developments and regulatory changes
+3. **Professional Advice**: Consult legal professionals for complex licensing scenarios
+4. **Community Standards**: Follow ethical guidelines and community standards
+
+---
+
+## 📋 QUICK REFERENCE
+
+### ✅ DO
+
+- Obtain explicit public use authorization for all content
+- Implement comprehensive rights management systems
+- Respect all rights holder opt-out requests
+- Ensure cross-border portability for EU residents
+- Preserve all rights management information
+- Provide clear attribution and source citation
+- Implement robust access controls and monitoring
+- Conduct regular compliance audits
+
+### ❌ DON'T
+
+- Make copyrighted content publicly available without authorization
+- Ignore rights holder opt-out requests
+- Remove or alter rights management information
+- Implement geo-blocking that violates portability rights
+- Use content commercially without proper licensing
+- Circumvent technical protection measures
+- Extract substantial parts of protected databases
+- Delay or challenge valid opt-out requests
+
+---
+
+## 🚨 EMERGENCY COMPLIANCE PROCEDURES
+
+### Immediate Actions for Suspected Violations
+
+1. **Immediate Cessation**: Stop all potentially non-compliant activities immediately
+2. **Content Removal**: Remove unauthorized content from public access
+3. **Documentation**: Document the issue, circumstances, and actions taken
+4. **Legal Consultation**: Contact legal counsel immediately
+5. **Evidence Preservation**: Preserve all relevant evidence and logs
+6. **Stakeholder Notification**: Notify relevant stakeholders and rights holders
+
+### Post-Violation Procedures
+
+1. **Investigation**: Conduct thorough investigation of the violation
+2. **Remediation**: Implement corrective measures and prevent recurrence
+3. **Rights Holder Communication**: Communicate with affected rights holders
+4. **System Updates**: Update systems and procedures to prevent future violations
+5. **Training**: Provide additional training to prevent similar issues
+6. **Monitoring**: Enhance monitoring and compliance systems
+
+---
+
+## 📞 COMPLIANCE SUPPORT
+
+**For Questions About These Rules:**
+
+- Review the full copyright.txt document
+- Consult with legal professionals specializing in EU copyright law
+- Contact the development team for technical implementation
+- Refer to EU directive texts for authoritative guidance
+
+**Emergency Compliance Issues:**
+
+- Follow emergency compliance procedures immediately
+- Contact legal counsel without delay
+- Preserve all evidence and documentation
+- Notify relevant stakeholders promptly
+
+---
+
+**End of Public Use Rules**

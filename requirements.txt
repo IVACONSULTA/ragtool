@@ -1,0 +1,28 @@
+# Core ACP Framework
+#acp-sdk>=0.9.1
+
+# AI Agent Frameworks
+crewai>=0.11.2
+crewai[google-genai]
+crewai-tools
+
+# Vector Database
+qdrant-client>=1.7.0
+
+# LangSmith Monitoring & Debugging
+langsmith>=0.1.0
+
+# Web Framework
+flask>=3.0.0
+flask-cors>=4.0.0
+flask-limiter>=3.8.0
+
+# Utilities
+python-dotenv>=1.1.1
+nest-asyncio>=1.6.0
+google-generativeai>=0.8.0
+PyYAML>=6.0.0
+langchain-community>=0.3.0
+
+docx2txt
+

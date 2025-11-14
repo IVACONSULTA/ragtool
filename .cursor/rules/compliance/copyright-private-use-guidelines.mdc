@@ -1,0 +1,523 @@
+---
+description: EU Copyright compliance guidelines for private use of RagTool. Comprehensive rules covering both prohibited practices and safe use cases for document indexing and consultation in private contexts.
+globs: agents/*.py, utils/*.py, tests/*.py, scripts/*.sh, data/*.py, indexing/*.py
+---
+
+# EU Copyright Compliance Guidelines for Private Use
+
+## 🚫 Prohibited Practices - Never Implement for Private Use
+
+### Unauthorized Content Indexing
+
+- **NEVER**: Index copyrighted works without explicit authorization from rights holders
+- **NEVER**: Bypass paywalls, subscription requirements, or access controls to index content
+- **NEVER**: Ignore explicit opt-out requests from copyright holders
+- **NEVER**: Index content behind technical protection measures (DRM, encryption)
+- **NEVER**: Index content requiring payment or subscription without proper licensing
+- **AGENT RULE**: Always verify content licensing status before indexing
+
+### Database Rights Violations
+
+- **NEVER**: Extract substantial parts of databases protected under sui generis rights
+- **NEVER**: Engage in systematic extraction of database contents
+- **NEVER**: Repeatedly extract insubstantial parts that collectively become substantial
+- **NEVER**: Use extracted database content for commercial purposes
+- **NEVER**: Circumvent database access controls or terms of service
+- **AGENT RULE**: Limit extractions to insubstantial parts only (<10% of any single work)
+
+### Technical Protection Circumvention
+
+- **NEVER**: Bypass digital rights management (DRM) systems
+- **NEVER**: Circumvent encryption or access control mechanisms
+- **NEVER**: Use tools or methods to remove technical protection measures
+- **NEVER**: Create or distribute circumvention tools
+- **NEVER**: Modify or disable technical protection for indexing purposes
+- **AGENT RULE**: Respect all technical protection measures and access controls
+
+### Rights Management Information Violations
+
+- **NEVER**: Remove or alter copyright notices during indexing
+- **NEVER**: Strip author attribution or publication information
+- **NEVER**: Modify or delete metadata containing rights information
+- **NEVER**: Fail to preserve source URLs and publication details
+- **NEVER**: Alter licensing information or terms of use
+- **AGENT RULE**: Preserve all rights management information in indexed content
+
+### Commercial Use Prohibitions
+
+- **NEVER**: Use RagTool outputs for commercial purposes without proper licensing
+- **NEVER**: Sell or license indexed content or RagTool outputs
+- **NEVER**: Use RagTool for commercial research or development without authorization
+- **NEVER**: Monetize the RagTool or its outputs in any way
+- **NEVER**: Provide commercial services based on indexed content
+- **AGENT RULE**: Private use must be strictly non-commercial
+
+### Public Distribution Violations
+
+- **NEVER**: Share RagTool outputs publicly or with unauthorized users
+- **NEVER**: Make RagTool accessible to non-authorized individuals
+- **NEVER**: Publish or distribute generated content publicly
+- **NEVER**: Create public APIs or interfaces for RagTool access
+- **NEVER**: Broadcast or stream RagTool outputs
+- **AGENT RULE**: Restrict access to authorized private users only
+
+## ✅ Safe Practices - Recommended for Private Use
+
+### Lawful Content Indexing
+
+- **SAFE**: Index content from lawful sources only
+- **SAFE**: Use public domain materials and openly licensed content
+- **SAFE**: Index content with explicit private use authorization
+- **SAFE**: Use content you own or have licensed for private use
+- **SAFE**: Index Creative Commons, MIT, Apache, or similar licensed content
+- **AGENT RULE**: Always verify and document content source and licensing status
+
+### Insubstantial Parts Extraction
+
+- **SAFE**: Extract only insubstantial parts of databases (<10% threshold)
+- **SAFE**: Use small, non-significant portions of protected works
+- **SAFE**: Avoid systematic extraction of substantial content
+- **SAFE**: Monitor extraction volume and frequency
+- **SAFE**: Respect database maker's investment protection
+- **AGENT RULE**: Implement systematic extraction monitoring and limits
+
+### Private Research and Educational Use
+
+- **SAFE**: Use for personal research, education, or non-commercial purposes
+- **SAFE**: Individual learning and knowledge enhancement
+- **SAFE**: Non-commercial educational activities
+- **SAFE**: Personal decision-making support
+- **SAFE**: Transformative use (analysis, summarization, research)
+- **AGENT RULE**: Maintain usage logs showing private, non-commercial use
+
+### Technical Protection Respect
+
+- **SAFE**: Respect all technical protection measures
+- **SAFE**: Honor robots.txt and similar restrictions
+- **SAFE**: Comply with website terms of service
+- **SAFE**: Use only publicly available or properly licensed content
+- **SAFE**: Implement technical compliance checks
+- **AGENT RULE**: Regular compliance verification and monitoring
+
+### Rights Management Information Preservation
+
+- **SAFE**: Preserve all copyright and rights management information
+- **SAFE**: Keep original attribution and copyright notices
+- **SAFE**: Maintain source URLs and publication information
+- **SAFE**: Preserve author and publisher information
+- **SAFE**: Include metadata in all indexed content
+- **AGENT RULE**: Automated rights management information validation
+
+## 🤖 RagTool Private Use Compliance Framework
+
+### Private Use Agent Implementation
+
+```python
+class PrivateUseRagAgent:
+    def __init__(self, agent_name: str, capabilities: dict):
+        self.agent_identity = {
+            'name': agent_name,
+            'is_ai_agent': True,
+            'use_type': 'PRIVATE_ONLY',
+            'capabilities': capabilities,
+            'compliance_version': 'EU_COPYRIGHT_2024',
+            'private_use_restrictions': self.define_private_restrictions()
+        }
+        self.content_verifier = ContentVerificationSystem()
+        self.rights_manager = RightsManagementSystem()
+
+    def index_content(self, content_source: str, content_data: dict):
+        """Index content with private use compliance checks"""
+
+        # Verify content licensing
+        if not self.content_verifier.verify_private_use_authorization(content_source):
+            raise ComplianceError("Content not authorized for private use")
+
+        # Check for technical protection
+        if self.content_verifier.has_technical_protection(content_data):
+            raise ComplianceError("Cannot index content with technical protection")
+
+        # Verify insubstantial extraction
+        if not self.content_verifier.is_insubstantial_extraction(content_data):
+            raise ComplianceError("Extraction exceeds insubstantial threshold")
+
+        # Preserve rights management information
+        indexed_content = self.rights_manager.preserve_rights_info(content_data)
+
+        return {
+            'content': indexed_content,
+            'compliance_status': 'PRIVATE_USE_COMPLIANT',
+            'rights_info': self.rights_manager.extract_rights_info(content_data)
+        }
+```
+
+### Private Use Content Verification
+
+```python
+class PrivateUseContentVerifier:
+    def __init__(self):
+        self.lawful_sources = self.load_lawful_sources()
+        self.insubstantial_threshold = 0.10  # 10% threshold
+        self.technical_protection_detector = TechnicalProtectionDetector()
+
+    def verify_private_use_authorization(self, content_source: str) -> bool:
+        """Verify content is authorized for private use"""
+
+        # Check if source is in lawful sources list
+        if content_source in self.lawful_sources:
+            return True
+
+        # Check for explicit private use authorization
+        if self.has_private_use_license(content_source):
+            return True
+
+        # Check if content is public domain
+        if self.is_public_domain(content_source):
+            return True
+
+        return False
+
+    def is_insubstantial_extraction(self, content_data: dict) -> bool:
+        """Verify extraction is insubstantial"""
+
+        extraction_ratio = content_data.get('extraction_size', 0) / content_data.get('total_size', 1)
+        return extraction_ratio <= self.insubstantial_threshold
+
+    def has_technical_protection(self, content_data: dict) -> bool:
+        """Check for technical protection measures"""
+
+        return self.technical_protection_detector.detect_protection(content_data)
+```
+
+### Rights Management System
+
+```python
+class PrivateUseRightsManager:
+    def __init__(self):
+        self.rights_tracker = RightsTracker()
+        self.attribution_engine = AttributionEngine()
+
+    def preserve_rights_info(self, content_data: dict) -> dict:
+        """Preserve all rights management information"""
+
+        preserved_content = content_data.copy()
+
+        # Preserve copyright notices
+        if 'copyright_notice' in content_data:
+            preserved_content['copyright_notice'] = content_data['copyright_notice']
+
+        # Preserve author attribution
+        if 'author' in content_data:
+            preserved_content['author'] = content_data['author']
+
+        # Preserve source information
+        if 'source_url' in content_data:
+            preserved_content['source_url'] = content_data['source_url']
+
+        # Preserve publication information
+        if 'publication_info' in content_data:
+            preserved_content['publication_info'] = content_data['publication_info']
+
+        return preserved_content
+
+    def extract_rights_info(self, content_data: dict) -> dict:
+        """Extract and structure rights information"""
+
+        return {
+            'copyright_notice': content_data.get('copyright_notice', ''),
+            'author': content_data.get('author', ''),
+            'source_url': content_data.get('source_url', ''),
+            'publication_date': content_data.get('publication_date', ''),
+            'license_type': content_data.get('license_type', ''),
+            'rights_holder': content_data.get('rights_holder', '')
+        }
+```
+
+## 🛡️ Private Use Safeguards
+
+### Access Control Implementation
+
+```python
+class PrivateUseAccessController:
+    def __init__(self):
+        self.authorized_users = set()
+        self.access_logger = AccessLogger()
+        self.usage_monitor = UsageMonitor()
+
+    def verify_private_access(self, user_id: str, action: str) -> bool:
+        """Verify user is authorized for private use"""
+
+        if user_id not in self.authorized_users:
+            return False
+
+        # Log access attempt
+        self.access_logger.log_access(user_id, action, 'PRIVATE_USE')
+
+        # Monitor for commercial use indicators
+        if self.usage_monitor.detect_commercial_use(user_id, action):
+            raise ComplianceError("Commercial use detected in private context")
+
+        return True
+
+    def restrict_public_access(self, content: dict) -> dict:
+        """Ensure content is not accessible publicly"""
+
+        # Remove any public access indicators
+        if 'public_access' in content:
+            del content['public_access']
+
+        # Add private use restrictions
+        content['access_restriction'] = 'PRIVATE_USE_ONLY'
+        content['commercial_use_prohibited'] = True
+
+        return content
+```
+
+### Non-Commercial Use Verification
+
+```python
+class NonCommercialUseVerifier:
+    def __init__(self):
+        self.commercial_indicators = {
+            'monetization',
+            'revenue_generation',
+            'commercial_research',
+            'business_development',
+            'profit_making'
+        }
+
+    def verify_non_commercial_use(self, usage_context: dict) -> bool:
+        """Verify usage is non-commercial"""
+
+        usage_purpose = usage_context.get('purpose', '').lower()
+
+        for indicator in self.commercial_indicators:
+            if indicator in usage_purpose:
+                return False
+
+        return True
+
+    def monitor_usage_patterns(self, user_id: str, actions: list) -> dict:
+        """Monitor usage patterns for commercial indicators"""
+
+        commercial_score = 0
+
+        for action in actions:
+            if self.detect_commercial_pattern(action):
+                commercial_score += 1
+
+        return {
+            'commercial_score': commercial_score,
+            'is_commercial': commercial_score > 2,
+            'recommendations': self.generate_recommendations(commercial_score)
+        }
+```
+
+## 📊 Private Use Compliance Monitoring
+
+### Pre-Indexing Compliance Check
+
+```python
+class PrivateUseComplianceChecker:
+    def __init__(self):
+        self.verification_systems = {
+            'content_authorization': ContentAuthorizationVerifier(),
+            'technical_protection': TechnicalProtectionChecker(),
+            'extraction_limits': ExtractionLimitVerifier(),
+            'rights_management': RightsManagementChecker()
+        }
+
+    def conduct_pre_indexing_check(self, content_data: dict) -> dict:
+        """Comprehensive compliance check before indexing"""
+
+        compliance_results = {}
+
+        for check_name, verifier in self.verification_systems.items():
+            try:
+                result = verifier.verify(content_data)
+                compliance_results[check_name] = {
+                    'status': 'PASS' if result else 'FAIL',
+                    'details': verifier.get_details()
+                }
+            except ComplianceError as e:
+                compliance_results[check_name] = {
+                    'status': 'ERROR',
+                    'error': str(e)
+                }
+
+        return {
+            'overall_compliance': all(r['status'] == 'PASS' for r in compliance_results.values()),
+            'detailed_results': compliance_results,
+            'recommendations': self.generate_recommendations(compliance_results)
+        }
+```
+
+### Ongoing Compliance Monitoring
+
+```python
+class PrivateUseComplianceMonitor:
+    def __init__(self):
+        self.monitoring_systems = {
+            'access_control': AccessControlMonitor(),
+            'usage_patterns': UsagePatternMonitor(),
+            'rights_compliance': RightsComplianceMonitor(),
+            'extraction_limits': ExtractionLimitMonitor()
+        }
+
+    def monitor_private_use_compliance(self, agent_id: str) -> dict:
+        """Continuous monitoring of private use compliance"""
+
+        compliance_metrics = {}
+
+        for system_name, monitor in self.monitoring_systems.items():
+            metrics = monitor.collect_metrics(agent_id)
+            compliance_metrics[system_name] = metrics
+
+        # Check for violations
+        violations = self.detect_violations(compliance_metrics)
+
+        if violations:
+            self.handle_violations(agent_id, violations)
+
+        return {
+            'compliance_score': self.calculate_compliance_score(compliance_metrics),
+            'violations': violations,
+            'recommendations': self.generate_recommendations(compliance_metrics)
+        }
+```
+
+## 🎯 Private Use Compliance Checklist
+
+### Pre-Development Assessment
+
+- [ ] **Content Authorization**: Verify all content sources are authorized for private use
+- [ ] **Technical Protection**: Ensure no technical protection measures are circumvented
+- [ ] **Extraction Limits**: Implement insubstantial extraction limits (<10% threshold)
+- [ ] **Rights Management**: Design rights management information preservation
+- [ ] **Access Controls**: Plan private-only access restrictions
+- [ ] **Non-Commercial Use**: Ensure strict non-commercial use enforcement
+
+### Development Phase
+
+- [ ] **Compliance-by-Design**: Implement private use compliance in agent architecture
+- [ ] **Content Verification**: Build content authorization verification systems
+- [ ] **Rights Preservation**: Implement rights management information preservation
+- [ ] **Access Restrictions**: Deploy private-only access controls
+- [ ] **Usage Monitoring**: Implement non-commercial use monitoring
+- [ ] **Extraction Limits**: Deploy systematic extraction monitoring
+
+### Deployment Phase
+
+- [ ] **User Authentication**: Implement authorized user verification
+- [ ] **Access Logging**: Deploy comprehensive access logging
+- [ ] **Compliance Monitoring**: Activate real-time compliance monitoring
+- [ ] **Rights Management**: Ensure rights information preservation
+- [ ] **Documentation**: Complete private use compliance documentation
+- [ ] **Incident Response**: Establish violation detection and response
+
+### Ongoing Operations
+
+- [ ] **Regular Audits**: Conduct quarterly compliance audits
+- [ ] **User Training**: Provide private use compliance training
+- [ ] **System Updates**: Keep compliance systems updated
+- [ ] **Rights Verification**: Regular rights holder communication
+- [ ] **Monitoring Enhancement**: Continuously improve monitoring systems
+- [ ] **Legal Updates**: Stay informed about legal developments
+
+## 🚨 Emergency Compliance Protocols
+
+### Immediate Response Actions
+
+```python
+class PrivateUseEmergencyProtocol:
+    def __init__(self):
+        self.alert_system = ComplianceAlertSystem()
+        self.emergency_actions = EmergencyActionManager()
+
+    def handle_private_use_violation(self, violation_type: str, agent_id: str, severity: str):
+        """Handle private use compliance violations immediately"""
+
+        if severity == 'CRITICAL':
+            # Immediately suspend private use access
+            self.emergency_actions.suspend_private_access(agent_id)
+
+            # Notify rights holders if required
+            if violation_type in ['unauthorized_indexing', 'commercial_use', 'public_distribution']:
+                self.alert_system.notify_rights_holders(violation_type, agent_id)
+
+        # Log incident
+        self.log_compliance_incident(violation_type, agent_id, severity)
+
+        # Initiate remediation
+        self.initiate_remediation_process(violation_type, agent_id)
+```
+
+### Content Removal and Remediation
+
+```python
+def handle_unauthorized_content(agent_id: str, content_data: dict):
+    """Handle unauthorized content in private use context"""
+
+    # Immediately remove unauthorized content
+    content_manager.remove_unauthorized_content(agent_id, content_data)
+
+    # Revoke access to related content
+    access_controller.revoke_related_access(agent_id, content_data)
+
+    # Notify user of violation
+    user_notification.send_violation_notice(agent_id, content_data)
+
+    # Update compliance records
+    compliance_tracker.record_violation(agent_id, content_data)
+```
+
+## 📈 Continuous Compliance Monitoring
+
+### Real-Time Monitoring Dashboard
+
+```python
+class PrivateUseComplianceDashboard:
+    def __init__(self):
+        self.metrics_collector = ComplianceMetricsCollector()
+        self.violation_detector = ViolationDetector()
+        self.alert_thresholds = self.define_alert_thresholds()
+
+    def monitor_private_use_compliance(self, agent_id: str):
+        """Continuous monitoring of private use compliance"""
+
+        current_metrics = self.metrics_collector.collect_metrics(agent_id)
+
+        # Check for violations
+        violations = self.violation_detector.detect_violations(current_metrics)
+
+        if violations:
+            self.handle_compliance_violations(agent_id, violations)
+
+        # Update compliance score
+        compliance_score = self.calculate_compliance_score(current_metrics)
+        self.update_compliance_score(agent_id, compliance_score)
+
+        return compliance_score
+```
+
+## 🔍 Audit & Documentation Requirements
+
+### Comprehensive Audit Trail
+
+- **Content Indexing**: Log all content indexing activities with authorization status
+- **User Access**: Track all user access and usage patterns
+- **Rights Management**: Monitor rights management information preservation
+- **Extraction Activities**: Record all content extraction activities and volumes
+- **Compliance Checks**: Document all compliance validations and results
+- **Violation Responses**: Maintain detailed violation response logs
+
+### Required Documentation
+
+- **Private Use Policy**: Clear private use guidelines and restrictions
+- **Content Authorization Records**: Documentation of all content authorizations
+- **Rights Management Procedures**: Detailed rights preservation protocols
+- **Access Control Documentation**: User authentication and authorization systems
+- **Compliance Monitoring Reports**: Regular compliance assessment reports
+- **Incident Response Plans**: Emergency response and remediation procedures
+
+This framework ensures that RagTool agents maintain full EU copyright compliance for private use while enabling legitimate personal research, education, and non-commercial information consultation activities.

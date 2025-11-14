@@ -1,0 +1,412 @@
+# RagTool Prohibited Practices - EU Copyright Compliance
+
+## Document and Link Indexing & Consultation Prohibitions
+
+**Document Version:** 1.0  
+**Last Updated:** December 2024  
+**Project:** SapRagTool - CrewAI RAG Agent Server  
+**Scope:** Prohibited practices for document indexing and RAG consultation under EU copyright law  
+**Legal Basis:** EU Directives 2001/29/EC, 1996/9/EC, 2019/790/EU, 2004/48/EC, Regulation 2017/1128
+
+---
+
+## EXECUTIVE SUMMARY
+
+This document specifies the prohibited practices regarding the indexing of documents or links by the RagTool and the use of the RagTool for consultation, divided into two distinct scenarios:
+
+**Scenario A: Private Use** - Individual, non-commercial use by authorized private users  
+**Scenario B: Public Use** - Public access, distribution, or commercial use of the RagTool
+
+Each scenario has specific prohibited practices that must be strictly avoided to ensure EU copyright compliance and prevent legal violations.
+
+---
+
+## SCENARIO A: PRIVATE USE PROHIBITED PRACTICES
+
+### A.1 Document and Link Indexing - PROHIBITED ACTIONS
+
+#### ❌ **PROHIBITED: Unauthorized Copyrighted Content Indexing**
+
+**What is Prohibited:**
+- Indexing copyrighted works without explicit authorization from rights holders
+- Bypassing paywalls, subscription requirements, or access controls to index content
+- Ignoring explicit opt-out requests from copyright holders
+- Indexing content behind technical protection measures (DRM, encryption)
+- Indexing content that requires payment or subscription without proper licensing
+
+**Legal Basis:** Directive 2001/29/EC Article 2 (Reproduction Right)  
+**Risk Level:** HIGH - Copyright infringement with potential damages
+
+#### ❌ **PROHIBITED: Substantial Database Extraction**
+
+**What is Prohibited:**
+- Extracting substantial parts of databases protected under sui generis rights
+- Systematic extraction of database contents, even if individual extractions are small
+- Repeated extraction of insubstantial parts that collectively become substantial
+- Commercial use of extracted database content, even for private purposes
+- Circumventing database access controls or terms of service
+
+**Legal Basis:** Directive 1996/9/EC Article 7 (Sui Generis Right)  
+**Risk Level:** HIGH - Database rights infringement with substantial damages
+
+#### ❌ **PROHIBITED: Technical Protection Circumvention**
+
+**What is Prohibited:**
+- Bypassing digital rights management (DRM) systems
+- Circumventing encryption or access control mechanisms
+- Using tools or methods to remove technical protection measures
+- Creating or distributing circumvention tools
+- Modifying or disabling technical protection for indexing purposes
+
+**Legal Basis:** Directive 2001/29/EC Article 6 (Technical Protection Measures)  
+**Risk Level:** HIGH - Anti-circumvention law violations
+
+#### ❌ **PROHIBITED: Rights Management Information Removal**
+
+**What is Prohibited:**
+- Removing or altering copyright notices during indexing
+- Stripping author attribution or publication information
+- Modifying or deleting metadata containing rights information
+- Failing to preserve source URLs and publication details
+- Altering licensing information or terms of use
+
+**Legal Basis:** Directive 2001/29/EC Article 7 (Rights Management Information)  
+**Risk Level:** MEDIUM - Rights management information violations
+
+#### ❌ **PROHIBITED: Orphan Works Without Diligent Search**
+
+**What is Prohibited:**
+- Using orphan works without conducting diligent search for rights holders
+- Indexing works with unknown copyright status without proper verification
+- Failing to register orphan works in appropriate databases
+- Using orphan works for commercial purposes without authorization
+
+**Legal Basis:** Directive 2012/28/EU (Orphan Works Directive)  
+**Risk Level:** MEDIUM - Orphan works compliance violations
+
+### A.2 RagTool Consultation - PROHIBITED ACTIONS
+
+#### ❌ **PROHIBITED: Commercial Use of Indexed Content**
+
+**What is Prohibited:**
+- Using RagTool outputs for commercial purposes without proper licensing
+- Selling or licensing indexed content or RagTool outputs
+- Using RagTool for commercial research or development without authorization
+- Monetizing the RagTool or its outputs in any way
+- Providing commercial services based on indexed content
+
+**Legal Basis:** Directive 2001/29/EC Article 3 (Communication to Public)  
+**Risk Level:** HIGH - Commercial copyright infringement
+
+#### ❌ **PROHIBITED: Public Distribution of RagTool Outputs**
+
+**What is Prohibited:**
+- Sharing RagTool outputs publicly or with unauthorized users
+- Making RagTool accessible to non-authorized individuals
+- Publishing or distributing generated content publicly
+- Creating public APIs or interfaces for RagTool access
+- Broadcasting or streaming RagTool outputs
+
+**Legal Basis:** Directive 2001/29/EC Article 3 (Communication to Public)  
+**Risk Level:** HIGH - Communication to public infringement
+
+#### ❌ **PROHIBITED: Systematic Content Extraction**
+
+**What is Prohibited:**
+- Automated bulk content extraction from protected sources
+- Systematic downloading of entire websites or databases
+- Repeated extraction from the same sources over time
+- Creating comprehensive copies of protected works
+- Building competing databases from extracted content
+
+**Legal Basis:** Directive 2001/29/EC Article 2 (Reproduction Right)  
+**Risk Level:** HIGH - Systematic copyright infringement
+
+#### ❌ **PROHIBITED: Database Rights Violations in Consultation**
+
+**What is Prohibited:**
+- Consulting databases in ways that infringe sui generis rights
+- Using substantial database extractions for any purpose
+- Providing access to substantial database content through RagTool
+- Circumventing database access controls during consultation
+
+**Legal Basis:** Directive 1996/9/EC Article 8 (Rights and Obligations)  
+**Risk Level:** HIGH - Database rights infringement
+
+---
+
+## SCENARIO B: PUBLIC USE PROHIBITED PRACTICES
+
+### B.1 Document and Link Indexing for Public Use - PROHIBITED ACTIONS
+
+#### ❌ **PROHIBITED: Unauthorized Public Distribution Rights**
+
+**What is Prohibited:**
+- Indexing content without explicit public distribution authorization
+- Making copyrighted works publicly accessible without rights holder consent
+- Ignoring rights holder restrictions on public use or distribution
+- Bypassing licensing requirements for public distribution
+- Indexing content with private use only licenses for public access
+
+**Legal Basis:** Directive 2001/29/EC Article 3 (Communication to Public)  
+**Risk Level:** CRITICAL - Communication to public infringement with enhanced damages
+
+#### ❌ **PROHIBITED: Commercial Exploitation Without Authorization**
+
+**What is Prohibited:**
+- Commercial exploitation of copyrighted content without proper licensing
+- Monetizing public access to copyrighted works without authorization
+- Providing commercial services based on unauthorized content
+- Selling or licensing unauthorized content for public use
+- Creating commercial value from unauthorized content indexing
+
+**Legal Basis:** Directive 2001/29/EC Article 3 (Communication to Public)  
+**Risk Level:** CRITICAL - Commercial copyright infringement with substantial damages
+
+#### ❌ **PROHIBITED: Press Publications Rights Violations**
+
+**What is Prohibited:**
+- Using press publications without publisher authorization
+- Indexing news articles or press content without proper licensing
+- Ignoring publisher rights over online use of press publications
+- Bypassing press publication access controls
+- Commercial use of press publications without authorization
+
+**Legal Basis:** Directive 2019/790/EU Article 15 (Press Publications)  
+**Risk Level:** HIGH - Press publication rights infringement
+
+#### ❌ **PROHIBITED: Cross-Border Portability Violations**
+
+**What is Prohibited:**
+- Implementing geo-blocking that prevents EU residents from accessing content
+- Creating discriminatory access based on location within the EU
+- Violating portability rights for EU residents
+- Implementing artificial access restrictions for EU users
+- Failing to ensure consistent access across EU member states
+
+**Legal Basis:** Regulation 2017/1128 (Cross-border Portability)  
+**Risk Level:** HIGH - Portability regulation violations
+
+### B.2 Public RagTool Usage - PROHIBITED ACTIONS
+
+#### ❌ **PROHIBITED: Unauthorized Communication to Public**
+
+**What is Prohibited:**
+- Making copyrighted content publicly accessible without authorization
+- Providing public access to unauthorized works through RagTool
+- Ignoring communication to public rights for copyrighted works
+- Bypassing public distribution restrictions
+- Making works available to the public without rights holder consent
+
+**Legal Basis:** Directive 2001/29/EC Article 3 (Communication to Public)  
+**Risk Level:** CRITICAL - Communication to public infringement with enhanced enforcement
+
+#### ❌ **PROHIBITED: Opt-Out Mechanism Violations**
+
+**What is Prohibited:**
+- Ignoring rights holder opt-out requests for public use
+- Continuing to use opted-out content publicly
+- Delaying implementation of opt-out requests
+- Challenging valid opt-out notifications
+- Failing to implement immediate opt-out enforcement
+
+**Legal Basis:** Directive 2019/790/EU Article 4 (Text and Data Mining)  
+**Risk Level:** HIGH - Willful copyright infringement with enhanced damages
+
+#### ❌ **PROHIBITED: Rights Management Information Violations**
+
+**What is Prohibited:**
+- Removing copyright notices from public content
+- Altering author attribution in public outputs
+- Modifying licensing information for public distribution
+- Stripping metadata for public use
+- Failing to display rights management information prominently
+
+**Legal Basis:** Directive 2001/29/EC Article 7 (Rights Management Information)  
+**Risk Level:** HIGH - Rights management information violations with enhanced penalties
+
+#### ❌ **PROHIBITED: Database Rights Violations for Public Use**
+
+**What is Prohibited:**
+- Public distribution of substantial database extractions
+- Commercial use of database contents without authorization
+- Making substantial database content publicly accessible
+- Circumventing database access controls for public distribution
+- Violating database maker's investment protection
+
+**Legal Basis:** Directive 1996/9/EC Article 7 (Sui Generis Right)  
+**Risk Level:** CRITICAL - Database rights infringement with substantial financial penalties
+
+#### ❌ **PROHIBITED: Text and Data Mining Exceptions Violations**
+
+**What is Prohibited:**
+- Using TDM exceptions for non-qualifying organizations
+- Ignoring rights holder opt-out mechanisms in TDM
+- Using TDM for commercial purposes without authorization
+- Failing to respect lawful access requirements for TDM
+- Violating scientific research purpose limitations
+
+**Legal Basis:** Directive 2019/790/EU Article 3-4 (Text and Data Mining)  
+**Risk Level:** HIGH - TDM exception violations
+
+---
+
+## CROSS-SCENARIO PROHIBITED PRACTICES
+
+### Universal Prohibitions (Apply to Both Private and Public Use)
+
+#### ❌ **PROHIBITED: Personal Data Processing Violations**
+
+**What is Prohibited:**
+- Processing personal data without lawful basis
+- Indexing content containing personal data without GDPR compliance
+- Failing to implement data protection by design
+- Ignoring data subject rights and consent requirements
+- Cross-referencing personal data from different contexts
+
+**Legal Basis:** GDPR Articles 5-6 (Data Protection Principles)  
+**Risk Level:** HIGH - GDPR violations with administrative fines
+
+#### ❌ **PROHIBITED: AI Act Prohibited Practices**
+
+**What is Prohibited:**
+- Implementing real-time biometric identification in public spaces
+- Creating biometric categorization based on protected characteristics
+- Building social scoring systems that evaluate people's behavior
+- Targeting or exploiting vulnerabilities of specific groups
+- Implementing subliminal manipulation or dark patterns
+
+**Legal Basis:** EU AI Act Article 5 (Prohibited AI Practices)  
+**Risk Level:** CRITICAL - AI Act violations with criminal penalties
+
+#### ❌ **PROHIBITED: Fundamental Rights Violations**
+
+**What is Prohibited:**
+- Violating freedom of expression and information
+- Infringing on privacy and data protection rights
+- Discriminating against individuals or groups
+- Violating human dignity and autonomy
+- Creating systems that lead to detrimental treatment
+
+**Legal Basis:** EU Charter of Fundamental Rights  
+**Risk Level:** CRITICAL - Fundamental rights violations
+
+---
+
+## ENFORCEMENT AND PENALTIES
+
+### Private Use Violations
+
+**Immediate Actions Required:**
+- Cease all non-compliant activities immediately
+- Remove unauthorized content from indexing
+- Implement proper authorization systems
+- Document all compliance measures
+
+**Potential Penalties:**
+- Copyright infringement damages
+- Database rights infringement penalties
+- Anti-circumvention law violations
+- Rights management information violations
+
+### Public Use Violations
+
+**Immediate Actions Required:**
+- Remove unauthorized content from public access
+- Implement comprehensive opt-out mechanisms
+- Obtain proper public distribution licenses
+- Ensure cross-border portability compliance
+
+**Potential Penalties:**
+- Enhanced copyright infringement damages
+- Commercial copyright infringement penalties
+- Database rights infringement with substantial fines
+- Portability regulation violations
+- AI Act violations with criminal penalties
+
+---
+
+## COMPLIANCE VERIFICATION CHECKLIST
+
+### Pre-Implementation Verification
+
+**For Private Use:**
+- [ ] All content has lawful source verification
+- [ ] No technical protection measures are circumvented
+- [ ] Extraction limited to insubstantial parts
+- [ ] Rights management information preserved
+- [ ] Private use authorization confirmed
+- [ ] Non-commercial use restrictions implemented
+
+**For Public Use:**
+- [ ] Explicit public distribution authorization obtained
+- [ ] All rights holders have consented to public use
+- [ ] Opt-out mechanisms implemented and respected
+- [ ] Cross-border portability compliance ensured
+- [ ] Rights management information prominently displayed
+- [ ] Commercial use restrictions properly implemented
+
+### Ongoing Compliance Monitoring
+
+**Continuous Monitoring Required:**
+- [ ] Rights holder authorization compliance
+- [ ] Opt-out mechanism respect
+- [ ] Technical protection compliance
+- [ ] Database rights respect
+- [ ] Personal data protection compliance
+- [ ] AI Act compliance verification
+
+---
+
+## EMERGENCY COMPLIANCE PROCEDURES
+
+### Immediate Response Protocol
+
+1. **Immediate Cessation**: Stop all potentially non-compliant activities
+2. **Content Removal**: Remove unauthorized content from all access points
+3. **Documentation**: Document the issue and actions taken
+4. **Legal Consultation**: Contact legal counsel immediately
+5. **Evidence Preservation**: Preserve all relevant evidence and logs
+6. **Stakeholder Notification**: Notify relevant stakeholders and rights holders
+
+### Post-Violation Remediation
+
+1. **Investigation**: Conduct thorough investigation of violations
+2. **Remediation**: Implement corrective measures
+3. **System Updates**: Update systems to prevent future violations
+4. **Training**: Provide additional compliance training
+5. **Monitoring Enhancement**: Strengthen compliance monitoring systems
+
+---
+
+## LEGAL DISCLAIMER
+
+This document provides guidance on prohibited practices under EU copyright law for the RagTool project. It does not constitute legal advice and should not be relied upon as such. The specific application of these laws may vary depending on:
+
+- National implementation of EU directives
+- Specific use cases and content types
+- Jurisdictional differences
+- Evolving case law and regulations
+
+**Recommendation**: Consult with qualified legal counsel specializing in EU copyright law before implementing any compliance measures or making business decisions based on this analysis.
+
+---
+
+## CONTACT AND UPDATES
+
+**Document Maintainer**: RagTool Development Team  
+**Review Schedule**: Quarterly  
+**Next Review Date**: March 2025  
+**Version Control**: This document should be version controlled and updated as regulations change
+
+**Key Legal References**:
+- [Directive 2001/29/EC - Copyright Information Society](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02001L0029-20190606)
+- [Directive 2019/790/EU - Digital Single Market Copyright](https://eur-lex.europa.eu/eli/dir/2019/790/oj)
+- [Directive 1996/9/EC - Database Protection](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A01996L0009-20190606)
+- [Directive 2004/48/EC - IP Rights Enforcement](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32004L0048)
+- [Regulation 2017/1128 - Cross-border Portability](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02017R1128-20170630)
+- [EU AI Act - Prohibited AI Practices](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A52021PC0206)
+
+---
+
+**End of Document**
