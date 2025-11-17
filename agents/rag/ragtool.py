@@ -54,7 +54,7 @@ class BaseRagTool:
         # Explicitly configure ChromaDB as the vector database
         # This prevents CrewAI from trying to use other vector databases like Qdrant
         core_config["vectordb"] = {
-            "provider": "chroma",
+            "provider": "chromadb",
             "config": {
                 "collection_name": "rag_documents"
             }
@@ -64,6 +64,9 @@ class BaseRagTool:
 
     def _initialize_rag_tool(self) -> RagTool:
         """Initialize CrewAI RagTool with persistent storage."""
+        # Ensure EMBEDDINGS_GOOGLE_API_KEY is set for Google embeddings
+        self._ensure_embedding_api_key()
+        
         # Get chunk parameters with defaults if not present
         chunk_size = self.rag_config.get("chunk_size", 1200)
         chunk_overlap = self.rag_config.get("chunk_overlap", 200)
@@ -74,6 +77,22 @@ class BaseRagTool:
             chunk_overlap=chunk_overlap,
             storage_path=self.storage_path,
         )
+    
+    def _ensure_embedding_api_key(self):
+        """Ensure required API keys are set for embedding providers."""
+        embedding_config = self.rag_config.get("embedding_model", {})
+        provider = embedding_config.get("provider", "")
+        
+        # For Google embeddings, CrewAI requires EMBEDDINGS_GOOGLE_API_KEY
+        if provider in ["google-generativeai", "google", "gemini"]:
+            if not os.getenv("EMBEDDINGS_GOOGLE_API_KEY"):
+                # Try to use GOOGLE_API_KEY or GEMINI_API_KEY as fallback
+                google_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+                if google_key:
+                    os.environ["EMBEDDINGS_GOOGLE_API_KEY"] = google_key
+                    print("✅ Set EMBEDDINGS_GOOGLE_API_KEY from GOOGLE_API_KEY/GEMINI_API_KEY")
+                else:
+                    print("⚠️  Warning: EMBEDDINGS_GOOGLE_API_KEY not set for Google embeddings")
 
     def initialize_rag_tool(self) -> bool:
         """
