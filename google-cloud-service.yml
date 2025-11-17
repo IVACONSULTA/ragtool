@@ -2,6 +2,8 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: ragtool-agent
+  namespace: "237915647765"
+  selfLink: /apis/serving.knative.dev/v1/namespaces/237915647765/services/ragtool-agent
   labels:
     cloud.googleapis.com/location: europe-west1
   annotations:
@@ -93,9 +95,9 @@ spec:
               cpu: 1000m
               memory: 512Mi
           startupProbe:
-            timeoutSeconds: 240
-            periodSeconds: 240
-            failureThreshold: 1
+            timeoutSeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
             tcpSocket:
               port: 8080
   traffic:
