@@ -29,8 +29,6 @@ spec:
               value: ivaconsulta-rag-tool
             - name: AGENT_ROLE
               value: VAT_AGENT
-            - name: PORT
-              value: "8080"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:

@@ -57,8 +57,8 @@ LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-ivaconsulta-rag-tool}
 read -p "Agent Role (default: VAT_AGENT): " AGENT_ROLE
 AGENT_ROLE=${AGENT_ROLE:-VAT_AGENT}
 
-read -p "Port (default: 8080): " PORT
-PORT=${PORT:-8080}
+read -p "Container Port (default: 8080): " CONTAINER_PORT
+CONTAINER_PORT=${CONTAINER_PORT:-8080}
 
 read -p "Flask Environment (default: PROD): " FLASK_ENV
 FLASK_ENV=${FLASK_ENV:-PROD}
@@ -117,12 +117,12 @@ DEPLOY_CMD="gcloud run deploy $SERVICE_NAME \
     --image=$IMAGE_REF \
     --region=$REGION \
     --platform=managed \
-    --port=$PORT \
+    --port=$CONTAINER_PORT \
     --memory=512Mi \
     --cpu=1 \
     --timeout=300 \
     --max-instances=10 \
-    --set-env-vars=\"FLASK_ENV=$FLASK_ENV,LANGSMITH_PROJECT=$LANGSMITH_PROJECT,AGENT_ROLE=$AGENT_ROLE,PORT=$PORT\""
+    --set-env-vars=\"FLASK_ENV=$FLASK_ENV,LANGSMITH_PROJECT=$LANGSMITH_PROJECT,AGENT_ROLE=$AGENT_ROLE\""
 
 if [ -n "$SECRETS_FLAG" ]; then
     DEPLOY_CMD="$DEPLOY_CMD $SECRETS_FLAG"
