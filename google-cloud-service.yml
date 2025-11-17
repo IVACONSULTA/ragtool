@@ -1,0 +1,61 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ragtool-agent
+  labels:
+    cloud.googleapis.com/location: europe-west1
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/maxScale: "10"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+        - name: ragtool-agent-1
+          image: europe-west1-docker.pkg.dev/ivaconsulta/ragtool/ragtool-agent:latest
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            - name: FLASK_ENV
+              value: PROD
+            - name: LANGSMITH_PROJECT
+              value: ivaconsulta-rag-tool
+            - name: AGENT_ROLE
+              value: VAT_AGENT
+            - name: PORT
+              value: "8080"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: OPENAI_API_KEY
+            - name: LANGSMITH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: LANGSMITH_API_KEY
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: API_KEY
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          startupProbe:
+            timeoutSeconds: 240
+            periodSeconds: 240
+            failureThreshold: 1
+            tcpSocket:
+              port: 8080
+  traffic:
+    - percent: 100
+      latestRevision: true
