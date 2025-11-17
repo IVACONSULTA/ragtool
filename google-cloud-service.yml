@@ -15,7 +15,7 @@ spec:
         run.googleapis.com/startup-cpu-boost: "true"
     spec:
       containerConcurrency: 80
-      timeoutSeconds: 300
+      timeoutSeconds: 3000
       containers:
         - name: ragtool-agent-1
           image: europe-west1-docker.pkg.dev/ivaconsulta/ragtool/ragtool-agent:latest
@@ -23,17 +23,61 @@ spec:
             - name: http1
               containerPort: 8080
           env:
-            - name: FLASK_ENV
-              value: PROD
+            - name: GEMINI_2.0_FLASH
+              value: GEMINI_2.0FLASH
+            - name: GEMINI_2.5_FLASH
+              value: GEMINI_2.5FLASH
+            - name: GROQ_LLAMA__LIGHT_MODEL
+              value: GROQ_LLAMA__LIGHT_MODEL
+            - name: GROQ_LLAMA_MODEL
+              value: GROQ_LLAMA_MODEL
+            - name: GROQ_MIXTRAL_MODEL
+              value: GROQ_MIXTRAL_MODEL
+            - name: OPENAI_4o_MINI
+              value: OPENAI_4o_MINI
+            - name: CONFIG_SET
+              value: GEMINI_2.5_FLASH
             - name: LANGSMITH_PROJECT
-              value: ivaconsulta-rag-tool
+              value: rag-ivaconsulta-dev
             - name: AGENT_ROLE
               value: VAT_AGENT
+            - name: RAG_DATA_PATH
+              value: ./data/raw
+            - name: CHROMA_DB_PATH
+              value: ./db
+            - name: VAT_AGENT
+              value: VAT_AGENT
+            - name: SAP_AGENT
+              value: SAP_AGENT
+            - name: AGENT_ROLE
+              value: VAT_AGENT
+            - name: CREWAI_TRACING_ENABLED
+              value: true
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
                   key: latest
                   name: OPENAI_API_KEY
+            - name: EMBEDDINGS_GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: EMBEDDINGS_GOOGLE_API_KEY
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: GOOGLE_API_KEY
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: GEMINI_API_KEY
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: latest
+                  name: GROQ_API_KEY
             - name: LANGSMITH_API_KEY
               valueFrom:
                 secretKeyRef:
