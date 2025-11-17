@@ -52,7 +52,8 @@ fi
 # Prompt for non-sensitive environment variables
 echo -e "${YELLOW}📝 Configuration${NC}"
 read -p "LangSmith Project (default: ivaconsulta-rag-tool): " LANGSMITH_PROJECT
-LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-ivaconsulta-rag-tool}
+LANGSMITH_PROJECT=$
+{LANGSMITH_PROJECT:-ivaconsulta-rag-tool}
 
 read -p "Agent Role (default: VAT_AGENT): " AGENT_ROLE
 AGENT_ROLE=${AGENT_ROLE:-VAT_AGENT}
@@ -120,8 +121,10 @@ DEPLOY_CMD="gcloud run deploy $SERVICE_NAME \
     --port=$CONTAINER_PORT \
     --memory=512Mi \
     --cpu=1 \
-    --timeout=300 \
+    --timeout=3000 \
     --max-instances=10 \
+    --cpu-boost \
+    --no-cpu-throttling \
     --set-env-vars=\"FLASK_ENV=$FLASK_ENV,LANGSMITH_PROJECT=$LANGSMITH_PROJECT,AGENT_ROLE=$AGENT_ROLE\""
 
 if [ -n "$SECRETS_FLAG" ]; then
