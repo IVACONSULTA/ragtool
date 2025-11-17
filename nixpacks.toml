@@ -1,0 +1,13 @@
+[phases.setup]
+nixPkgs = ["python312"]
+
+[phases.install]
+cmds = [
+    "pip install --upgrade pip",
+    "pip install --no-cache-dir -r requirements.txt",
+    "pip install --no-cache-dir -r requirements-dev.txt"
+]
+
+[start]
+cmd = "python agents/crewai/crew_agent_server_with_guard_rails.py"
+
