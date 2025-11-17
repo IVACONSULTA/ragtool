@@ -297,27 +297,7 @@ class SapCrew:
         self.custom_llm = custom_llm_instance
         self.custom_rag_tool = custom_rag_tool_instance
 
-<<<<<<< HEAD
-        # Check if YAML files exist
-        # current_dir = os.path.dirname(__file__)
-                
-        current_dir = os.path(__file__).resolve().parent
-
-        agents_config_path, agents_used_fallback = resolve_config_path(
-            "sap_agents.yaml", "agents.yaml"
-        )
-        tasks_config_path, tasks_used_fallback = resolve_config_path(
-            "sap_tasks.yaml", "tasks.yaml"
-        )
-        self.original_agents_config_path = str(agents_config_path)
-        self.original_tasks_config_path = str(tasks_config_path)
-
-
-        agents_yaml_path = os.path.join(current_dir, "agents.yaml")
-        tasks_yaml_path = os.path.join(current_dir, "tasks.yaml")
-=======
         current_dir = Path(__file__).resolve().parent
->>>>>>> 2104aa3a783d10fdb467e55cdb76a8468b46aba8
 
         def resolve_config_path(
             preferred_name: str, fallback_name: str
