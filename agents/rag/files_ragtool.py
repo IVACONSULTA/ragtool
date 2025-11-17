@@ -1,7 +1,7 @@
 """
-Files RagTool for Vector Database (Qdrant Local)
+Files RagTool for Vector Database (ChromaDB)
 
-This module handles processing various file types and managing the Qdrant vector database
+This module handles processing various file types and managing the ChromaDB vector database
 separately from the main agent server. This allows for:
 - One-time processing of various file types
 - Efficient loading of existing vector database
@@ -46,7 +46,7 @@ from .ragtool import BaseRagTool
 
 
 class FilesRagTool(BaseRagTool):
-    """Handles various file types processing and vector database (Qdrant local) management."""
+    """Handles various file types processing and vector database (ChromaDB) management."""
 
     def __init__(self, rag_config: Dict, storage_path: str = "./db"):
         """
@@ -54,7 +54,7 @@ class FilesRagTool(BaseRagTool):
 
         Args:
             rag_config: Configuration for LLM and embedding models
-            storage_path: Path where the vector database (Qdrant local storage) will be stored
+            storage_path: Path where the vector database (ChromaDB) will be stored
         """
         super().__init__(rag_config, storage_path)
         # Store processed_files.json in data/processed directory for better organization
@@ -677,7 +677,7 @@ def main():
     """CLI interface for file processing."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Process various file types for vector database (Qdrant local)")
+    parser = argparse.ArgumentParser(description="Process various file types for vector database (ChromaDB)")
     parser.add_argument(
         "--action",
         choices=["process", "add", "add-url", "list", "reset", "supported"],
@@ -691,7 +691,7 @@ def main():
         "--force", action="store_true", help="Force reprocess all files"
     )
     parser.add_argument(
-        "--storage", default="./db", help="Vector database storage path (Qdrant local)"
+        "--storage", default="./db", help="Vector database storage path (ChromaDB)"
     )
 
     args = parser.parse_args()

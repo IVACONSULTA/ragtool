@@ -34,7 +34,7 @@ class BaseRagTool:
 
         Args:
             rag_config: Configuration for LLM and embedding models
-            storage_path: Path where the vector database (Qdrant local storage) will be stored
+            storage_path: Path where the vector database (ChromaDB) will be stored
         """
         self.rag_config = rag_config
         self.storage_path = storage_path
@@ -51,8 +51,14 @@ class BaseRagTool:
         core_config.pop("chunk_size", None)
         core_config.pop("chunk_overlap", None)
         
-        # Let CrewAI use default ChromaDB configuration
-        # ChromaDB will be used in persistent mode via storage_path parameter
+        # Explicitly configure ChromaDB as the vector database
+        # This prevents CrewAI from trying to use other vector databases like Qdrant
+        core_config["vectordb"] = {
+            "provider": "chroma",
+            "config": {
+                "collection_name": "rag_documents"
+            }
+        }
         
         return core_config
 
