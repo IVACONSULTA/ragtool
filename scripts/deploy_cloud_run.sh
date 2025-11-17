@@ -52,8 +52,7 @@ fi
 # Prompt for non-sensitive environment variables
 echo -e "${YELLOW}📝 Configuration${NC}"
 read -p "LangSmith Project (default: ivaconsulta-rag-tool): " LANGSMITH_PROJECT
-LANGSMITH_PROJECT=$
-{LANGSMITH_PROJECT:-ivaconsulta-rag-tool}
+LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-ivaconsulta-rag-tool}
 
 read -p "Agent Role (default: VAT_AGENT): " AGENT_ROLE
 AGENT_ROLE=${AGENT_ROLE:-VAT_AGENT}
