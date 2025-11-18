@@ -701,8 +701,8 @@ def index():
 #################################################################################
 
 if __name__ == "__main__":
-    # Get port from environment variable (Railway sets this automatically)
-    port = int(os.getenv("PORT", 8001))
+    # Get port from environment variable (Cloud Run and Railway set this automatically)
+    port = int(os.getenv("PORT", 8080))
 
     environment_type = "LOCAL" if is_running_locally() else "RAILWAY"
 
