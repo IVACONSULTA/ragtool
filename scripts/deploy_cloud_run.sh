@@ -112,7 +112,7 @@ else
     SECRETS_FLAG=""
 fi
 
-# Build deployment command
+# Build deployment command with no-traffic flag for safer deployment
 DEPLOY_CMD="gcloud run deploy $SERVICE_NAME \
     --image=$IMAGE_REF \
     --region=$REGION \
@@ -124,6 +124,7 @@ DEPLOY_CMD="gcloud run deploy $SERVICE_NAME \
     --max-instances=10 \
     --cpu-boost \
     --no-cpu-throttling \
+    --no-traffic \
     --set-env-vars=\"FLASK_ENV=$FLASK_ENV,LANGSMITH_PROJECT=$LANGSMITH_PROJECT,AGENT_ROLE=$AGENT_ROLE\""
 
 if [ -n "$SECRETS_FLAG" ]; then
@@ -143,6 +144,29 @@ echo "Command: $DEPLOY_CMD"
 echo ""
 
 eval $DEPLOY_CMD
+
+# Get the latest revision
+LATEST_REVISION=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format='value(status.latestCreatedRevisionName)')
+
+echo ""
+echo -e "${GREEN}✅ New revision deployed: $LATEST_REVISION${NC}"
+echo -e "${YELLOW}⚠️  Revision is deployed but receiving NO TRAFFIC (--no-traffic flag)${NC}"
+echo ""
+
+# Prompt to route traffic to new revision
+read -p "Route 100% traffic to new revision? (y/n, default: n): " ROUTE_TRAFFIC
+ROUTE_TRAFFIC=${ROUTE_TRAFFIC:-n}
+
+if [[ $ROUTE_TRAFFIC =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}🔀 Routing 100% traffic to new revision...${NC}"
+    gcloud run services update-traffic $SERVICE_NAME \
+        --region=$REGION \
+        --to-latest
+    echo -e "${GREEN}✅ Traffic routed to new revision${NC}"
+else
+    echo -e "${YELLOW}⚠️  Traffic NOT routed. To route traffic manually, run:${NC}"
+    echo "  gcloud run services update-traffic $SERVICE_NAME --region=$REGION --to-latest"
+fi
 
 # Get service URL
 SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format='value(status.url)')

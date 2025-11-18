@@ -73,10 +73,10 @@ else
     echo -e "${GREEN}Using tags: latest, $VERSION_TAG${NC}"
 fi
 
-# Build the Docker image
+# Build the Docker image with no cache to ensure fresh build
 echo ""
-echo -e "${BLUE}🔨 Building Docker image...${NC}"
-docker build -t $LOCAL_TAG .
+echo -e "${BLUE}🔨 Building Docker image (no cache - fresh build)...${NC}"
+docker build --no-cache --pull -t $LOCAL_TAG .
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Docker build failed${NC}"
