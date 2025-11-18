@@ -54,7 +54,9 @@ spec:
             - name: AGENT_ROLE
               value: VAT_AGENT
             - name: CREWAI_TRACING_ENABLED
-              value: true
+              value: "true"
+            - name: LANGCHAIN_TRACING_V2
+              value: "true"
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:

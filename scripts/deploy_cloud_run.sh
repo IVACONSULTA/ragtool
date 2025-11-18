@@ -125,7 +125,7 @@ DEPLOY_CMD="gcloud run deploy $SERVICE_NAME \
     --cpu-boost \
     --no-cpu-throttling \
     --no-traffic \
-    --set-env-vars=\"FLASK_ENV=$FLASK_ENV,LANGSMITH_PROJECT=$LANGSMITH_PROJECT,AGENT_ROLE=$AGENT_ROLE\""
+    --set-env-vars=\"FLASK_ENV=$FLASK_ENV,LANGSMITH_PROJECT=$LANGSMITH_PROJECT,AGENT_ROLE=$AGENT_ROLE,LANGCHAIN_TRACING_V2=true,CREWAI_TRACING_ENABLED=true\""
 
 if [ -n "$SECRETS_FLAG" ]; then
     DEPLOY_CMD="$DEPLOY_CMD $SECRETS_FLAG"
