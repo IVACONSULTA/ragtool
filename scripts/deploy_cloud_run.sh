@@ -134,10 +134,11 @@ echo -e "${GREEN}🚀 Deploying to Cloud Run using YAML configuration...${NC}"
 echo "Command: $DEPLOY_CMD"
 echo ""
 echo -e "${YELLOW}Configuration includes:${NC}"
-echo "  - Startup probe: 10s period, 30 failures max (5 min total)"
-echo "  - Timeout: 3000s"
+echo "  - Startup probe: 10s period, 60 failures max (10 min total)"
+echo "  - Timeout: 3000s (50 min)"
 echo "  - Memory: 512Mi"
 echo "  - CPU: 1000m with boost"
+echo "  - Allows time for RAG file processing (up to 10 minutes)"
 echo ""
 
 eval $DEPLOY_CMD
