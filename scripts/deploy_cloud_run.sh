@@ -112,7 +112,8 @@ else
     SECRETS_FLAG=""
 fi
 
-# Build deployment command with no-traffic flag for safer deployment
+# Build deployment command with startup probe and no-traffic flag for safer deployment
+# Startup probe: check every 10s, allow 30 failures = 300s (5 minutes) total startup time
 DEPLOY_CMD="gcloud run deploy $SERVICE_NAME \
     --image=$IMAGE_REF \
     --region=$REGION \
@@ -125,6 +126,9 @@ DEPLOY_CMD="gcloud run deploy $SERVICE_NAME \
     --cpu-boost \
     --no-cpu-throttling \
     --no-traffic \
+    --startup-probe-period-seconds=10 \
+    --startup-probe-failure-threshold=30 \
+    --startup-probe-timeout-seconds=10 \
     --set-env-vars=\"FLASK_ENV=$FLASK_ENV,LANGSMITH_PROJECT=$LANGSMITH_PROJECT,AGENT_ROLE=$AGENT_ROLE,LANGCHAIN_TRACING_V2=true,CREWAI_TRACING_ENABLED=true\""
 
 if [ -n "$SECRETS_FLAG" ]; then
