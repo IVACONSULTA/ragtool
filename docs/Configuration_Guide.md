@@ -22,16 +22,17 @@ RagTool now uses a centralized configuration system that:
 
 ### Optional Variables (with defaults)
 
-| Variable             | Default                                             | Description                      |
-| -------------------- | --------------------------------------------------- | -------------------------------- |
-| `LLM_MODEL`          | `gpt-4o-mini`                                       | OpenAI model for the LLM         |
-| `LLM_PROVIDER`       | `openai`                                            | LLM provider                     |
-| `LLM_MAX_TOKENS`     | `1024`                                              | Maximum tokens for LLM responses |
-| `EMBEDDING_MODEL`    | `text-embedding-3-small`                            | OpenAI embedding model           |
-| `EMBEDDING_PROVIDER` | `openai`                                            | Embedding provider               |
-| `DATA_FILE_PATH`     | `./utils/data/gold-hospital-and-premium-extras.pdf` | Path to PDF file                 |
-| `CHROMA_DB_PATH`     | `./db`                                              | ChromaDB storage path            |
-| `API_KEY`            | (none)                                              | API key for production security  |
+| Variable             | Default                                                  | Description                                       |
+| -------------------- | -------------------------------------------------------- | ------------------------------------------------- |
+| `AGENT_ROLE`         | `vat_agent`                                              | Agent type: `vat_agent` or `sap_agent`            |
+| `RAG_DATA_PATH`      | `./data/raw` (vat_agent) or `./data/raw_sap` (sap_agent) | RAG data directory path                           |
+| `LLM_MODEL`          | `gpt-4o-mini`                                            | OpenAI model for the LLM                          |
+| `LLM_PROVIDER`       | `openai`                                                 | LLM provider                                      |
+| `LLM_MAX_TOKENS`     | `1024`                                                   | Maximum tokens for LLM responses                  |
+| `EMBEDDING_MODEL`    | `text-embedding-3-small`                                 | OpenAI embedding model                            |
+| `EMBEDDING_PROVIDER` | `openai`                                                 | Embedding provider                                |
+| `CONFIG_SET`         | (none)                                                   | Configuration set name (e.g., `GEMINI_2.5_FLASH`) |
+| `API_KEY`            | (none)                                                   | API key for production security                   |
 
 ### Railway-Specific Variables (Auto-set)
 
@@ -60,6 +61,12 @@ RagTool now uses a centralized configuration system that:
    ```bash
    # Required
    OPENAI_API_KEY=sk-your-actual-openai-api-key
+   # OR use Gemini
+   CONFIG_SET=GEMINI_2.5_FLASH
+
+   # Agent configuration
+   AGENT_ROLE=vat_agent  # or sap_agent
+   RAG_DATA_PATH=./data/raw  # Optional: override default path
 
    # Optional customizations
    LLM_MODEL=gpt-4o-mini
@@ -83,6 +90,13 @@ RagTool now uses a centralized configuration system that:
 
    ```bash
    OPENAI_API_KEY=sk-your-actual-openai-api-key
+   # OR use Gemini
+   CONFIG_SET=GEMINI_2.5_FLASH
+
+   # Agent configuration
+   AGENT_ROLE=vat_agent  # or sap_agent
+   RAG_DATA_PATH=./data/raw  # Optional: override default path
+
    LLM_MODEL=gpt-4o-mini
    LLM_MAX_TOKENS=1024
    API_KEY=your-secure-api-key
@@ -90,8 +104,7 @@ RagTool now uses a centralized configuration system that:
 
 2. **Optional Railway-specific overrides**:
    ```bash
-   DATA_FILE_PATH=/app/utils/data/policy.pdf
-   CHROMA_DB_PATH=/app/chroma_db
+   RAG_DATA_PATH=/app/data/raw  # Custom data path
    ```
 
 ## 🛠️ Configuration Management
@@ -121,12 +134,13 @@ python utils/files_manager.py --list
 🔧 RagTool Configuration
 ========================================
 Environment: Local
+Agent Role: VAT_AGENT
 OpenAI API Key: ✅ Set
 LLM Model: gpt-4o-mini
 LLM Max Tokens: 1024
 Embedding Model: text-embedding-3-small
-Data Path: ./utils/data/gold-hospital-and-premium-extras.pdf
-Storage Path: ./chroma_db
+RAG Data Path: ./data/raw
+Storage Path: ./db
 ========================================
 ```
 
@@ -140,12 +154,13 @@ Storage Path: ./chroma_db
 🔧 RagTool Configuration
 ========================================
 Environment: Railway
+Agent Role: VAT_AGENT
 OpenAI API Key: ✅ Set
 LLM Model: gpt-4o-mini
 LLM Max Tokens: 1024
 Embedding Model: text-embedding-3-small
-Data Path: /app/utils/data/policy.pdf
-Storage Path: /app/chroma_db
+RAG Data Path: ./data/raw
+Storage Path: ./db
 ========================================
 ```
 
@@ -220,20 +235,27 @@ LLM_MODEL=gpt-4o
 LLM_MAX_TOKENS=2048
 ```
 
-### Custom File Paths
+### Agent Role Configuration
 
-**Local Development**:
+**VAT Agent (Default)**:
 
 ```bash
-DATA_FILE_PATH=./custom/path/policy.pdf
-CHROMA_DB_PATH=./custom/chromadb
+AGENT_ROLE=vat_agent
+RAG_DATA_PATH=./data/raw  # Default for VAT agent
 ```
 
-**Railway with Different Structure**:
+**SAP Agent**:
 
 ```bash
-DATA_FILE_PATH=/app/data/policy.pdf
-CHROMA_DB_PATH=/app/storage/chromadb
+AGENT_ROLE=sap_agent
+RAG_DATA_PATH=./data/raw_sap  # Default for SAP agent
+```
+
+**Custom Data Path**:
+
+```bash
+AGENT_ROLE=vat_agent
+RAG_DATA_PATH=/app/custom/data/path  # Override default
 ```
 
 ## 🔍 Troubleshooting
@@ -424,13 +446,19 @@ DATA_FILE_PATH=/app/utils/data/production-docs.pdf
 CHROMA_DB_PATH=/app/storage/chromadb
 ```
 
-### PDF Management Environment Variables
+### Agent and RAG Configuration Variables
 
-| Variable         | Default                   | Description            | Environment Impact              |
-| ---------------- | ------------------------- | ---------------------- | ------------------------------- |
-| `DATA_FILE_PATH` | `./utils/data/policy.pdf` | PDF file location      | Auto-adjusted for Railway paths |
-| `CHROMA_DB_PATH` | `./db`                    | Database storage path  | Production paths on Railway     |
-| `RAILWAY_*`      | (auto-set)                | Railway detection vars | Enables automated behavior      |
+| Variable        | Default                                                  | Description            | Environment Impact                   |
+| --------------- | -------------------------------------------------------- | ---------------------- | ------------------------------------ |
+| `AGENT_ROLE`    | `vat_agent`                                              | Agent type to build    | Determines which crew is initialized |
+| `RAG_DATA_PATH` | `./data/raw` (vat_agent) or `./data/raw_sap` (sap_agent) | RAG data directory     | Role-specific default paths          |
+| `RAILWAY_*`     | (auto-set)                                               | Railway detection vars | Enables automated behavior           |
+
+**Important Notes:**
+
+- Only **one crew** is built based on `AGENT_ROLE` (no fallback or secondary crews)
+- If RAG tool initialization fails, the server initialization fails (no fallback RAG tool)
+- The system uses **FAISS** vector database (not ChromaDB)
 
 ### Testing Environment Detection
 

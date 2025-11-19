@@ -1,13 +1,13 @@
 # 📄 PDF Management Guide for RagTool
 
-This guide explains how to efficiently manage PDF documents in your ChromaDB-powered RAG system.
+This guide explains how to efficiently manage PDF documents in your FAISS-powered RAG system.
 
 ## 🎯 Overview
 
 The new PDF management system separates document processing from the main agent server, providing:
 
-- **Efficient startup**: Load existing ChromaDB instead of reprocessing PDFs every time
-- **Persistent storage**: PDFs are processed once and stored in ChromaDB
+- **Efficient startup**: Load existing FAISS vector database instead of reprocessing PDFs every time
+- **Persistent storage**: PDFs are processed once and stored in FAISS vector database
 - **Easy document management**: Simple CLI tools to add/remove documents
 - **Change detection**: Only reprocess PDFs when they've been modified
 - **Railway optimization**: Faster deployments with pre-processed databases
@@ -16,16 +16,16 @@ The new PDF management system separates document processing from the main agent 
 
 ```
 RagTool/
-├── utils/
-│   ├── data/                      # Your PDF files and metadata
+├── data/
+│   ├── raw/                       # Your PDF files and metadata
 │   │   ├── policy-document.pdf
 │   │   └── processed_files.json  # Metadata about processed files
-│   ├── files_ragtool.py          # PDF processing utilities
-│   └── files_manager.py             # CLI tool for PDF management
-├── db/                            # ChromaDB storage
-│   └── [chromadb files]          # Vector database files
+│   └── processed/                # Processed file metadata
+├── db/                            # FAISS vector database storage
+│   └── [faiss index files]       # Vector database files
+├── files_manager_runner.py        # PDF processing utilities
 └── agents/
-    └── crew_agent_server.py       # Main server (loads existing DB)
+    └── crew_agent_server_with_guard_rails.py  # Main server (loads existing DB)
 ```
 
 ## 🚀 Quick Start
@@ -45,17 +45,17 @@ python agents/crew_agent_server.py
 
 ### 2. Regular Usage
 
-After initial setup, your agent server will automatically load the existing ChromaDB:
+After initial setup, your agent server will automatically load the existing FAISS vector database:
 
 ```bash
 # Just start your server - no PDF processing needed!
-python agents/crew_agent_server.py
+python agents/crewai/crew_agent_server_with_guard_rails.py
 ```
 
 Output will show:
 
 ```
-✅ Successfully loaded existing ChromaDB - no reprocessing needed
+✅ Successfully loaded existing FAISS vector database - no reprocessing needed
 📄 Contains 1 processed files
 🕒 Last updated: 2024-01-15T10:30:00
 ```
@@ -109,8 +109,8 @@ Output:
 ### Reset Database
 
 ```bash
-# Reset entire ChromaDB (use with caution!)
-python utils/files_manager.py --reset
+# Reset entire FAISS vector database (use with caution!)
+python3 files_manager_runner.py --reset
 ```
 
 **Smart Reset Behavior**:
@@ -124,7 +124,7 @@ python utils/files_manager.py --reset
 
 ```
 ⚠️  WARNING: This will delete all processed PDF data!
-Are you sure you want to reset the ChromaDB? (type 'yes' to confirm): yes
+Are you sure you want to reset the FAISS vector database? (type 'yes' to confirm): yes
 ✅ Database reset successfully
 Starting to re-process all PDFs...
 📄 Found 2 PDF files:
@@ -178,21 +178,21 @@ The management script now includes several utility functions for better organiza
 
 ### Smart Processing Logic
 
-1. **First Run**: No ChromaDB exists
+1. **First Run**: No FAISS vector database exists
 
-   - Process all PDFs in `utils/data/` directory
-   - Create ChromaDB with vector embeddings
+   - Process all PDFs in `data/raw/` directory (or role-specific path)
+   - Create FAISS vector database with embeddings
    - Save metadata about processed files
 
-2. **Subsequent Runs**: ChromaDB exists
+2. **Subsequent Runs**: FAISS vector database exists
 
-   - Load existing ChromaDB directly (fast!)
+   - Load existing FAISS vector database directly (fast!)
    - Check if any PDFs have changed (using file hashes)
    - Only reprocess changed files
 
 3. **Adding New PDFs**:
    - Calculate hash of new file
-   - Add to existing ChromaDB
+   - Add to existing FAISS vector database
    - Update metadata
 
 ### Metadata Tracking
@@ -219,51 +219,52 @@ When running on Railway, certain behaviors change:
 - Enhanced logging for deployment tracking
 - Optimized processing flow for cloud environments
 
-### Option 1: Pre-built ChromaDB (Recommended)
+### Option 1: Pre-built FAISS Vector Database (Recommended)
 
 1. **Local Development**:
 
    ```bash
    # Process PDFs locally
-   python utils/files_manager.py
+   python3 files_manager_runner.py process
 
    # Commit the db/ directory
    git add db/
-   git commit -m "Add processed ChromaDB"
+   git commit -m "Add processed FAISS vector database"
    git push
    ```
 
-2. **Railway Deployment**:
-   - Railway builds and deploys
-   - Agent server loads existing ChromaDB instantly
+2. **Railway/Cloud Run Deployment**:
+   - Platform builds and deploys
+   - Agent server loads existing FAISS vector database instantly
    - No PDF processing during deployment = faster startup
 
-### Option 2: Process on Railway
+### Option 2: Process on Deployment Platform
 
 1. **Include PDFs in deployment**:
 
    ```bash
-   git add utils/data/
+   git add data/raw/
    git commit -m "Add PDF files"
    ```
 
-2. **First Railway deployment**:
+2. **First deployment**:
 
    - Agent processes PDFs on first startup
-   - ChromaDB is created and persisted
-   - Subsequent deployments load existing ChromaDB
+   - FAISS vector database is created and persisted
+   - Subsequent deployments load existing FAISS vector database
 
 3. **Automatic Reset & Reprocessing**:
    - Use `--reset` flag for clean deployments
-   - On Railway: Automatically resets and reprocesses all PDFs
-   - No manual confirmation required in Railway environment
+   - On Railway/Cloud Run: Automatically resets and reprocesses all PDFs
+   - No manual confirmation required in production environment
 
-### Railway Environment Variables
+### Environment Variables
 
 ```bash
-# Optional: Custom paths for Railway
-DATA_FILE_PATH=/app/utils/data/policy.pdf
-CHROMA_DB_PATH=/app/chroma_db
+# Optional: Custom paths
+RAG_DATA_PATH=./data/raw  # Default depends on AGENT_ROLE
+# For VAT agent: ./data/raw
+# For SAP agent: ./data/raw_sap
 ```
 
 ## 📊 Performance Benefits
@@ -278,7 +279,7 @@ Agent Startup → Process PDF → Create Embeddings → Ready
 ### After (Optimized Approach)
 
 ```
-Agent Startup → Load ChromaDB → Ready
+Agent Startup → Load FAISS Vector DB → Ready
                     ↑ ~2-5 seconds
 ```
 
@@ -298,8 +299,9 @@ The management script now features:
 ### Custom Storage Path
 
 ```bash
-# Use custom ChromaDB location
-python utils/files_manager.py --storage /custom/path/chromadb
+# Use custom FAISS vector database location
+# Set via environment variable or config
+RAG_DATA_PATH=/custom/path/to/data
 ```
 
 ### Custom Data Directory
@@ -312,57 +314,44 @@ python utils/files_manager.py --data-dir /path/to/pdfs
 ### Programmatic Usage
 
 ```python
-from utils.files_ragtool import PDFRagTool
-from utils.files_manager import is_running_on_railway, init_db_and_process_pdfs
+from agents.rag.files_ragtool import FilesRagTool
+from agents.utils.config import get_rag_config
 
 # Initialize processor
-config = {...}  # Your LLM config
-processor = PDFRagTool(config, "./db")
+config = get_rag_config()  # Get configuration
+processor = FilesRagTool(config, "./db")
 
-# Check environment
-if is_running_on_railway():
-    print("Running on Railway - automated processing")
-else:
-    print("Local development environment")
-
-# Process multiple PDFs
-pdf_files = ["doc1.pdf", "doc2.pdf", "doc3.pdf"]
-success = processor.initialize_ragtool_and_process_files(pdf_files)
-
-# Use utility function for common operations
-init_db_and_process_pdfs("./utils/data", processor)
+# Process files
+python3 files_manager_runner.py process
 
 # Load existing database
 rag_tool = processor.get_rag_tool()
-
-# Add single PDF
-processor.add_new_pdf("new_document.pdf")
 ```
 
 ## 🔍 Troubleshooting
 
-### "No existing ChromaDB found"
+### "No existing FAISS vector database found"
 
-- **Cause**: First run or ChromaDB was deleted
-- **Solution**: Run `python utils/files_manager.py` to process PDFs
+- **Cause**: First run or database was deleted
+- **Solution**: Run `python3 files_manager_runner.py process` to process PDFs
 
 ### "PDF file not found"
 
 - **Cause**: PDF file path is incorrect
-- **Solution**: Check file exists and path is correct
+- **Solution**: Check file exists and path is correct (check `RAG_DATA_PATH` or role-specific path)
 
-### "Error loading existing ChromaDB"
+### "Error loading existing FAISS vector database"
 
-- **Cause**: ChromaDB corruption or version mismatch
-- **Solution**: Reset and reprocess: `python utils/files_manager.py --reset`
+- **Cause**: Database corruption or version mismatch
+- **Solution**: Reset and reprocess: `python3 files_manager_runner.py --reset`
   - The reset command now automatically reprocesses all PDFs after resetting
-  - On Railway: Runs without confirmation
+  - On Railway/Cloud Run: Runs without confirmation
   - Locally: Prompts for confirmation before reset
 
-### Slow startup on Railway
+### Slow startup on Railway/Cloud Run
 
 - **Cause**: PDFs being processed on every deployment
-- **Solution**: Pre-process locally and commit ChromaDB to git
+- **Solution**: Pre-process locally and commit FAISS vector database to git
 
 ### Out of memory on Railway
 
@@ -373,11 +362,11 @@ processor.add_new_pdf("new_document.pdf")
 
 ### Development Workflow
 
-1. **Add PDFs locally**: Copy to `utils/data/` directory
-2. **Process locally**: Run `python files_manager.py`
+1. **Add PDFs locally**: Copy to `data/raw/` directory (or role-specific path)
+2. **Process locally**: Run `python3 files_manager_runner.py process`
 3. **Test locally**: Start agent and test
-4. **Commit everything**: Include both PDFs and ChromaDB
-5. **Deploy**: Railway uses pre-processed ChromaDB
+4. **Commit everything**: Include both PDFs and FAISS vector database
+5. **Deploy**: Platform uses pre-processed FAISS vector database
 
 ### Railway-Specific Workflow
 
@@ -425,9 +414,9 @@ If you're migrating from the old approach where PDFs were processed every time:
 
 ### Regular Tasks
 
-- **Check processed files**: `python utils/files_manager.py --list`
-- **Monitor ChromaDB size**: Check `db/` directory size
-- **Update documents**: Use `--add` for new PDFs
+- **Check processed files**: `python3 files_manager_runner.py list`
+- **Monitor FAISS vector database size**: Check `db/` directory size
+- **Update documents**: Add new PDFs to `data/raw/` and process
 - **Refresh content**: Use `--force` when PDFs are updated
 
 ### Health Checks

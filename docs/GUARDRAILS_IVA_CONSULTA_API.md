@@ -2,9 +2,14 @@
 
 ## Overview
 
-The IVA Consulta Agent with Guardrails is the **DEFAULT** specialized CrewAI agent designed to provide expert VAT and indirect taxation consultation services for Spanish and international companies. This version includes **EU AI Act compliance guardrails** to ensure all interactions meet regulatory requirements.
+The IVA Consulta Agent with Guardrails is a specialized CrewAI agent designed to provide expert VAT and indirect taxation consultation services for Spanish and international companies. This version includes **EU AI Act compliance guardrails** to ensure all interactions meet regulatory requirements.
 
-**🎯 This agent is now the default for all chat requests unless another agent type is specified.**
+**🎯 Agent Selection**: The system builds **only one crew** based on the `AGENT_ROLE` environment variable:
+
+- `AGENT_ROLE=vat_agent` (default) → Builds **only** IVA Consulta Crew
+- `AGENT_ROLE=sap_agent` → Builds **only** SAP Crew
+- No fallback or secondary crews are initialized
+
 **🛡️ All requests are automatically validated against EU AI Act compliance rules.**
 
 ## Features
@@ -219,13 +224,34 @@ curl -X POST http://localhost:8001/iva-consulta \
 
 ## Deployment
 
-The agent is ready for deployment on Railway and will automatically:
+The agent is ready for deployment on Railway/Google Cloud Run and will automatically:
 
-1. Load the RAG knowledge base with processed VAT documents
-2. Initialize the Google Generative AI configuration
-3. Enable EU AI Act compliance guardrails
-4. Start the Flask server with the IVA Consulta endpoint
-5. Handle requests from the website chatbot with full compliance monitoring
+1. Read `AGENT_ROLE` environment variable (defaults to `vat_agent`)
+2. Build **only** the crew corresponding to `AGENT_ROLE` (no fallback or secondary crews)
+3. Initialize RAG tool with role-specific data path (fails immediately if initialization fails, no fallback)
+4. Load the RAG knowledge base with processed documents
+5. Initialize the LLM configuration
+6. Enable EU AI Act compliance guardrails
+7. Start the Flask server with the chat endpoint
+8. Handle requests from the website chatbot with full compliance monitoring
+
+### Environment Variables
+
+```bash
+# Required: Set agent role
+AGENT_ROLE=vat_agent  # or sap_agent
+
+# Optional: Override data path
+RAG_DATA_PATH=./data/raw  # Default depends on AGENT_ROLE
+
+# Required: LLM configuration
+CONFIG_SET=GEMINI_2.5_FLASH  # or other config set
+OPENAI_API_KEY=your_key  # if using OpenAI
+
+# Optional: LangSmith monitoring
+LANGSMITH_API_KEY=your_key
+LANGSMITH_PROJECT=rag-ivaconsulta-dev
+```
 
 ## Security Features
 
