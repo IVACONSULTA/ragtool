@@ -149,12 +149,27 @@ curl -X POST http://localhost:8003/iva-consulta \
 
 ## Deployment
 
-The agent is ready for deployment on Railway and will automatically:
+The agent is ready for deployment on Railway/Google Cloud Run and will automatically:
 
-1. Load the RAG knowledge base with processed VAT documents
-2. Initialize the Google Generative AI configuration
-3. Start the Flask server with the IVA Consulta endpoint
-4. Handle requests from the website chatbot
+1. Read `AGENT_ROLE` environment variable (defaults to `vat_agent`)
+2. Build **only** the crew corresponding to `AGENT_ROLE`:
+   - `AGENT_ROLE=vat_agent` → Builds **only** IVA Consulta Crew
+   - `AGENT_ROLE=sap_agent` → Builds **only** SAP Crew
+3. Initialize RAG tool with role-specific data path (fails immediately if initialization fails, no fallback)
+4. Load the RAG knowledge base with processed documents
+5. Initialize the LLM configuration
+6. Start the Flask server with the chat endpoint
+7. Handle requests from the website chatbot
+
+### Environment Variables
+
+```bash
+# Required: Set agent role
+AGENT_ROLE=vat_agent  # or sap_agent
+
+# Optional: Override data path
+RAG_DATA_PATH=./data/raw  # Default depends on AGENT_ROLE
+```
 
 ## Support
 

@@ -2,6 +2,8 @@
 
 This PR represents the **initial release** of the RagIvaconsulta Agent - a production-ready CrewAI-powered RAG agent for VAT (IVA) consultation with comprehensive EU AI Act compliance, LangSmith monitoring, and Railway deployment capabilities.
 
+**Key Focus**: VAT consultation specialist agent designed for Railway deployment, accessible via HTTPS by orchestrator agents and external clients.
+
 ## 🎯 What does this PR do?
 
 - [x] Feature addition - **Complete RAG Agent Implementation**
@@ -13,16 +15,21 @@ This PR represents the **initial release** of the RagIvaconsulta Agent - a produ
 
 ### Core Agent Functionality
 
-- **CrewAI Multi-Agent System**: IVA Consulta (VAT specialist) and SAP consultant agents with YAML-based configuration
+- **CrewAI RAG Agent System**: Specialized VAT (IVA) consultation agent with YAML-based configuration
+- **Single Crew Initialization**: Only one crew is built based on `AGENT_ROLE` environment variable:
+  - `vat_agent` (default): VAT documentation specialist - **Primary role**
+  - `sap_agent`: SAP integration consultant (optional)
+  - **No fallback or secondary crews** - clean, focused initialization
 - **Advanced RAG Capabilities**:
-  - ChromaDB vector storage for efficient document retrieval
+  - **FAISS vector database** for efficient document retrieval (migrated from ChromaDB)
   - Support for multiple file formats (PDF, TXT, DOCX, MD, HTML)
   - Intelligent document processing with chunking and embeddings
   - Files management system with metadata tracking
-- **Dual Agent Roles**:
-  - `iva_consulta`/`vat_agent`: VAT documentation specialist (default)
-  - `sap`: SAP integration consultant
-- **Flexible Configuration**: Role-based data path selection and environment-specific settings
+  - **No fallback RAG tool** - initialization fails immediately if RAG setup fails
+- **Role-Based Configuration**:
+  - Default: `vat_agent` with `./data/raw` data path
+  - SAP agent: `sap_agent` with `./data/raw_sap` data path
+  - Environment-specific settings and validation
 
 ### EU AI Act Compliance
 
@@ -44,9 +51,12 @@ This PR represents the **initial release** of the RagIvaconsulta Agent - a produ
 ### Production-Ready Infrastructure
 
 - **Railway Deployment**:
+  - **Primary deployment platform** - optimized for Railway hosting
   - Automatic environment detection (Railway vs Local)
   - Pre-configured `railway.json` with health checks
   - `Procfile` for seamless deployment
+  - **Orchestrator Agent Integration**: Designed to be called by orchestrator agents on Railway
+  - **HTTPS Access**: Accessible via HTTPS by external clients and orchestrator agents
 - **CI/CD Pipeline**:
   - Automated testing on pull requests
   - Code structure validation
@@ -55,16 +65,23 @@ This PR represents the **initial release** of the RagIvaconsulta Agent - a produ
 - **Environment Management**:
   - Configuration sets for different LLM providers (OpenAI, Gemini)
   - Flexible environment variable handling
-  - Multiple data path support
+  - Role-based data path support (`AGENT_ROLE` determines data path)
 
 ### API & Server
 
-- **Flask REST API**:
+- **Flask REST API** (HTTPS-enabled):
   - `/health` - Health check with detailed system status
   - `/chat` - Main agent interaction endpoint with compliance validation
+    - Default agent: `iva_consulta_agent` (VAT specialist)
+    - Optional `agent_type` parameter for flexibility
+    - `context_country` parameter for jurisdictional context
   - `/` - API documentation and capabilities
+- **Multi-Client Support**:
+  - **Orchestrator Agents**: Designed for Railway orchestrator agent integration
+  - **External Clients**: HTTPS access for any external client
+  - API key authentication for production security
 - **CORS Support**: Configurable for Railway and local development
-- **Rate Limiting**: Built-in protection with Flask-Limiter
+- **Rate Limiting**: Built-in protection with Flask-Limiter (15 requests/minute)
 - **Security**: API key validation and production-ready security measures
 
 ## 🔍 Major Components Added
@@ -118,11 +135,15 @@ agents/
 
 - [x] Tested locally with both OpenAI and Gemini models
 - [x] All core features validated
-- [x] ChromaDB initialization and file processing verified
+- [x] **FAISS vector database** initialization and file processing verified
+- [x] Single crew initialization tested (no fallback behavior)
+- [x] RAG tool failure handling verified (no fallback RAG tool)
 - [x] API endpoints tested (health check, chat)
 - [x] EU AI Act compliance validation working
 - [x] LangSmith tracing operational
 - [x] Railway deployment configuration validated
+- [x] Orchestrator agent integration tested
+- [x] HTTPS client access verified
 - [x] CI pipeline passes
 
 ## 📋 Configuration
@@ -131,22 +152,23 @@ agents/
 
 ```bash
 # LLM Configuration (choose one)
-CONFIG_SET=gemini-2.0-flash  # or gpt-4o-mini
-
-# API Keys
+CONFIG_SET=GEMINI_2.5_FLASH  # or GEMINI_2.0_FLASH, OPENAI_4o_MINI
+# OR
 OPENAI_API_KEY=your_openai_key_here     # For OpenAI models
 GEMINI_API_KEY=your_gemini_key_here     # For Gemini models
 GOOGLE_API_KEY=your_google_key_here     # Alternative for Gemini
 
+# Agent Configuration (default: VAT agent)
+AGENT_ROLE=vat_agent                    # Default: vat_agent (VAT specialist)
+RAG_DATA_PATH=./data/raw                # Default for vat_agent (auto-set based on AGENT_ROLE)
+
 # LangSmith Monitoring (optional but recommended)
 LANGSMITH_API_KEY=your_langsmith_key_here
-LANGSMITH_PROJECT=your_project_name
+LANGSMITH_PROJECT=rag-ivaconsulta-dev
 LANGCHAIN_TRACING_V2=true
 
-# Agent Configuration
-RAG_ROLE=vat_agent                      # or iva_consulta, sap
-RAG_DATA_PATH=./data/raw
-CHROMA_DB_PATH=./db
+# Production Security
+API_KEY=your_secure_api_key_here        # Required for production HTTPS access
 
 # Railway (auto-set on Railway platform)
 PORT=8001
@@ -196,11 +218,15 @@ make dev-server
 
 The agent automatically:
 
-1. Detects environment (Railway vs Local)
-2. Initializes ChromaDB if needed
-3. Processes documents in `data/raw/`
-4. Wraps RAG tool for CrewAI compatibility
-5. Starts Flask server with health checks
+1. Reads `AGENT_ROLE` environment variable (defaults to `vat_agent`)
+2. Detects environment (Railway vs Local)
+3. Initializes **FAISS vector database** if needed
+4. Processes documents in role-specific data path (`./data/raw` for VAT agent)
+5. **Builds only one crew** based on `AGENT_ROLE` (no fallback/secondary crews)
+6. **Fails immediately** if RAG tool initialization fails (no fallback RAG tool)
+7. Wraps RAG tool for CrewAI compatibility
+8. Starts Flask server with health checks
+9. Ready for HTTPS access by orchestrator agents and external clients
 
 ## 📦 Dependencies
 
@@ -211,7 +237,7 @@ The agent automatically:
 - `flask>=3.0.0` - HTTP server
 - `flask-cors>=4.0.0` - CORS support
 - `flask-limiter>=3.8.0` - Rate limiting
-- `chromadb>=0.4.0` - Vector database
+- `faiss-cpu>=1.7.4` - **FAISS vector database** (migrated from ChromaDB)
 - `langchain>=0.1.0` - LLM framework
 - `langsmith>=0.1.0` - Monitoring and tracing
 
@@ -224,13 +250,22 @@ The agent automatically:
 
 ## 📸 Key Capabilities Demonstrated
 
-### 1. Agent Interaction
+### 1. Agent Interaction (VAT Consultation)
 
 ```bash
+# Local development
 curl -X POST http://localhost:8001/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "¿Cuál es el tipo de IVA reducido en España?"}'
+  -d '{"message": "¿Cuál es el tipo de IVA reducido en España?", "context_country": "Spain"}'
+
+# Production (HTTPS with API key)
+curl -X POST https://your-railway-app.railway.app/chat \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{"message": "What is the VAT rate for digital services in Spain?", "context_country": "Spain"}'
 ```
+
+**Default Agent**: `iva_consulta_agent` (VAT specialist) - automatically selected based on `AGENT_ROLE=vat_agent`
 
 ### 2. Health Monitoring
 
@@ -267,39 +302,56 @@ Automatically validates all requests against EU AI Act:
 
 ## 📚 Documentation Added
 
-- `README.md` - Complete setup and usage guide
-- `GUARDRAILS_IVA_CONSULTA_API.md` - Compliance API documentation
-- `IVA_CONSULTA_API.md` - VAT agent API reference
-- `docs/Configuration_Guide.md` - Environment setup
-- `docs/Files_Management.md` - Document processing guide
+- `README.md` - Complete setup and usage guide (updated for VAT focus and Railway deployment)
+- `docs/GUARDRAILS_IVA_CONSULTA_API.md` - Compliance API documentation
+- `docs/IVA_CONSULTA_API.md` - VAT agent API reference
+- `docs/Configuration_Guide.md` - Environment setup (updated with AGENT_ROLE)
+- `docs/Files_Management.md` - Document processing guide (updated for FAISS)
 - `docs/Langsmith_Integration.md` - Monitoring setup
-- `docs/Compliance_Module.md` - EU AI Act implementation
+- `docs/Compliance_guardrails.md` - EU AI Act implementation
+- `docs/DOCUMENTATION_CONSOLIDATION_SUMMARY.md` - Documentation consolidation summary
 - `.cursor/rules/` - Comprehensive development and compliance rules
+
+**Documentation Consolidation**: Removed duplicate files and consolidated documentation to reflect:
+
+- Single crew initialization (no fallback/secondary crews)
+- FAISS vector database (not ChromaDB)
+- VAT consultation as default role
+- Railway deployment with orchestrator agent integration
 
 ## 🎓 Example Use Cases
 
-1. **VAT Consultation**: Query Spanish VAT rates and regulations
-2. **SAP Integration**: Get guidance on SAP integration patterns
-3. **Document Search**: Retrieve relevant information from processed documents
-4. **Compliance-Safe AI**: Interact with AI while maintaining EU AI Act compliance
+1. **VAT Consultation** (Primary Use Case): Query VAT rates, regulations, and compliance requirements
+   - Spanish VAT rates and regulations
+   - European VAT directives
+   - VAT compliance procedures
+   - Indirect taxation guidance
+2. **Orchestrator Agent Integration**: Called by orchestrator agents on Railway for multi-agent workflows
+3. **External Client Integration**: HTTPS access for external applications needing VAT consultation
+4. **Document Search**: Retrieve relevant information from processed VAT documentation
+5. **Compliance-Safe AI**: Interact with AI while maintaining EU AI Act compliance
 
 ## 📞 Additional Notes
 
-This initial release establishes a solid foundation for a production-ready RAG agent with:
+This initial release establishes a solid foundation for a production-ready VAT consultation RAG agent with:
 
-- **Modularity**: Easy to extend with new agents and tools
+- **Focused Design**: Single crew initialization for VAT consultation (default role)
+- **Clean Initialization**: No fallback or secondary crews - fails fast if initialization fails
+- **Railway-Optimized**: Designed for Railway deployment with orchestrator agent integration
+- **HTTPS-Ready**: Accessible via HTTPS by orchestrator agents and external clients
 - **Compliance-First**: Built with EU AI Act compliance from the ground up
 - **Observable**: Comprehensive monitoring and debugging capabilities
-- **Deployment-Ready**: Pre-configured for Railway with CI/CD pipeline
-- **Well-Documented**: Extensive documentation for developers and users
+- **FAISS-Powered**: Efficient FAISS vector database for document retrieval
+- **Well-Documented**: Extensive documentation consolidated and updated
 - **Maintainable**: Clean code structure with development tools
 
 The agent is ready for:
 
 - ✅ Production deployment on Railway
-- ✅ Integration with front-end applications
-- ✅ Extension with additional agent roles
-- ✅ Scaling with more documents and data sources
+- ✅ Integration with orchestrator agents on Railway
+- ✅ HTTPS access by external clients
+- ✅ VAT consultation services (primary use case)
+- ✅ Scaling with more VAT documents and data sources
 - ✅ Monitoring and performance optimization
 
 ## 🔗 Related Issues

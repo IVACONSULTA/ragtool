@@ -112,42 +112,48 @@ else
     SECRETS_FLAG=""
 fi
 
-# Build deployment command with startup probe and no-traffic flag for safer deployment
-# Startup probe: check every 10s, allow 30 failures = 300s (5 minutes) total startup time
-DEPLOY_CMD="gcloud run deploy $SERVICE_NAME \
-    --image=$IMAGE_REF \
-    --region=$REGION \
-    --platform=managed \
-    --port=$CONTAINER_PORT \
-    --memory=512Mi \
-    --cpu=1 \
-    --timeout=3000 \
-    --max-instances=10 \
-    --cpu-boost \
-    --no-cpu-throttling \
-    --no-traffic \
-    --startup-probe-period-seconds=10 \
-    --startup-probe-failure-threshold=30 \
-    --startup-probe-timeout-seconds=10 \
-    --set-env-vars=\"FLASK_ENV=$FLASK_ENV,LANGSMITH_PROJECT=$LANGSMITH_PROJECT,AGENT_ROLE=$AGENT_ROLE,LANGCHAIN_TRACING_V2=true,CREWAI_TRACING_ENABLED=true\""
+# Deploy using YAML file for full control including startup probe configuration
+echo -e "${YELLOW}📝 Updating google-cloud-service.yml with current image...${NC}"
 
-if [ -n "$SECRETS_FLAG" ]; then
-    DEPLOY_CMD="$DEPLOY_CMD $SECRETS_FLAG"
-fi
+# Create a temporary YAML file with the current configuration
+TEMP_YAML="/tmp/google-cloud-service-deploy.yml"
+cp google-cloud-service.yml $TEMP_YAML
 
-if [[ $ALLOW_UNAUTH =~ ^[Yy]$ ]]; then
-    DEPLOY_CMD="$DEPLOY_CMD --allow-unauthenticated"
-else
-    DEPLOY_CMD="$DEPLOY_CMD --no-allow-unauthenticated"
-fi
+# Update the image in the YAML file
+sed -i.bak "s|image: .*|image: $IMAGE_REF|g" $TEMP_YAML
+
+# Update environment variables in the YAML
+# Note: This is a simplified approach. For production, consider using yq or similar tools
+echo -e "${BLUE}📋 Deploying with YAML configuration (includes startup probe)...${NC}"
+
+DEPLOY_CMD="gcloud run services replace $TEMP_YAML --region=$REGION"
 
 # Deploy
 echo ""
-echo -e "${GREEN}🚀 Deploying to Cloud Run...${NC}"
+echo -e "${GREEN}🚀 Deploying to Cloud Run using YAML configuration...${NC}"
 echo "Command: $DEPLOY_CMD"
+echo ""
+echo -e "${YELLOW}Configuration includes:${NC}"
+echo "  - Startup probe: 10s period, 60 failures max (10 min total)"
+echo "  - Timeout: 3000s (50 min)"
+echo "  - Memory: 512Mi"
+echo "  - CPU: 1000m with boost"
+echo "  - Allows time for RAG file processing (up to 10 minutes)"
 echo ""
 
 eval $DEPLOY_CMD
+
+# Set IAM policy for unauthenticated access if requested
+if [[ $ALLOW_UNAUTH =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}🔓 Setting IAM policy to allow unauthenticated access...${NC}"
+    gcloud run services add-iam-policy-binding $SERVICE_NAME \
+        --region=$REGION \
+        --member="allUsers" \
+        --role="roles/run.invoker"
+fi
+
+# Clean up temporary file
+rm -f $TEMP_YAML $TEMP_YAML.bak
 
 # Get the latest revision
 LATEST_REVISION=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format='value(status.latestCreatedRevisionName)')

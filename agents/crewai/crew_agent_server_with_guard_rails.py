@@ -12,10 +12,14 @@ Endpoints:
 """
 
 import asyncio
+import io
 import os
 import sys
 import threading
+from contextlib import ExitStack
 from datetime import datetime
+from functools import wraps
+from unittest.mock import patch
 
 import nest_asyncio
 
@@ -45,6 +49,9 @@ from agents.guardrails.compliance_guardrails import (
     validate_all_compliance_rules,
 )
 
+# Import security module for API key authentication
+from security.flask_security_integration import FlaskSecurityIntegration
+
 # Import LangSmith integration
 from agents.langsmith_integration import (
     get_langsmith_manager,
@@ -61,6 +68,12 @@ nest_asyncio.apply()
 
 # Load environment variables if present
 load_dotenv()
+
+# Configure CrewAI to automatically show execution traces without prompting
+# This ensures continuous logging without blocking on user input
+os.environ.setdefault("CREWAI_TRACING_ENABLED", "true")
+# Disable interactive prompts by setting a default response
+# We'll mock stdin to automatically answer 'y' to continue logging
 
 railway_public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
 railway_private_domain = os.getenv("RAILWAY_PRIVATE_DOMAIN")
@@ -79,6 +92,9 @@ CORS(app, origins=cors_origins)
 limiter = Limiter(
     get_remote_address, app=app, default_limits=["100 per hour", "20 per minute"]
 )
+
+# Initialize security integration
+security_integration = FlaskSecurityIntegration(app)
 
 #################################################################################
 #                    Initialization State Management                            #
@@ -212,113 +228,42 @@ def initialize_agents_background():
 
         # Initialize CustomRagTool instance with role-based data path
         initialization_status = "initializing_rag"
-        try:
-            print(f"\n\n🤖 Initializing Custom RAG Tool for '{AGENT_ROLE.upper()}' role...")
-            custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
-            rag_tool = custom_rag_tool.initialize_rag_tool(data_path=RAG_DATA_PATH)
-            print(f"✅ Custom RAG Tool initialized: {custom_rag_tool.get_status_info()}")
-        except Exception as e:
-            print(f"❌ Error initializing Custom RAG Tool: {e}")
-            # Create fallback instance
-            custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
-            rag_tool = None
-            print("✅ Custom RAG Tool fallback initialized: RAG Tool: DISABLED")
+        print(f"\n\n🤖 Initializing Custom RAG Tool for '{AGENT_ROLE.upper()}' role...")
+        custom_rag_tool = CustomRagTool(data_path=RAG_DATA_PATH)
+        rag_tool = custom_rag_tool.initialize_rag_tool(data_path=RAG_DATA_PATH)
+        print(f"✅ Custom RAG Tool initialized: {custom_rag_tool.get_status_info()}")
 
-        # Initialize crews based on AGENT_ROLE
-        initialization_status = "initializing_crews"
+        # Initialize crew based on AGENT_ROLE (no fallback, no secondary crew)
+        initialization_status = "initializing_crew"
         
-        # Initialize VAT Agent crew (default)
+        # Initialize VAT Agent crew
         if AGENT_ROLE == "vat_agent":
-            try:
-                print("\n\n🤖 Initializing IVA Consulta Crew (DEFAULT)...")
-                iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-                active_crew = iva_consulta_crew
-                print("✅ IVA Consulta Crew initialized successfully")
-                print(f"   - {custom_llm.get_model_info()}")
-                print(f"   - {custom_rag_tool.get_status_info()}")
-            except Exception as e:
-                print(f"❌ Error initializing IVA Consulta Crew: {e}")
-                print("🔄 Attempting to initialize SAP Crew as fallback...")
-                # Reinitialize RAG tool with SAP data path for fallback
-                fallback_data_path = ROLE_DATA_PATHS.get("sap_agent")
-                if fallback_data_path:
-                    print(
-                        f"🔄 Reinitializing RAG tool with SAP data path: {fallback_data_path}"
-                    )
-                    try:
-                        custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
-                        print(f"✅ RAG tool reinitialized with SAP data path")
-                    except Exception as rag_error:
-                        print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
+            print("\n\n🤖 Initializing IVA Consulta Crew...")
+            iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+            active_crew = iva_consulta_crew
+            print("✅ IVA Consulta Crew initialized successfully")
+            print(f"   - {custom_llm.get_model_info()}")
+            print(f"   - {custom_rag_tool.get_status_info()}")
 
-                try:
-                    sap_crew = SapCrew(custom_llm, custom_rag_tool)
-                    active_crew = sap_crew
-                    print("✅ SAP Crew initialized as fallback")
-                except Exception as fallback_error:
-                    print(f"❌ Fallback initialization also failed: {fallback_error}")
-                    active_crew = None
-
-        # Initialize SAP Agent crew (default)
+        # Initialize SAP Agent crew
         elif AGENT_ROLE == "sap_agent":
-            try:
-                print("\n\n🤖 Initializing SAP Crew (DEFAULT)...")
-                sap_crew = SapCrew(custom_llm, custom_rag_tool)
-                active_crew = sap_crew
-                print("✅ SAP Crew initialized successfully")
-                print(f"   - {custom_llm.get_model_info()}")
-                print(f"   - {custom_rag_tool.get_status_info()}")
-            except Exception as e:
-                print(f"❌ Error initializing SAP Crew: {e}")
-                print("🔄 Attempting to initialize IVA Consulta Crew as fallback...")
-                # Reinitialize RAG tool with VAT agent data path for fallback
-                fallback_data_path = ROLE_DATA_PATHS.get("vat_agent")
-                if fallback_data_path:
-                    print(
-                        f"🔄 Reinitializing RAG tool with VAT agent data path: {fallback_data_path}"
-                    )
-                    try:
-                        custom_rag_tool.refresh_rag_tool(data_path=fallback_data_path)
-                        print(f"✅ RAG tool reinitialized with VAT agent data path")
-                    except Exception as rag_error:
-                        print(f"⚠️  Could not reinitialize RAG tool: {rag_error}")
+            print("\n\n🤖 Initializing SAP Crew...")
+            sap_crew = SapCrew(custom_llm, custom_rag_tool)
+            active_crew = sap_crew
+            print("✅ SAP Crew initialized successfully")
+            print(f"   - {custom_llm.get_model_info()}")
+            print(f"   - {custom_rag_tool.get_status_info()}")
 
-                try:
-                    iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-                    active_crew = iva_consulta_crew
-                    print("✅ IVA Consulta Crew initialized as fallback")
-                except Exception as fallback_error:
-                    print(f"❌ Fallback initialization also failed: {fallback_error}")
-                    active_crew = None
-
+        # Unknown role - default to VAT Agent
         else:
             print(f"\n\n⚠️  Unknown AGENT_ROLE '{AGENT_ROLE}', defaulting to VAT Agent")
             AGENT_ROLE = "vat_agent"  # Normalize to known role
-            try:
-                print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
-                iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-                active_crew = iva_consulta_crew
-                print("✅ IVA Consulta Crew initialized successfully")
-            except Exception as e:
-                print(f"❌ Error initializing IVA Consulta Crew: {e}")
-                active_crew = None
-
-        # Initialize the other crew as well if not already initialized (for flexibility)
-        if AGENT_ROLE == "vat_agent" and sap_crew is None:
-            try:
-                print("\n\n🤖 Initializing SAP Crew (secondary)...")
-                sap_crew = SapCrew(custom_llm, custom_rag_tool)
-                print("✅ SAP Crew initialized successfully")
-            except Exception as e:
-                print(f"⚠️  Could not initialize SAP Crew (secondary): {e}")
-
-        elif AGENT_ROLE == "sap_agent" and iva_consulta_crew is None:
-            try:
-                print("\n\n🤖 Initializing IVA Consulta Crew (secondary)...")
-                iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
-                print("✅ IVA Consulta Crew initialized successfully")
-            except Exception as e:
-                print(f"⚠️  Could not initialize IVA Consulta Crew (secondary): {e}")
+            print("🤖 Initializing IVA Consulta Crew (DEFAULT)...")
+            iva_consulta_crew = IVAConsultaCrew(custom_llm, custom_rag_tool)
+            active_crew = iva_consulta_crew
+            print("✅ IVA Consulta Crew initialized successfully")
+            print(f"   - {custom_llm.get_model_info()}")
+            print(f"   - {custom_rag_tool.get_status_info()}")
         
         # Mark initialization as complete
         initialization_status = "ready"
@@ -338,37 +283,92 @@ def initialize_agents_background():
 #################################################################################
 
 
-def verify_api_key():
-    """Verify API key for production environments and security testing."""
-    # Check if security testing mode is enabled
-    security_test_mode = os.getenv("SECURITY_TEST_MODE", "false").lower() == "true"
+class AutoConfirmExecutionTraces:
+    """Context manager to automatically answer 'y' to CrewAI's execution trace prompt.
+    
+    This ensures that execution traces continue to be logged without blocking on user input.
+    CrewAI prompts with: "Would you like to view your execution traces? [y/N]"
+    This function automatically answers 'y' to continue logging.
+    """
+    
+    def __init__(self):
+        self.stack = None
+    
+    def __enter__(self):
+        # Patch both input() and sys.stdin to handle different CrewAI input methods
+        # Most Python code uses input(), but we cover both cases
+        def mock_input(prompt=""):
+            # Automatically return 'y' for execution trace prompts
+            if "execution traces" in prompt.lower() or "view" in prompt.lower():
+                print("✅ Auto-confirming execution trace display (y)")
+                return 'y'
+            # For any other prompts, return 'y' as default
+            return 'y'
+        
+        # Use ExitStack to properly manage multiple context managers
+        self.stack = ExitStack()
+        
+        # Patch sys.stdin for direct stdin reads
+        self.stack.enter_context(patch('sys.stdin', io.StringIO('y\n')))
+        # Patch builtins.input for input() function calls
+        self.stack.enter_context(patch('builtins.input', side_effect=mock_input))
+        
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.stack:
+            self.stack.close()
+        return False
 
-    if not is_running_locally() or security_test_mode:
-        api_key = request.headers.get("X-API-Key")
-        expected_key = os.getenv("API_KEY")
 
-        if not api_key:
-            print("❌ No API key provided in request headers")
-            return None, (
-                jsonify({"error": "Unauthorized - Missing API key in request"}),
-                401,
-            )
-        elif not expected_key:
-            print("❌ No API key configured in environment")
-            return None, (
-                jsonify({"error": "Unauthorized - API key not configured"}),
-                401,
-            )
-        elif api_key.strip() != expected_key.strip():  # Strip whitespace from both
-            print("❌ API key mismatch")
-            return None, (jsonify({"error": "Unauthorized - Invalid API key"}), 401)
+def auto_confirm_execution_traces():
+    """Factory function that returns the AutoConfirmExecutionTraces context manager."""
+    return AutoConfirmExecutionTraces()
 
-        print("✅ API key verification successful")
-        return api_key, None
-    else:
-        # Local development - no API key required
-        print("🏠 Local development - skipping API key verification")
-        return None, None
+
+def require_api_key_conditional(f):
+    """Decorator to require API key in production or when security test mode is enabled."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check if security testing mode is enabled
+        security_test_mode = os.getenv("SECURITY_TEST_MODE", "false").lower() == "true"
+        
+        # In production or security test mode, require API key
+        if not is_running_locally() or security_test_mode:
+            api_key = request.headers.get("X-API-Key") or request.headers.get("Authorization", "").replace("Bearer ", "")
+            expected_key = os.getenv("API_KEY")
+            
+            if not api_key:
+                print("❌ No API key provided in request headers")
+                return jsonify({
+                    "error": "Unauthorized - Missing API key in request",
+                    "error_type": "authentication_failed"
+                }), 401
+            elif not expected_key:
+                print("❌ No API key configured in environment")
+                return jsonify({
+                    "error": "Unauthorized - API key not configured",
+                    "error_type": "configuration_error"
+                }), 401
+            elif not security_integration.api_security.validate_api_key(api_key):
+                print("❌ API key validation failed")
+                # Record failed attempt
+                client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+                if client_ip:
+                    client_ip = client_ip.split(',')[0].strip()
+                security_integration.api_security.record_failed_attempt(client_ip, "invalid_api_key")
+                return jsonify({
+                    "error": "Unauthorized - Invalid API key",
+                    "error_type": "authentication_failed"
+                }), 401
+            
+            print("✅ API key verification successful")
+        else:
+            # Local development - no API key required
+            print("🏠 Local development - skipping API key verification")
+        
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 
@@ -447,25 +447,28 @@ async def call_crewai_agent(
         )
         
         # Trace the agent role execution if LangSmith is enabled
-        if langsmith_manager.is_enabled():
-            try:
-                from langsmith import trace
-                agent_trace_name = f"agent_{crew_name.lower().replace(' ', '_')}"
-                with trace(name=agent_trace_name, run_type="chain") as agent_run:
-                    agent_run.inputs = {"user_message": user_message, "crew_name": crew_name}
-                    if context_country:
-                        agent_run.inputs["context_country"] = context_country
-                    
+        # Use auto_confirm_execution_traces to automatically answer 'y' to prompts
+        # This ensures execution traces continue logging without blocking
+        with auto_confirm_execution_traces():
+            if langsmith_manager.is_enabled():
+                try:
+                    from langsmith import trace
+                    agent_trace_name = f"agent_{crew_name.lower().replace(' ', '_')}"
+                    with trace(name=agent_trace_name, run_type="chain") as agent_run:
+                        agent_run.inputs = {"user_message": user_message, "crew_name": crew_name}
+                        if context_country:
+                            agent_run.inputs["context_country"] = context_country
+                        
+                        task_output = await crew_instance.kickoff_async()
+                        
+                        agent_run.outputs = {"response": str(task_output)}
+                except Exception as e:
+                    print(f"⚠️  Could not trace agent execution: {e}")
+                    # Fallback: execute without tracing
                     task_output = await crew_instance.kickoff_async()
-                    
-                    agent_run.outputs = {"response": str(task_output)}
-            except Exception as e:
-                print(f"⚠️  Could not trace agent execution: {e}")
-                # Fallback: execute without tracing
+            else:
+                # Execute without tracing if LangSmith is disabled
                 task_output = await crew_instance.kickoff_async()
-        else:
-            # Execute without tracing if LangSmith is disabled
-            task_output = await crew_instance.kickoff_async()
 
         response_content = str(task_output)
 
@@ -588,6 +591,7 @@ def health():
 
 @trace_async_function("call_chat_endpoint")
 @app.route("/chat", methods=["POST"])
+@require_api_key_conditional
 @limiter.limit("15 per minute")
 def chat():
     # Check if initialization is complete
@@ -604,11 +608,6 @@ def chat():
                 "initialization_status": initialization_status,
                 "status": "initializing"
             }), 503
-    
-    # Check API key in production
-    api_key, auth_error = verify_api_key()
-    if auth_error:
-        return auth_error
     try:
         data = request.get_json(force=True, silent=False)
         if not data or "message" not in data:
@@ -701,7 +700,7 @@ def index():
 #################################################################################
 
 if __name__ == "__main__":
-    # Get port from environment variable (Railway sets this automatically)
+    # Get port from environment variable (Cloud Run and Railway set this automatically)
     port = int(os.getenv("PORT", 8001))
 
     environment_type = "LOCAL" if is_running_locally() else "RAILWAY"
