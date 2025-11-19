@@ -187,7 +187,7 @@ def initialize_agents_background():
                     if project:
                         os.environ["LANGCHAIN_PROJECT"] = project
                     else:
-                        os.environ["LANGCHAIN_PROJECT"] = "ivaconsulta-rag-tool"
+                        os.environ["LANGCHAIN_PROJECT"] = "rag-ivaconsulta-dev"
 
                     # Enable comprehensive monitoring
                     print("📊 Enabling comprehensive LLM monitoring...")

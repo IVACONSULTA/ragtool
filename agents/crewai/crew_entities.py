@@ -344,6 +344,8 @@ class SapCrew:
             )
         print("✅ SapCrew initialized successfully")
 
+
+
     @agent
     def senior_sap_consultant(self) -> Agent:
         """Create the senior SAP consultant agent with proper configuration."""
@@ -445,6 +447,17 @@ class SapCrew:
             print(f"   Error type: {type(e).__name__}")
             print(f"   Error details: {str(e)}")
             raise e
+        
+    def resolve_config_path(
+            self, preferred_name: str, fallback_name: str
+        ) -> tuple[os.path, bool]:
+            preferred_path = (self.current_dir / preferred_name).resolve()
+            if preferred_path.exists():
+                return preferred_path, False
+            fallback_path = (self.current_dir / fallback_name).resolve()
+            if fallback_path.exists():
+                return fallback_path, True
+            return preferred_path, False
 
 
 @CrewBase

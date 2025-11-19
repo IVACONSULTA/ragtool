@@ -7,7 +7,10 @@ crewai[google-genai]
 crewai-tools
 
 # Vector Database
-qdrant-client>=1.7.0
+chromadb>=0.5.0
+# Note: qdrant-client is required by CrewAI even if not used
+# We explicitly configure ChromaDB in ragtool.py to avoid using Qdrant
+qdrant-client==1.15.1
 
 # LangSmith Monitoring & Debugging
 langsmith>=0.1.0

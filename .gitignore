@@ -6,6 +6,7 @@ __pycache__/
 # Database
 # GitHub filesize limit is 100mb
 db/
+Dockerfile
 
 # C extensions
 *.so
