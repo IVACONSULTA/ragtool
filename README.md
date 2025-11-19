@@ -1,15 +1,22 @@
 # RagTool - CrewAI RAG Agent Server
 
-A CrewAI-powered insurance policy agent that uses RAG (Retrieval Augmented Generation) to answer questions about policy coverage and waiting periods. This project provides a simple HTTP server with a `/chat` endpoint for direct access to the CrewAI agent.
+A CrewAI-powered VAT (Value Added Tax) consultation agent that uses RAG (Retrieval Augmented Generation) to provide expert advice on VAT and indirect taxation matters. This project provides a simple HTTP server with a `/chat` endpoint for direct access to the CrewAI agent.
+
+**Deployment & Integration**: The agent is deployed on Railway and can be called via HTTPS by:
+
+- **Orchestrator Agents**: Other agents on Railway that coordinate multi-agent workflows
+- **External Clients**: Any HTTPS client that needs VAT consultation services
 
 ## 🚀 Features
 
+- **VAT Expertise**: Specialized in VAT and indirect taxation consultation (default role)
 - **CrewAI Integration**: Powered by CrewAI for intelligent agent conversations
 - **EU AI Act Compliance**: Built-in guardrails ensuring compliance with EU AI Act regulations
 - **Advanced RAG Capabilities**: Smart PDF processing with FAISS vector database
 - **LangSmith Monitoring**: Comprehensive tracing, debugging, and performance monitoring
-- **HTTP API**: Simple REST endpoints for health checks and chat interactions
-- **Railway Ready**: Pre-configured for easy deployment to Railway with auto-detection
+- **HTTPS API**: REST endpoints accessible via HTTPS for orchestrator agents and external clients
+- **Railway Deployment**: Pre-configured for Railway deployment with orchestrator agent integration
+- **Multi-Agent Ready**: Designed to be called by orchestrator agents in multi-agent workflows
 - **Smart Environment Detection**: Automatically adjusts behavior for local vs production environments
 - **Intelligent PDF Management**: Automated processing, reset, and reprocessing capabilities
 - **Persistent Vector Storage**: FAISS for efficient and scalable document retrieval
@@ -65,24 +72,6 @@ python -m venv .venv
 python -m pip install --upgrade pip
 ```
 
-=======
-python -m pip install --upgrade pip
-
-````
-
-#### On Windows:
-
-```bash
-# Create virtual environment
-python -m venv .venv
-
-# Activate virtual environment
-.venv\Scripts\activate
-
-# Upgrade pip
-python -m pip install --upgrade pip
-````
-
 ### 3. Install Dependencies
 
 ```bash
@@ -103,29 +92,36 @@ cp env.example .env
 
 # Edit with your settings
 OPENAI_API_KEY=your_openai_api_key_here
+# OR use Gemini
+CONFIG_SET=GEMINI_2.5_FLASH
+
+# Agent configuration (default: VAT agent)
+AGENT_ROLE=vat_agent  # Default role: VAT consultation specialist
+RAG_DATA_PATH=./data/raw  # VAT agent data path
+
 LLM_MODEL=gpt-4o-mini
 EMBEDDING_MODEL=text-embedding-3-small
 ```
 
-For complete configuration options, see [Configuration.md](Configuration.md).
+For complete configuration options, see [Configuration Guide](docs/Configuration_Guide.md).
 
 ### 5. Process PDF Documents
 
 ```bash
-# Process PDF documents for RAG
-python utils/files_manager.py
+# Process PDF documents for RAG (VAT agent uses ./data/raw by default)
+python3 files_manager_runner.py process
 
 # Add new PDFs
-python utils/files_manager.py --add path/to/new.pdf
+python3 files_manager_runner.py add-file path/to/new.pdf
 
 # Reset and reprocess all PDFs
-python utils/files_manager.py --reset
+python3 files_manager_runner.py --reset
 
 # List processed files
-python utils/files_manager.py --list
+python3 files_manager_runner.py list
 ```
 
-For detailed PDF management, see [PDF_Management.md](PDF_Management.md).
+For detailed PDF management, see [Files Management Guide](docs/Files_Management.md).
 
 ### 6. Set Up LangSmith Monitoring (Optional)
 
@@ -147,19 +143,24 @@ For detailed LangSmith integration, see [LANGSMITH_INTEGRATION.md](docs/LANGSMIT
 ### 7. Run the Server Locally
 
 ```bash
-# Option 1: Direct Python execution
-python agents/crew_agent_server.py
+# Option 1: Direct Python execution (with guardrails)
+python agents/crewai/crew_agent_server_with_guard_rails.py
 
 # Option 2: Using the provided script
-chmod +x scripts/run_agent.sh
-./scripts/run_agent.sh
+chmod +x start_guardrails_server.sh
+./start_guardrails_server.sh
 ```
 
-The server will start on `http://localhost:8001` by default.
+The server will start on `http://localhost:8001` by default. The default agent role is **VAT Agent** (`vat_agent`), providing VAT and indirect taxation consultation.
 
 ## ☁️ Railway Deployment
 
-Railway is a deployment platform that makes it easy to deploy and scale applications. This project is pre-configured for Railway deployment.
+Railway is the primary deployment platform for this agent. The agent is designed to be deployed on Railway and can be called via HTTPS by:
+
+- **Orchestrator Agents**: Other agents on Railway that coordinate multi-agent workflows
+- **External Clients**: Any HTTPS client that needs VAT consultation services
+
+This project is pre-configured for Railway deployment with orchestrator agent integration support.
 
 ### Prerequisites for Railway Deployment
 
@@ -183,11 +184,24 @@ Railway is a deployment platform that makes it easy to deploy and scale applicat
    - In your Railway project dashboard, go to the "Variables" tab
 
    - Add the following environment variables:
+
      ```
+     # LLM Configuration
      OPENAI_API_KEY=your_openai_api_key_here
+     # OR use Gemini
+     CONFIG_SET=GEMINI_2.5_FLASH
+
+     # Agent Configuration (default: VAT agent)
+     AGENT_ROLE=vat_agent
+     RAG_DATA_PATH=./data/raw
+
+     # LangSmith Monitoring (optional)
      LANGSMITH_API_KEY=your_langsmith_api_key_here
-     LANGSMITH_PROJECT=sap-rag-tool
+     LANGSMITH_PROJECT=rag-ivaconsulta-dev
      LANGCHAIN_TRACING_V2=true
+
+     # Production Security
+     API_KEY=your_secure_api_key_here
      ```
 
 3. **Deploy**:
@@ -291,14 +305,15 @@ Response:
 
 ### Chat with Agent
 
-The chat endpoint includes **EU AI Act compliance validation** before processing requests.
+The chat endpoint includes **EU AI Act compliance validation** before processing requests. The default agent role is **VAT Agent**, providing VAT and indirect taxation consultation.
 
 ```bash
 POST https://your-railway-app.railway.app/chat
 Content-Type: application/json
 
 {
-  "message": "What is covered under the gold hospital plan?"
+  "message": "What is the VAT rate for digital services in Spain?",
+  "context_country": "Spain"
 }
 ```
 
@@ -306,10 +321,13 @@ Content-Type: application/json
 
 ```json
 {
-  "response": "Based on the policy document, the gold hospital plan covers...",
+  "response": "In Spain, digital services are subject to the general VAT rate of 21%...",
+  "agent_type": "iva_consulta_agent",
   "timestamp": "2024-01-01T12:00:00"
 }
 ```
+
+**Note**: The `agent_type` parameter is optional. If not specified, it defaults to `iva_consulta_agent` (VAT agent) based on the `AGENT_ROLE` environment variable.
 
 **Error Response** (Compliance Violation):
 
@@ -426,45 +444,70 @@ For complete LangSmith integration details, see:
 
 ## 🔧 Agent Communication
 
-### Called by Another Agent
+### Called by Orchestrator Agent or External Clients
 
-When this agent is deployed to Railway, it can be called by other agents via HTTP requests to the public URL:
+When this agent is deployed to Railway, it can be called via HTTPS by:
+
+1. **Orchestrator Agents**: Other agents on Railway that coordinate multi-agent workflows
+2. **External Clients**: Any HTTPS client that needs VAT consultation services
+
+#### Example: Orchestrator Agent Calling VAT Agent
 
 ```python
 import requests
 
-# Example: Another agent calling this RAG agent
+# Example: Orchestrator agent calling this VAT RAG agent
 response = requests.post(
     "https://your-railway-app.railway.app/chat",
-    json={"message": "What are the waiting periods for dental coverage?"}
+    headers={
+        "Content-Type": "application/json",
+        "X-API-Key": "your_api_key_here"  # Required in production
+    },
+    json={
+        "message": "What is the VAT rate for digital services in Spain?",
+        "context_country": "Spain"
+    }
 )
 
 if response.status_code == 200:
     agent_response = response.json()["response"]
-    print(f"RAG Agent Response: {agent_response}")
+    agent_type = response.json()["agent_type"]
+    print(f"VAT Agent ({agent_type}) Response: {agent_response}")
+else:
+    print(f"Error: {response.status_code} - {response.json()}")
 ```
 
-### Integration Example
+### Integration Example: External Client
 
 ```javascript
-// Example: JavaScript integration
-const askRagAgent = async (question) => {
+// Example: External client calling VAT agent via HTTPS
+const askVATAgent = async (question, country = "Spain") => {
   const response = await fetch("https://your-railway-app.railway.app/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "X-API-Key": "your_api_key_here", // Required in production
     },
-    body: JSON.stringify({ message: question }),
+    body: JSON.stringify({
+      message: question,
+      context_country: country,
+    }),
   });
 
   const data = await response.json();
-  return data.response;
+  return {
+    response: data.response,
+    agentType: data.agent_type,
+    timestamp: data.timestamp,
+  };
 };
 
-// Usage
-const answer = await askRagAgent(
-  "What is the maximum benefit for physiotherapy?"
+// Usage: VAT consultation
+const answer = await askVATAgent(
+  "What is the VAT rate for digital services in Spain?",
+  "Spain"
 );
+console.log(`VAT Agent (${answer.agentType}): ${answer.response}`);
 ```
 
 ## 📁 Project Structure
@@ -472,48 +515,58 @@ const answer = await askRagAgent(
 ```
 RagTool/
 ├── agents/
-│   └── crew_agent_server.py     # Main server application
-├── utils/
-│   ├── data/                    # PDF files and processing metadata
-│   │   ├── *.pdf               # Your PDF documents
-│   │   └── processed_files.json # Processing metadata
-│   ├── files_ragtool.py          # PDF processing utilities
-│   ├── files_manager.py          # PDF management CLI
-│   └── config.py               # Configuration management
-├── db/                         # ChromaDB vector storage (generated)
-├── scripts/
-│   ├── run_agent.sh           # Local startup script
-│   └── run_pdf_processor.sh   # PDF processing script
-├── tests/                     # Test files
-├── requirements.txt           # Python dependencies
-├── requirements-dev.txt       # Development dependencies
-├── railway.json              # Railway deployment configuration
-├── env.example               # Environment variables template
-├── Configuration.md          # Detailed configuration guide
-├── PDF_Management.md         # PDF management documentation
-├── .env                      # Environment variables (create this)
-└── README.md                 # This file
+│   ├── crewai/
+│   │   ├── crew_agent_server_with_guard_rails.py  # Main server (VAT agent default)
+│   │   └── crew_entities.py                      # Agent and crew definitions
+│   ├── guardrails/                                # EU AI Act compliance
+│   ├── langsmith_integration.py                   # LangSmith monitoring
+│   └── rag/                                       # RAG tool implementation
+├── data/
+│   ├── raw/                      # VAT agent documents (default)
+│   ├── raw_sap/                  # SAP agent documents
+│   └── processed/                # Processing metadata
+├── db/                           # FAISS vector database storage
+├── docs/                         # Documentation
+│   ├── Configuration_Guide.md   # Configuration documentation
+│   ├── Files_Management.md      # PDF management guide
+│   └── ...                      # Other documentation
+├── scripts/                      # Utility scripts
+├── tests/                        # Test files
+├── files_manager_runner.py       # PDF processing CLI
+├── requirements.txt             # Python dependencies
+├── requirements-dev.txt         # Development dependencies
+├── railway.json                 # Railway deployment configuration
+├── env.example                  # Environment variables template
+├── start_guardrails_server.sh   # Server startup script
+├── .env                         # Environment variables (create this)
+└── README.md                    # This file
 ```
 
 ## 🛡️ Environment Variables
 
 ### Required Variables
 
-| Variable         | Description                           | Default |
-| ---------------- | ------------------------------------- | ------- |
-| `OPENAI_API_KEY` | OpenAI API key for LLM and embeddings | None    |
+| Variable         | Description                                  | Default |
+| ---------------- | -------------------------------------------- | ------- |
+| `OPENAI_API_KEY` | OpenAI API key for LLM and embeddings        | None    |
+| OR `CONFIG_SET`  | Configuration set (e.g., `GEMINI_2.5_FLASH`) | None    |
+
+### Agent Configuration
+
+| Variable        | Description                                      | Default                                                  |
+| --------------- | ------------------------------------------------ | -------------------------------------------------------- |
+| `AGENT_ROLE`    | Agent type: `vat_agent` (default) or `sap_agent` | `vat_agent`                                              |
+| `RAG_DATA_PATH` | RAG data directory path                          | `./data/raw` (vat_agent) or `./data/raw_sap` (sap_agent) |
 
 ### Optional Variables
 
-| Variable          | Description                     | Default                   |
-| ----------------- | ------------------------------- | ------------------------- |
-| `LLM_MODEL`       | OpenAI model for the LLM        | `gpt-4o-mini`             |
-| `LLM_MAX_TOKENS`  | Maximum tokens for responses    | `1024`                    |
-| `EMBEDDING_MODEL` | OpenAI embedding model          | `text-embedding-3-small`  |
-| `DATA_FILE_PATH`  | Path to policy document         | `./utils/data/policy.pdf` |
-| `CHROMA_DB_PATH`  | ChromaDB storage path           | `./db`                    |
-| `PORT`            | Server port                     | `8001`                    |
-| `API_KEY`         | API key for production security | None                      |
+| Variable          | Description                     | Default                       |
+| ----------------- | ------------------------------- | ----------------------------- |
+| `LLM_MODEL`       | OpenAI model for the LLM        | `gpt-4o-mini`                 |
+| `LLM_MAX_TOKENS`  | Maximum tokens for responses    | `1024`                        |
+| `EMBEDDING_MODEL` | OpenAI embedding model          | `text-embedding-3-small`      |
+| `PORT`            | Server port                     | `8001`                        |
+| `API_KEY`         | API key for production security | None (required in production) |
 
 ### Railway Auto-Set Variables
 
@@ -523,22 +576,22 @@ RagTool/
 | `RAILWAY_ENVIRONMENT_NAME` | Railway environment name | Environment detection |
 | `RAILWAY_SERVICE_NAME`     | Railway service name     | Environment detection |
 
-For complete configuration details, see [Configuration.md](Configuration.md).
+For complete configuration details, see [Configuration Guide](docs/Configuration_Guide.md).
 
 ## 🔍 Troubleshooting
 
 ### Common Issues
 
-1. **"Could not load policy document"**:
+1. **"Could not load documents"**:
 
-   - Ensure PDF files exist in the `utils/data/` directory
-   - Run `python utils/files_manager.py --list` to check processed files
-   - Use `python utils/files_manager.py` to process PDFs
+   - Ensure PDF files exist in the `data/raw/` directory (for VAT agent)
+   - Run `python3 files_manager_runner.py list` to check processed files
+   - Use `python3 files_manager_runner.py process` to process PDFs
 
-2. **"No existing ChromaDB found"**:
+2. **"No existing FAISS vector database found"**:
 
-   - First time setup: Run `python utils/files_manager.py` to create database
-   - Database corruption: Use `python utils/files_manager.py --reset`
+   - First time setup: Run `python3 files_manager_runner.py process` to create database
+   - Database corruption: Use `python3 files_manager_runner.py --reset`
 
 3. **OpenAI API Errors**:
 
@@ -558,7 +611,7 @@ For complete configuration details, see [Configuration.md](Configuration.md).
 ### Debugging
 
 - **Configuration Check**: `python3 -m agents.config --info`
-- **PDF Management**: `python utils/files_manager.py --list`
+- **PDF Management**: `python3 files_manager_runner.py list`
 - **Environment Detection**: Check for Railway-specific logs in output
 - **Local Development**: Detailed logging with confirmations
 - **Railway Production**: Streamlined logging optimized for deployment
@@ -568,16 +621,17 @@ For complete configuration details, see [Configuration.md](Configuration.md).
 
 ```bash
 # Reset everything and start fresh
-python utils/files_manager.py --reset
+python3 files_manager_runner.py --reset
 
 # Validate configuration
 python3 -m agents.config --validate
 
-# Check environment detection
-python -c "from utils.files_manager import is_running_on_railway; print(f'Railway: {is_running_on_railway()}')"
-
 # Process PDFs manually
-python utils/files_manager.py --force
+python3 files_manager_runner.py process
+
+# Check agent role and data path
+echo "AGENT_ROLE: ${AGENT_ROLE:-vat_agent}"
+echo "RAG_DATA_PATH: ${RAG_DATA_PATH:-./data/raw}"
 ```
 
 ## 📝 Dependencies
@@ -590,8 +644,8 @@ The project uses the following key dependencies:
 - **crewai-tools**: RAG tool for document processing and vector search
 - **flask**: Web framework for HTTP API
 - **flask-cors**: CORS support for web requests
-- **chromadb**: Vector database for document embeddings
-- **openai**: OpenAI API integration for LLM and embeddings
+- **faiss-cpu**: FAISS vector database for document embeddings
+- **openai**: OpenAI API integration for LLM and embeddings (or Gemini via CONFIG_SET)
 
 ### Utility Dependencies
 
@@ -612,30 +666,39 @@ For complete dependency management, see `requirements.txt` and `requirements-dev
 
 ## 📚 Documentation
 
-Detailed documentation is available:
+Detailed documentation is available in the `docs/` folder:
 
-- **[Configuration Guide](Configuration.md)**: Complete environment and configuration setup
-- **[PDF Management Guide](PDF_Management.md)**: Document processing and management
-- **[Railway Setup Guide](Railway_API_setup.md)**: Detailed Railway deployment instructions
-- **[Contributing Guidelines](CONTRIBUTING.md)**: How to contribute to the project
+- **[Configuration Guide](docs/Configuration_Guide.md)**: Complete environment and configuration setup
+- **[Files Management Guide](docs/Files_Management.md)**: Document processing and management
+- **[IVA Consulta API](docs/IVA_CONSULTA_API.md)**: VAT agent API documentation
+- **[Guardrails API](docs/GUARDRAILS_IVA_CONSULTA_API.md)**: API with EU AI Act compliance
+- **[LangSmith Integration](docs/Langsmith_Integration.md)**: Monitoring and debugging setup
+- **[Documentation Consolidation Summary](docs/DOCUMENTATION_CONSOLIDATION_SUMMARY.md)**: Recent documentation updates
 
 ## 🚀 Quick Start Commands
 
 ```bash
 # Complete setup (first time)
 cp env.example .env
-# Edit .env with your OPENAI_API_KEY
-python utils/files_manager.py          # Process PDFs
-python agents/crew_agent_server.py   # Start server
+# Edit .env with your OPENAI_API_KEY or CONFIG_SET
+# Set AGENT_ROLE=vat_agent (default) for VAT consultation
+
+python3 files_manager_runner.py process  # Process PDFs for VAT agent
+python agents/crewai/crew_agent_server_with_guard_rails.py  # Start server
 
 # Reset and restart (clean slate)
-python utils/files_manager.py --reset  # Reset DB and reprocess
-python agents/crew_agent_server.py   # Start server
+python3 files_manager_runner.py --reset  # Reset DB and reprocess
+python agents/crewai/crew_agent_server_with_guard_rails.py  # Start server
 
 # Check system status
-python utils/files_manager.py --list   # List processed files
-python3 -m agents.config --validate   # Validate configuration
-curl http://localhost:8001/health     # Check server health
+python3 files_manager_runner.py list     # List processed files
+python3 -m agents.config --validate     # Validate configuration
+curl http://localhost:8001/health       # Check server health
+
+# Test VAT consultation
+curl -X POST http://localhost:8001/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What is the VAT rate in Spain?", "context_country": "Spain"}'
 ```
 
 ## 📄 License
@@ -650,9 +713,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contributing guidelines.
 
 For issues related to:
 
-- **Railway Deployment**: Check [Railway_API_setup.md](Railway_API_setup.md) or Railway documentation
-- **PDF Management**: Check [PDF_Management.md](PDF_Management.md)
-- **Configuration**: Check [Configuration.md](Configuration.md)
-- **OpenAI API**: Check OpenAI documentation
+- **Railway Deployment**: Check Railway documentation or deployment logs
+- **PDF Management**: Check [Files Management Guide](docs/Files_Management.md)
+- **Configuration**: Check [Configuration Guide](docs/Configuration_Guide.md)
+- **VAT Agent API**: Check [IVA Consulta API](docs/IVA_CONSULTA_API.md)
+- **Orchestrator Integration**: Ensure HTTPS endpoint is accessible and API key is configured
+- **OpenAI/Gemini API**: Check respective API documentation
 - **CrewAI**: Check CrewAI documentation
-- **This Project**: [Add your support contact information]
+- **This Project**: See documentation in `docs/` folder

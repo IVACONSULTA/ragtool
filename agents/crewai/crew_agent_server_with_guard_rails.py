@@ -18,6 +18,7 @@ import sys
 import threading
 from contextlib import ExitStack
 from datetime import datetime
+from functools import wraps
 from unittest.mock import patch
 
 import nest_asyncio
@@ -47,6 +48,9 @@ from agents.guardrails.compliance_guardrails import (
     ComplianceViolationError,
     validate_all_compliance_rules,
 )
+
+# Import security module for API key authentication
+from security.flask_security_integration import FlaskSecurityIntegration
 
 # Import LangSmith integration
 from agents.langsmith_integration import (
@@ -88,6 +92,9 @@ CORS(app, origins=cors_origins)
 limiter = Limiter(
     get_remote_address, app=app, default_limits=["100 per hour", "20 per minute"]
 )
+
+# Initialize security integration
+security_integration = FlaskSecurityIntegration(app)
 
 #################################################################################
 #                    Initialization State Management                            #
@@ -319,37 +326,49 @@ def auto_confirm_execution_traces():
     return AutoConfirmExecutionTraces()
 
 
-def verify_api_key():
-    """Verify API key for production environments and security testing."""
-    # Check if security testing mode is enabled
-    security_test_mode = os.getenv("SECURITY_TEST_MODE", "false").lower() == "true"
-
-    if not is_running_locally() or security_test_mode:
-        api_key = request.headers.get("X-API-Key")
-        expected_key = os.getenv("API_KEY")
-
-        if not api_key:
-            print("❌ No API key provided in request headers")
-            return None, (
-                jsonify({"error": "Unauthorized - Missing API key in request"}),
-                401,
-            )
-        elif not expected_key:
-            print("❌ No API key configured in environment")
-            return None, (
-                jsonify({"error": "Unauthorized - API key not configured"}),
-                401,
-            )
-        elif api_key.strip() != expected_key.strip():  # Strip whitespace from both
-            print("❌ API key mismatch")
-            return None, (jsonify({"error": "Unauthorized - Invalid API key"}), 401)
-
-        print("✅ API key verification successful")
-        return api_key, None
-    else:
-        # Local development - no API key required
-        print("🏠 Local development - skipping API key verification")
-        return None, None
+def require_api_key_conditional(f):
+    """Decorator to require API key in production or when security test mode is enabled."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check if security testing mode is enabled
+        security_test_mode = os.getenv("SECURITY_TEST_MODE", "false").lower() == "true"
+        
+        # In production or security test mode, require API key
+        if not is_running_locally() or security_test_mode:
+            api_key = request.headers.get("X-API-Key") or request.headers.get("Authorization", "").replace("Bearer ", "")
+            expected_key = os.getenv("API_KEY")
+            
+            if not api_key:
+                print("❌ No API key provided in request headers")
+                return jsonify({
+                    "error": "Unauthorized - Missing API key in request",
+                    "error_type": "authentication_failed"
+                }), 401
+            elif not expected_key:
+                print("❌ No API key configured in environment")
+                return jsonify({
+                    "error": "Unauthorized - API key not configured",
+                    "error_type": "configuration_error"
+                }), 401
+            elif not security_integration.api_security.validate_api_key(api_key):
+                print("❌ API key validation failed")
+                # Record failed attempt
+                client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+                if client_ip:
+                    client_ip = client_ip.split(',')[0].strip()
+                security_integration.api_security.record_failed_attempt(client_ip, "invalid_api_key")
+                return jsonify({
+                    "error": "Unauthorized - Invalid API key",
+                    "error_type": "authentication_failed"
+                }), 401
+            
+            print("✅ API key verification successful")
+        else:
+            # Local development - no API key required
+            print("🏠 Local development - skipping API key verification")
+        
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 
@@ -572,6 +591,7 @@ def health():
 
 @trace_async_function("call_chat_endpoint")
 @app.route("/chat", methods=["POST"])
+@require_api_key_conditional
 @limiter.limit("15 per minute")
 def chat():
     # Check if initialization is complete
@@ -588,11 +608,6 @@ def chat():
                 "initialization_status": initialization_status,
                 "status": "initializing"
             }), 503
-    
-    # Check API key in production
-    api_key, auth_error = verify_api_key()
-    if auth_error:
-        return auth_error
     try:
         data = request.get_json(force=True, silent=False)
         if not data or "message" not in data:
