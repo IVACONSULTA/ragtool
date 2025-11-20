@@ -62,16 +62,16 @@ gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
 
 # Prompt for version tag
 echo -e "${YELLOW}📝 Image Tagging${NC}"
-read -p "Enter version tag (e.g., v1.0.0, or press Enter for 'latest' only): " VERSION_TAG
-
+read -p "Enter version tag (e.g., v1.0.0, or press Enter to generate a unique tag): " VERSION_TAG
 if [ -z "$VERSION_TAG" ]; then
-    TAGS=("$LATEST_TAG")
-    echo -e "${GREEN}Using tag: latest${NC}"
-else
-    VERSIONED_TAG="${FULL_IMAGE_PATH}:${VERSION_TAG}"
-    TAGS=("$LATEST_TAG" "$VERSIONED_TAG")
-    echo -e "${GREEN}Using tags: latest, $VERSION_TAG${NC}"
+  VERSION_TAG=$(date +%Y%m%d%H%M%S)
+  echo "No version tag provided. Using generated tag: $VERSION_TAG"
 fi
+
+VERSIONED_TAG="${FULL_IMAGE_PATH}:${VERSION_TAG}"
+TAGS=("$VERSIONED_TAG")
+echo -e "${GREEN}Using tag: $VERSION_TAG${NC}"
+echo -e "${YELLOW}Note: Tag immutability is enabled - only using version tag${NC}"
 
 # Build the Docker image with no cache to ensure fresh build
 echo ""
@@ -111,13 +111,13 @@ done
 # Verify the image exists
 echo ""
 echo -e "${BLUE}🔍 Verifying image in Artifact Registry...${NC}"
-if gcloud artifacts docker images describe $LATEST_TAG &> /dev/null; then
+if gcloud artifacts docker images describe $VERSIONED_TAG &> /dev/null; then
     echo -e "${GREEN}✅ Image verified in Artifact Registry${NC}"
     
     # Show image details
     echo ""
     echo -e "${BLUE}📋 Image Details:${NC}"
-    gcloud artifacts docker images describe $LATEST_TAG \
+    gcloud artifacts docker images describe $VERSIONED_TAG \
         --format="table(tags,createTime,updateTime,imageSizeBytes)"
 else
     echo -e "${YELLOW}⚠️  Could not verify image (may take a moment to appear)${NC}"
@@ -132,11 +132,13 @@ echo "   ./scripts/deploy_cloud_run.sh"
 echo ""
 echo "2. Or deploy manually:"
 echo "   gcloud run deploy ragtool-agent \\"
-echo "     --image=$LATEST_TAG \\"
+echo "     --image=$VERSIONED_TAG \\"
 echo "     --region=$REGION"
 echo ""
 echo "3. Test locally:"
-echo "   docker pull $LATEST_TAG"
-echo "   docker run -p 8080:8080 --env-file .env $LATEST_TAG"
+echo "   docker pull $VERSIONED_TAG"
+echo "   docker run -p 8080:8080 --env-file .env $VERSIONED_TAG"
+echo ""
+echo -e "${BLUE}📌 Image tag: $VERSION_TAG${NC}"
 echo ""
 
