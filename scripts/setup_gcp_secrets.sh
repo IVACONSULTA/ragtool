@@ -134,7 +134,7 @@ echo "     --image=$REGION-docker.pkg.dev/$PROJECT_ID/ragtool/ragtool-agent:late
 echo "     --region=$REGION \\"
 echo "     --set-secrets=\"OPENAI_API_KEY=OPENAI_API_KEY:latest,LANGSMITH_API_KEY=LANGSMITH_API_KEY:latest,API_KEY=API_KEY:latest\" \\"
 echo "     --set-env-vars=\"FLASK_ENV=PROD,LANGSMITH_PROJECT=rag-ivaconsulta-dev,AGENT_ROLE=VAT_AGENT\" \\"
-echo "     --port=8080"
+echo "     --port=8001"
 echo ""
 echo "2. Or use the deployment script: ./scripts/deploy_cloud_run.sh"
 echo ""

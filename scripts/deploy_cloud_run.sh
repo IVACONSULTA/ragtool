@@ -57,8 +57,8 @@ LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-ivaconsulta-rag-tool}
 read -p "Agent Role (default: VAT_AGENT): " AGENT_ROLE
 AGENT_ROLE=${AGENT_ROLE:-VAT_AGENT}
 
-read -p "Container Port (default: 8080): " CONTAINER_PORT
-CONTAINER_PORT=${CONTAINER_PORT:-8080}
+read -p "Container Port (default: 8001): " CONTAINER_PORT
+CONTAINER_PORT=${CONTAINER_PORT:-8001}
 
 read -p "Flask Environment (default: PROD): " FLASK_ENV
 FLASK_ENV=${FLASK_ENV:-PROD}
