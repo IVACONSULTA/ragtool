@@ -23,7 +23,7 @@ spec:
           image: europe-west1-docker.pkg.dev/ivaconsulta/ragtool/ragtool-agent:latest
           ports:
             - name: http1
-              containerPort: 8080
+              containerPort: 8001
           env:
             - name: GEMINI_2.0_FLASH
               value: GEMINI_2.0FLASH
@@ -101,7 +101,7 @@ spec:
             periodSeconds: 10
             failureThreshold: 60
             tcpSocket:
-              port: 8080
+              port: 8001
   traffic:
     - percent: 100
       latestRevision: true
