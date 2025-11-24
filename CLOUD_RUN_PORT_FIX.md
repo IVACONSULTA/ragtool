@@ -47,10 +47,14 @@ Cloud Run was setting `PORT=8001` in the environment, but the Dockerfile was ove
 
 ## Verification
 
-All configuration files now consistently use **port 8001**:
+All configuration files are now optimized for Cloud Run:
 
 - ✅ Dockerfile: `PORT=8001`, `EXPOSE 8001`
-- ✅ google-cloud-service.yml: `containerPort: 8001`
+- ✅ google-cloud-service.yml:
+  - `containerPort: 8001`
+  - `minScale: 1` (always-warm instance)
+  - `cpu: 2000m` (increased for faster init)
+  - `memory: 1Gi` (increased for RAG database)
 - ✅ Python server: Reads `PORT` env var (defaults to 8001)
 - ✅ Startup probe: Checks `tcpSocket.port: 8001`
 
@@ -154,9 +158,34 @@ startupProbe:
 This allows up to 10 minutes for:
 
 - RAG file processing
-- ChromaDB initialization
+- Vector database initialization
 - Agent setup
 - LangSmith integration
+
+### Keep-Warm Configuration
+
+To eliminate cold starts and ensure instant responses:
+
+```yaml
+annotations:
+  autoscaling.knative.dev/minScale: "1" # Always keep 1 instance running
+  autoscaling.knative.dev/maxScale: "10" # Scale up to 10 under load
+
+resources:
+  limits:
+    cpu: 2000m # Increased from 1000m
+    memory: 1Gi # Increased from 512Mi
+```
+
+**Benefits**:
+
+- ✅ No cold start delays (instant responses)
+- ✅ RAG database stays loaded in memory
+- ✅ Consistent sub-second response times
+- ✅ Better user experience
+- ✅ Faster initialization with increased resources
+
+**Cost**: ~$15-30/month for always-on instance
 
 ## Troubleshooting
 
