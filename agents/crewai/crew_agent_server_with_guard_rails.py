@@ -539,7 +539,7 @@ async def call_crewai_agent(
 #                             Endpoints                                         #
 #################################################################################
 
-@trace_function("call_health_endpoint")
+#@trace_function("call_health_endpoint")
 @app.route("/health", methods=["GET"])
 def health():
     # Health endpoint can be accessed without API key for monitoring
