@@ -674,6 +674,7 @@ def chat():
         return jsonify({"error": str(exc)}), 500
 
 @trace_async_function("call_index_endpoint")
+@require_api_key_conditional
 @app.route("/", methods=["GET"])
 def index():
     return jsonify(
