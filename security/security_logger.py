@@ -12,7 +12,11 @@ import threading
 class SecurityLogger:
     """Comprehensive security logging system"""
     
-    def __init__(self, log_file: str = 'security.log'):
+    def __init__(self, log_file: str = None):
+        if log_file is None:
+            # Default to security.log in the same directory as this file
+            log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'security.log')
+            
         self.logger = logging.getLogger('security')
         self.logger.setLevel(logging.INFO)
         

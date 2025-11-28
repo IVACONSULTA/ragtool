@@ -339,12 +339,12 @@ Security events are logged to `security.log`:
 
 ```bash
 # View security logs
-tail -f security.log
+tail -f security/security.log
 
 # Search for specific events
-grep "suspicious_activity" security.log
-grep "rate_limit_exceeded" security.log
-grep "authentication_attempt" security.log
+grep "suspicious_activity" security/security.log
+grep "rate_limit_exceeded" security/security.log
+grep "authentication_attempt" security/security.log
 ```
 
 ### 2. Security Metrics

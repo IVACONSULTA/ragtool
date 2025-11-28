@@ -250,7 +250,7 @@ done
 
 ### Monitoring
 
-- Security logs: `tail -f security.log`
+- Security logs: `tail -f security/security.log`
 - Security status: `GET /security/status`
 - Metrics: Check security dashboard
 

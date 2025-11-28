@@ -1,555 +1,60 @@
 ## 📝 Description
 
-This PR includes **critical Google Cloud Run deployment fixes and enhancements** for the RagIvaconsulta Agent - a production-ready CrewAI-powered RAG agent for VAT (IVA) consultation with comprehensive EU AI Act compliance, LangSmith monitoring, and multi-cloud deployment capabilities.
-
-**Key Focus**: VAT consultation specialist agent designed for Railway and Google Cloud Run deployment, accessible via HTTPS by orchestrator agents and external clients.
-
-**Latest Changes (fix/google-cloud branch)**:
-
-- ✅ Fixed port configuration mismatch preventing Cloud Run container startup
-- ✅ Optimized Cloud Run configuration with keep-warm instances and increased resources
-- ✅ Added comprehensive database rebuild system for Cloud Run Jobs
-- ✅ Restored sample questions for testing
+This PR focuses on cleaning up the repository, consolidating documentation, and finalizing the configuration for the Railway deployment of the IVA Consulta agent. It removes obsolete scripts and temporary fix files while organizing documentation into a coherent structure.
 
 ## 🎯 What does this PR do?
 
-- [x] Feature addition - **Complete RAG Agent Implementation**
-- [x] Documentation update - **Comprehensive setup and deployment guides**
-- [x] Security Enhancement - **EU AI Act compliance guardrails**
-- [x] Infrastructure - **CI/CD pipeline and deployment configuration**
-- [x] **Bug Fix** - **Google Cloud Run port configuration alignment**
-- [x] **Enhancement** - **Cloud Run optimization with keep-warm instances**
-- [x] **Feature** - **Database rebuild system for Cloud Run Jobs**
+- [ ] Feature addition
+- [ ] Bug fix
+- [x] Documentation update
+- [x] Code refactoring
+- [x] Other: Repository Cleanup & Organization
 
-## 🚀 Key Features
+## 🔍 Changes Made
 
-### Core Agent Functionality
+### 🧹 Cleanup & Removal
 
-- **CrewAI RAG Agent System**: Specialized VAT (IVA) consultation agent with YAML-based configuration
-- **Single Crew Initialization**: Only one crew is built based on `AGENT_ROLE` environment variable:
-  - `vat_agent` (default): VAT documentation specialist - **Primary role**
-  - `sap_agent`: SAP integration consultant (optional)
-  - **No fallback or secondary crews** - clean, focused initialization
-- **Advanced RAG Capabilities**:
-  - **FAISS vector database** for efficient document retrieval (migrated from ChromaDB)
-  - Support for multiple file formats (PDF, TXT, DOCX, MD, HTML)
-  - Intelligent document processing with chunking and embeddings
-  - Files management system with metadata tracking
-  - **No fallback RAG tool** - initialization fails immediately if RAG setup fails
-- **Role-Based Configuration**:
-  - Default: `vat_agent` with `./data/raw` data path
-  - SAP agent: `sap_agent` with `./data/raw_sap` data path
-  - Environment-specific settings and validation
+- Removed broken/obsolete `complete_workflow.py` script.
+- Removed temporary fix documentation (`CLOUD_RUN_PORT_FIX.md`, `DATABASE_LOCATION_FIX.md`, etc.) from the root directory.
+- Removed backup and temporary environment files (`.env.backup`, `.env_example`).
+- Removed unused/deprecated agent config files (`sap_agents.yaml`, `sap_tasks.yaml`).
 
-### EU AI Act Compliance
+### 📚 Documentation Consolidation
 
-- **Prohibited Practices Prevention**: Built-in guardrails preventing manipulative AI practices
-- **Risk Assessment Framework**: Automatic classification and compliance validation
-- **Compliance Guardrails Module**: Real-time validation of user requests against EU AI Act Article 5
-- **Comprehensive Documentation**: Complete compliance guidelines and implementation guides
+- Renamed and moved various guides to the `docs/` directory for better organization:
+  - `Adding_manual_content.md` (was `MANUAL_CONTENT_GUIDE.md`)
+  - `Google_Cloud_DB_rebuild_guide.md` (was `DATABASE_REBUILD_GUIDE.md`)
+  - `Local_setup_Configuration_Guide.md` (was `Configuration_Guide.md`)
+  - `RagTool_files_management.md` (was `Files_Management.md`)
+  - `Ragtool_Api.md` (was `IVA_CONSULTA_API.md`)
 
-### Monitoring & Observability
+### 🛠️ Code & Configuration
 
-- **LangSmith Integration**:
-  - Automatic LLM tracing and cost tracking
-  - Token usage monitoring and performance metrics
-  - Error tracking and debugging capabilities
-  - Custom run annotation and metadata
-- **Monitoring Dashboard**: Real-time visibility into agent performance
-- **Health Check Endpoints**: Production-ready health monitoring
-
-### Production-Ready Infrastructure
-
-- **Multi-Cloud Deployment**:
-  - **Railway Deployment**: Primary platform - optimized for Railway hosting
-    - Automatic environment detection (Railway vs Local)
-    - Pre-configured `railway.json` with health checks
-    - `Procfile` for seamless deployment
-  - **Google Cloud Run Deployment**: Enterprise-grade cloud deployment ⭐ **NEW**
-    - ✅ **Fixed port configuration** (PORT=8001) for consistent container startup
-    - ✅ **Keep-warm instances** (minScale=1) - no cold starts, instant responses
-    - ✅ **Optimized resources** (2 CPU cores, 1Gi memory) for faster initialization
-    - ✅ **Database rebuild system** via Cloud Run Jobs (zero-downtime)
-    - Comprehensive YAML configuration with 10-minute startup probes
-    - Automated deployment scripts (`build_and_push.sh`, `deploy_cloud_run.sh`, `run_rebuild_job.sh`)
-  - **Orchestrator Agent Integration**: Designed to be called by orchestrator agents
-  - **HTTPS Access**: Accessible via HTTPS by external clients and orchestrator agents
-- **CI/CD Pipeline**:
-  - Automated testing on pull requests
-  - Code structure validation
-  - Linting and formatting checks
-  - Script syntax validation
-- **Environment Management**:
-  - Configuration sets for different LLM providers (OpenAI, Gemini)
-  - Flexible environment variable handling
-  - Role-based data path support (`AGENT_ROLE` determines data path)
-  - All secrets managed via Google Cloud Secret Manager
-
-### API & Server
-
-- **Flask REST API** (HTTPS-enabled):
-  - `/health` - Health check with detailed system status
-  - `/chat` - Main agent interaction endpoint with compliance validation
-    - Default agent: `iva_consulta_agent` (VAT specialist)
-    - Optional `agent_type` parameter for flexibility
-    - `context_country` parameter for jurisdictional context
-  - `/` - API documentation and capabilities
-- **Multi-Client Support**:
-  - **Orchestrator Agents**: Designed for Railway orchestrator agent integration
-  - **External Clients**: HTTPS access for any external client
-  - API key authentication for production security
-- **CORS Support**: Configurable for Railway and local development
-- **Rate Limiting**: Built-in protection with Flask-Limiter (15 requests/minute)
-- **Security**: API key validation and production-ready security measures
-
-## 🔍 Major Components Added
-
-### Agent System (`agents/`)
-
-```
-agents/
-├── crewai/
-│   ├── crew_agent_server_with_guard_rails.py  # Main Flask server with guardrails
-│   ├── crew_entities.py                        # Agent and tool definitions
-│   ├── agents.yaml                              # Agent configurations
-│   └── tasks.yaml                               # Task definitions
-├── rag/
-│   ├── ragtool.py                               # Base RAG tool implementation
-│   ├── files_ragtool.py                         # Multi-format file processor
-│   └── rag_wrapper.py                           # CrewAI compatibility wrapper
-├── guardrails/
-│   └── compliance_guardrails.py                 # EU AI Act validation
-├── utils/
-│   ├── config.py                                # Configuration management
-│   └── files_manager.py                         # CLI for file processing
-└── langsmith_integration.py                      # LangSmith monitoring
-```
-
-### Compliance Framework (`.cursor/rules/compliance/`)
-
-- EU AI Act high-risk classification guidelines
-- Prohibited practices prevention rules
-- Risk management framework (Articles 9, 13, 60, 72)
-- Copyright compliance for private use
-
-### Documentation (`docs/`)
-
-- Configuration guides (environment setup, API keys)
-- Files management documentation
-- LangSmith integration and monitoring guides
-- Compliance module documentation
-- Manual content addition guides
-
-### Infrastructure
-
-- **CI/CD**: GitHub Actions workflow with comprehensive testing
-- **Railway**: Deployment configuration and health checks
-- **Google Cloud Run**: ⭐ **NEW**
-  - `Dockerfile` - Container configuration (PORT=8001, optimized)
-  - `google-cloud-service.yml` - Cloud Run service configuration (minScale=1, 2CPU, 1Gi)
-  - `Dockerfile.rebuild` - Database rebuild job container
-  - `Dockerfile.flexible` - Container with optional rebuild on startup
-  - `scripts/build_and_push.sh` - Docker image build and push automation
-  - `scripts/deploy_cloud_run.sh` - Deployment automation with YAML
-  - `scripts/run_rebuild_job.sh` - Database rebuild Cloud Run Job (with all env vars and secrets)
-  - `scripts/rebuild_database.py` - Python script for database rebuild
-  - `scripts/entrypoint.sh` - Startup script with rebuild capability
-- **Development Tools**:
-  - Makefile with common commands
-  - Pre-commit hooks for code quality
-  - Testing framework with pytest
+- Updated `agents/crewai/crew_agent_server_with_guard_rails.py` for improved stability.
+- Enhanced `security/security_logger.py` and updated security documentation.
 
 ## 🧪 Testing
 
-- [x] Tested locally with both OpenAI and Gemini models
-- [x] All core features validated
-- [x] **FAISS vector database** initialization and file processing verified
-- [x] Single crew initialization tested (no fallback behavior)
-- [x] RAG tool failure handling verified (no fallback RAG tool)
-- [x] API endpoints tested (health check, chat)
-- [x] EU AI Act compliance validation working
-- [x] LangSmith tracing operational
-- [x] Railway deployment configuration validated
-- [x] **Google Cloud Run deployment fixed and validated** ⭐ **NEW**
-- [x] **Port configuration alignment verified (8001 across all configs)** ⭐ **NEW**
-- [x] **Keep-warm instances tested (no cold starts)** ⭐ **NEW**
-- [x] **Database rebuild job tested and working** ⭐ **NEW**
-- [x] **Sample questions restored for testing** ⭐ **NEW**
-- [x] Orchestrator agent integration tested
-- [x] HTTPS client access verified
-- [x] CI pipeline passes
+- [x] I have tested this locally
+- [ ] All tests pass
+- [x] No breaking changes
 
-## 📋 Configuration
+## 📸 Screenshots (if applicable)
 
-### Required Environment Variables
+N/A
 
-```bash
-# LLM Configuration (choose one)
-CONFIG_SET=GEMINI_2.5_FLASH  # or GEMINI_2.0_FLASH, OPENAI_4o_MINI
-# OR
-OPENAI_API_KEY=your_openai_key_here     # For OpenAI models
-GEMINI_API_KEY=your_gemini_key_here     # For Gemini models
-GOOGLE_API_KEY=your_google_key_here     # Alternative for Gemini
+## 📋 Checklist
 
-# Agent Configuration (default: VAT agent)
-AGENT_ROLE=vat_agent                    # Default: vat_agent (VAT specialist)
-RAG_DATA_PATH=./data/raw                # Default for vat_agent (auto-set based on AGENT_ROLE)
-
-# LangSmith Monitoring (optional but recommended)
-LANGSMITH_API_KEY=your_langsmith_key_here
-LANGSMITH_PROJECT=rag-ivaconsulta-dev
-LANGCHAIN_TRACING_V2=true
-
-# Production Security
-API_KEY=your_secure_api_key_here        # Required for production HTTPS access
-
-# Railway (auto-set on Railway platform)
-PORT=8001
-RAILWAY_PUBLIC_DOMAIN=your-domain.railway.app
-```
-
-### Supported File Formats
-
-- PDF documents (with OCR preprocessing)
-- Plain text files (.txt)
-- Markdown files (.md)
-- Word documents (.docx)
-- HTML files (.html)
-- URLs (web scraping)
+- [x] Code follows project style guidelines
+- [x] Self-review completed
+- [x] Code is commented where necessary
+- [x] Documentation updated (if needed)
 
 ## 🚀 Deployment Notes
 
-### Railway Deployment
-
-1. Connect GitHub repository to Railway
-2. Configure environment variables in Railway dashboard
-3. Railway auto-detects configuration from `railway.json`
-4. Health checks run on `/health` endpoint
-5. Automatic deployment on push to main
-
-### Google Cloud Run Deployment ⭐ **NEW**
-
-**Fixed in this PR**: Port configuration alignment and performance optimization
-
-#### Quick Start
-
-```bash
-# 1. Build and push Docker image
-./scripts/build_and_push.sh
-
-# 2. Deploy to Cloud Run
-./scripts/deploy_cloud_run.sh
-```
-
-#### Configuration Highlights
-
-- **Port**: 8001 (aligned across Dockerfile, YAML, and Python server)
-- **Memory**: 1Gi (doubled for faster initialization)
-- **CPU**: 2000m (doubled with startup boost)
-- **Min Instances**: 1 (always-warm, no cold starts)
-- **Max Instances**: 10 (auto-scaling under load)
-- **Startup Probe**: 10-minute timeout for RAG initialization
-- **Secrets**: All API keys managed via Google Secret Manager
-
-#### Database Rebuild System
-
-When you need to rebuild the vector database (e.g., after adding new documents):
-
-```bash
-# Option 1: Cloud Run Job (Recommended - Zero Downtime)
-./scripts/run_rebuild_job.sh
-
-# Option 2: Environment Variable Flag
-gcloud run services update ragtool-agent \
-  --region=europe-west1 \
-  --set-env-vars=REBUILD_DATABASE=true
-
-# Option 3: Local Rebuild + Deploy
-python scripts/rebuild_database.py
-./scripts/build_and_push.sh
-./scripts/deploy_cloud_run.sh
-```
-
-**Key Fix**: Resolved port mismatch where Dockerfile was set to PORT=8080 but Cloud Run expected PORT=8001, causing container startup failures.
-
-**Performance**: With minScale=1, the service maintains instant response times (<1 second) with no cold start delays.
-
-**Cost**: ~$15-30/month for always-on instance, excellent value for production use.
-
-### Local Development
-
-```bash
-# Setup
-cp .env.example .env
-# Edit .env with your API keys
-
-# Install dependencies
-pip install -r requirements-dev.txt
-
-# Process documents
-python agents/utils/files_manager.py
-
-# Start server
-python agents/crewai/crew_agent_server_with_guard_rails.py
-
-# Or use Makefile
-make dev-server
-```
-
-### First-Time Setup
-
-The agent automatically:
-
-1. Reads `AGENT_ROLE` environment variable (defaults to `vat_agent`)
-2. Detects environment (Railway vs Local)
-3. Initializes **FAISS vector database** if needed
-4. Processes documents in role-specific data path (`./data/raw` for VAT agent)
-5. **Builds only one crew** based on `AGENT_ROLE` (no fallback/secondary crews)
-6. **Fails immediately** if RAG tool initialization fails (no fallback RAG tool)
-7. Wraps RAG tool for CrewAI compatibility
-8. Starts Flask server with health checks
-9. Ready for HTTPS access by orchestrator agents and external clients
-
-## 📦 Dependencies
-
-### Core Dependencies
-
-- `crewai[google-genai]>=0.121.0` - Multi-agent framework
-- `crewai-tools>=0.45.0` - RAG and tool integrations
-- `flask>=3.0.0` - HTTP server
-- `flask-cors>=4.0.0` - CORS support
-- `flask-limiter>=3.8.0` - Rate limiting
-- `faiss-cpu>=1.7.4` - **FAISS vector database** (migrated from ChromaDB)
-- `langchain>=0.1.0` - LLM framework
-- `langsmith>=0.1.0` - Monitoring and tracing
-
-### Development Dependencies
-
-- `pytest>=7.0.0` - Testing framework
-- `flake8>=6.0.0` - Code linting
-- `black>=23.0.0` - Code formatting
-- `isort>=5.12.0` - Import sorting
-
-## 📸 Key Capabilities Demonstrated
-
-### 1. Agent Interaction (VAT Consultation)
-
-```bash
-# Local development
-curl -X POST http://localhost:8001/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "¿Cuál es el tipo de IVA reducido en España?", "context_country": "Spain"}'
-
-# Production (HTTPS with API key)
-curl -X POST https://your-railway-app.railway.app/chat \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: your_api_key_here" \
-  -d '{"message": "What is the VAT rate for digital services in Spain?", "context_country": "Spain"}'
-```
-
-**Default Agent**: `iva_consulta_agent` (VAT specialist) - automatically selected based on `AGENT_ROLE=vat_agent`
-
-### 2. Health Monitoring
-
-```bash
-curl http://localhost:8001/health
-```
-
-Returns comprehensive system status including:
-
-- RAG tool availability
-- LLM configuration
-- LangSmith integration status
-- Environment type
-- Data paths
-
-### 3. Compliance Validation
-
-Automatically validates all requests against EU AI Act:
-
-- Rejects manipulative practices
-- Prevents subliminal techniques
-- Blocks social scoring requests
-- Ensures transparent AI interaction
-
-## 🔐 Security & Compliance
-
-- ✅ EU AI Act Article 5 compliance (Prohibited Practices)
-- ✅ Risk classification framework
-- ✅ Input validation and sanitization
-- ✅ Rate limiting and abuse prevention
-- ✅ Secure API key management
-- ✅ Environment-specific security configurations
-- ✅ Comprehensive audit logging
-
-## 📚 Documentation Added
-
-- `README.md` - Complete setup and usage guide (updated for multi-cloud deployment)
-- `CLOUD_RUN_PORT_FIX.md` - ⭐ **NEW**: Detailed explanation of Cloud Run port configuration fix
-- `CLOUD_RUN_FINAL_CONFIG.md` - ⭐ **NEW**: Complete Cloud Run deployment configuration guide
-- `PERMANENT_FIXES_SUMMARY.md` - ⭐ **NEW**: Summary of all permanent Cloud Run optimizations
-- `DATABASE_REBUILD_GUIDE.md` - ⭐ **NEW**: Comprehensive database rebuild guide (3 methods)
-- `DATABASE_REBUILD_SUMMARY.md` - ⭐ **NEW**: Quick reference for database rebuilds
-- `REBUILD_JOB_CONFIG.md` - ⭐ **NEW**: Complete configuration reference for rebuild jobs
-- `docs/GUARDRAILS_IVA_CONSULTA_API.md` - Compliance API documentation
-- `docs/IVA_CONSULTA_API.md` - VAT agent API reference
-- `docs/Configuration_Guide.md` - Environment setup (updated with AGENT_ROLE)
-- `docs/Files_Management.md` - Document processing guide (updated for FAISS)
-- `docs/Langsmith_Integration.md` - Monitoring setup
-- `docs/Compliance_guardrails.md` - EU AI Act implementation
-- `docs/DOCUMENTATION_CONSOLIDATION_SUMMARY.md` - Documentation consolidation summary
-- `.cursor/rules/` - Comprehensive development and compliance rules
-
-**Documentation Consolidation**: Removed duplicate files and consolidated documentation to reflect:
-
-- Single crew initialization (no fallback/secondary crews)
-- FAISS vector database (not ChromaDB)
-- VAT consultation as default role
-- Multi-cloud deployment (Railway and Google Cloud Run)
-- **Cloud Run port configuration fix and optimization**
-- **Database rebuild system with multiple methods**
-
-## 🎓 Example Use Cases
-
-1. **VAT Consultation** (Primary Use Case): Query VAT rates, regulations, and compliance requirements
-   - Spanish VAT rates and regulations
-   - European VAT directives
-   - VAT compliance procedures
-   - Indirect taxation guidance
-2. **Orchestrator Agent Integration**: Called by orchestrator agents on Railway for multi-agent workflows
-3. **External Client Integration**: HTTPS access for external applications needing VAT consultation
-4. **Document Search**: Retrieve relevant information from processed VAT documentation
-5. **Compliance-Safe AI**: Interact with AI while maintaining EU AI Act compliance
-
-## 🔧 Critical Fixes in This Branch (fix/google-cloud)
-
-### Port Configuration Alignment ⭐
-
-**Problem**: Google Cloud Run container was failing to start with error:
-
-```
-The user-provided container failed to start and listen on the port defined
-provided by the PORT=8001 environment variable
-```
-
-**Root Cause**: Port mismatch between configuration files:
-
-- Dockerfile: `PORT=8080`, `EXPOSE 8080`
-- google-cloud-service.yml: `containerPort: 8001`
-- Python server: Reads `PORT` env var (defaults to 8001)
-
-**Solution**: Aligned all configurations to use **PORT=8001**:
-
-- ✅ Updated Dockerfile: `PORT=8001`, `EXPOSE 8001`
-- ✅ Updated deployment scripts to default to port 8001
-- ✅ Verified consistency across all configuration files
-
-**Impact**:
-
-- Container now starts successfully on Cloud Run
-- Startup probes pass correctly
-- RAG agent initialization completes properly
-- Service is accessible and functional
-
-### Cloud Run Optimization ⭐
-
-**Enhancements**:
-
-- ✅ **Keep-Warm Instances**: Added `minScale: 1` to eliminate cold starts
-- ✅ **Increased Resources**: Doubled CPU (2000m) and memory (1Gi) for faster initialization
-- ✅ **Optimized Startup**: 10-minute startup probe timeout for RAG database loading
-- ✅ **Cost-Effective**: ~$15-30/month for always-on instance with instant responses
-
-**Benefits**:
-
-- No cold start delays (instant responses <1 second)
-- RAG database stays loaded in memory
-- Consistent sub-second response times
-- Better user experience
-
-### Database Rebuild System ⭐
-
-**New Capability**: Three flexible methods to rebuild the vector database:
-
-1. **Cloud Run Job** (Recommended):
-
-   - Zero downtime for main service
-   - Can be scheduled or run on-demand
-   - Includes ALL environment variables and secrets automatically
-   - `./scripts/run_rebuild_job.sh`
-
-2. **Environment Variable Flag**:
-
-   - Simple deployment with rebuild
-   - 5-10 minute downtime during rebuild
-   - `REBUILD_DATABASE=true`
-
-3. **Local Rebuild**:
-   - Full control over process
-   - Test locally before deploying
-   - `python scripts/rebuild_database.py`
-
-### Sample Questions Restored ⭐
-
-- ✅ Restored `data/processed/sample_questions.txt` (50 VAT questions)
-- ✅ Restored `data/processed/sample_questions_randomized.txt` (randomized order)
-- ✅ Multi-language questions (Spanish, French, German, Italian, Portuguese)
-- ✅ Covers 8+ European countries
-
-**Files Changed**:
-
-- `Dockerfile` - Port 8080 → 8001
-- `google-cloud-service.yml` - Added minScale=1, increased resources
-- `scripts/deploy_cloud_run.sh` - Updated configuration summary
-- `scripts/run_rebuild_job.sh` - **NEW**: Complete rebuild job automation
-- `scripts/rebuild_database.py` - **NEW**: Database rebuild script
-- `scripts/entrypoint.sh` - **NEW**: Startup script with rebuild support
-- `Dockerfile.rebuild` - **NEW**: Rebuild job container
-- `Dockerfile.flexible` - **NEW**: Container with optional rebuild
-- `data/processed/sample_questions*.txt` - **RESTORED**: Test questions
+- Ensure `AGENT_ROLE` is set correctly (default: `vat_agent`).
+- No new environment variables are required, but the repository structure is now cleaner for deployment.
 
 ## 📞 Additional Notes
 
-This release establishes a solid foundation for a production-ready VAT consultation RAG agent with:
-
-- **Focused Design**: Single crew initialization for VAT consultation (default role)
-- **Clean Initialization**: No fallback or secondary crews - fails fast if initialization fails
-- **Multi-Cloud Ready**: Optimized for both Railway and Google Cloud Run deployment
-- **HTTPS-Ready**: Accessible via HTTPS by orchestrator agents and external clients
-- **Compliance-First**: Built with EU AI Act compliance from the ground up
-- **Observable**: Comprehensive monitoring and debugging capabilities
-- **FAISS-Powered**: Efficient FAISS vector database for document retrieval
-- **Well-Documented**: Extensive documentation consolidated and updated
-- **Maintainable**: Clean code structure with development tools
-- **Cloud Run Optimized**: Port configuration fixed, keep-warm instances, database rebuild system
-
-The agent is ready for:
-
-- ✅ Production deployment on Railway
-- ✅ **Production deployment on Google Cloud Run** (fixed in this branch)
-- ✅ Integration with orchestrator agents
-- ✅ HTTPS access by external clients
-- ✅ VAT consultation services (primary use case)
-- ✅ **Zero-downtime database rebuilds** (Cloud Run Jobs)
-- ✅ **Instant responses** (keep-warm instances)
-- ✅ Scaling with more VAT documents and data sources
-- ✅ Monitoring and performance optimization
-
-## 🔗 Related Issues
-
-- Closes #[issue-number] (if applicable)
-
-## 👥 Contributors
-
-Initial implementation by the RagIvaconsulta development team.
-
----
-
-**Merge Checklist:**
-
-- [x] All tests pass
-- [x] Documentation is complete
-- [x] CI/CD pipeline is green
-- [x] Code follows project guidelines
-- [x] Security and compliance measures verified
-- [x] Ready for production deployment
+This PR significantly reduces clutter in the root directory and ensures that documentation is easy to find and follow in the `docs/` folder.
