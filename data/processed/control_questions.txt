@@ -1,0 +1,328 @@
+# Sample VAT Questions - European VAT Handbook 2025-2026
+# 100 questions covering VAT topics from multiple European countries
+# 70 questions about Spain | 30 questions about other countries (8+ countries)
+# Languages: Spanish, English, French, German, Portuguese (mixed across all countries)
+
+## SPAIN - 70 Questions
+
+### Spanish Language Questions (España) - 30 Questions
+
+¿Cuál es el tipo de IVA estándar aplicable en España?
+
+¿Qué tasa reducida de IVA se aplica a los productos farmacéuticos en España?
+
+¿Cuál es el umbral de registro de IVA para empresas nacionales en España?
+
+¿Qué documentos se requieren para obtener un número de IVA español (NIF-IVA)?
+
+¿Cómo funciona el régimen especial de devolución mensual (REDEME) en España?
+
+¿Qué es el sistema SII (Suministro Inmediato de Información) en España?
+
+¿Cuál es el tipo superreducido de IVA aplicable a los libros y periódicos en España?
+
+¿Qué condiciones deben cumplirse para aplicar la exención de IVA en las entregas intracomunitarias de bienes en España?
+
+¿Cómo se trata el mecanismo de inversión del sujeto pasivo (reverse charge) en España para servicios prestados por no residentes?
+
+¿Qué es el régimen especial de agrupación de IVA (REGE) en España?
+
+¿Cuál es el tratamiento del IVA para las importaciones seguidas de una entrega intracomunitaria en España?
+
+¿Qué requisitos deben cumplirse para aplicar el régimen de contabilidad de caja en España?
+
+¿Cómo se calcula el IVA en las entregas continuas o sucesivas en España?
+
+¿Qué productos alimenticios básicos están sujetos al tipo superreducido del 4% en España?
+
+¿Cuál es el tratamiento del IVA para las operaciones de triangulación simplificada en España?
+
+¿Cómo se trata el IVA en las operaciones de venta a distancia de bienes desde España a otros países de la UE?
+
+¿Qué requisitos deben cumplirse para aplicar el régimen especial de bienes usados, objetos de arte, antigüedades y objetos de colección en España?
+
+¿Cómo funciona el régimen especial de agricultura, ganadería y pesca en España?
+
+¿Cuál es el tratamiento del IVA para las operaciones de mediación en la compraventa de bienes inmuebles en España?
+
+¿Qué requisitos deben cumplirse para aplicar el régimen simplificado del IVA en España?
+
+¿Cómo se trata el IVA en las operaciones de cesión de derechos de propiedad intelectual desde España?
+
+¿Cuál es el tratamiento del IVA para las prestaciones de servicios de telecomunicaciones, radiodifusión y servicios electrónicos desde España?
+
+¿Qué condiciones deben cumplirse para aplicar la exención de IVA en las prestaciones de servicios sanitarios en España?
+
+¿Cómo se trata el IVA en las operaciones de construcción y rehabilitación de viviendas de protección oficial en España?
+
+¿Cuál es el tratamiento del IVA para las operaciones de venta de bienes en régimen de depósito o consigna desde España?
+
+¿Qué requisitos deben cumplirse para aplicar el régimen especial de agencias de viajes en España?
+
+¿Cómo funciona el tratamiento del IVA en las operaciones de cesión de uso de bienes muebles en España?
+
+¿Cuál es el tratamiento del IVA para las prestaciones de servicios de asistencia sanitaria prestados por entidades públicas en España?
+
+¿Qué documentación se requiere para aplicar la exención de IVA en las operaciones de enseñanza en España?
+
+¿Cómo se trata el IVA en las operaciones de venta de bienes mediante máquinas expendedoras en España?
+
+¿Cuál es el tratamiento del IVA para las operaciones de arrendamiento financiero (leasing) en España?
+
+¿Qué condiciones deben cumplirse para aplicar la exención de IVA en las prestaciones de servicios de seguros y reaseguros en España?
+
+¿Cómo funciona el tratamiento del IVA en las operaciones de venta de bienes en régimen de venta a plazos en España?
+
+¿Cuál es el tratamiento del IVA para las prestaciones de servicios de intermediación en operaciones financieras en España?
+
+¿Qué requisitos deben cumplirse para aplicar el régimen especial de recargo de equivalencia en España?
+
+¿Cómo se trata el IVA en las operaciones de venta de bienes mediante plataformas digitales desde España?
+
+¿Cuál es el tratamiento del IVA para las operaciones de prestación de servicios de investigación y desarrollo en España?
+
+¿Cómo se trata el IVA en las operaciones de prestación de servicios de restauración y catering en España?
+
+¿Cuál es el tratamiento del IVA para las operaciones de venta de entradas para espectáculos y eventos culturales en España?
+
+¿Cómo funciona el tratamiento del IVA en las operaciones de gestión de residuos y servicios medioambientales en España?
+
+### English Language Questions (Spain) - 20 Questions
+
+What is the standard VAT rate applicable in Spain?
+
+What reduced VAT rate applies to pharmaceutical products in Spain?
+
+What is the VAT registration threshold for domestic companies in Spain?
+
+What documents are required to obtain a Spanish VAT number (NIF-IVA)?
+
+How does the special monthly refund scheme (REDEME) work in Spain?
+
+What is the SII (Immediate Supply of Information) system in Spain?
+
+What is the super-reduced VAT rate applicable to books and newspapers in Spain?
+
+What conditions must be met to apply VAT exemption for intra-Community supplies of goods in Spain?
+
+How is the reverse charge mechanism treated in Spain for services provided by non-residents?
+
+What is the special VAT grouping regime (REGE) in Spain?
+
+What is the VAT treatment for imports followed by an intra-Community supply in Spain?
+
+What requirements must be met to apply the cash accounting scheme in Spain?
+
+How is VAT calculated for continuous or successive supplies in Spain?
+
+What basic food products are subject to the 4% super-reduced rate in Spain?
+
+What is the VAT treatment for simplified triangulation operations in Spain?
+
+What are the requirements to apply the special scheme for travel agencies in Spain?
+
+How does VAT treatment work for movable property use assignments in Spain?
+
+What is the VAT treatment for healthcare services provided by public entities in Spain?
+
+What documentation is required to apply VAT exemption for education operations in Spain?
+
+What is the VAT treatment for sales of goods through vending machines in Spain?
+
+What is the VAT treatment for financial leasing operations in Spain?
+
+What conditions must be met to apply VAT exemption for insurance and reinsurance services in Spain?
+
+What is the VAT treatment for installment sales of goods in Spain?
+
+What is the VAT treatment for financial intermediation services in Spain?
+
+What are the requirements to apply the special equivalence surcharge scheme in Spain?
+
+What is the VAT treatment for sales of goods through digital platforms from Spain?
+
+What is the VAT treatment for research and development services in Spain?
+
+What is the VAT treatment for restaurant and catering services in Spain?
+
+### French Language Questions (Espagne) - 10 Questions
+
+Quel est le taux de TVA standard applicable en Espagne?
+
+Comment fonctionne le système de remboursement mensuel (REDEME) en Espagne?
+
+Quelles sont les conditions pour bénéficier de l'exemption de TVA sur les livraisons intracommunautaires en Espagne?
+
+Quel est le traitement de la TVA pour les importations suivies d'une livraison intracommunautaire en Espagne?
+
+Comment s'applique le mécanisme d'autoliquidation (reverse charge) en Espagne pour les services fournis par des non-résidents?
+
+Quel est le traitement de la TVA pour les ventes à distance de biens depuis l'Espagne vers d'autres pays de l'UE?
+
+Quels sont les requis pour appliquer le régime spécial des biens d'occasion, objets d'art, antiquités et objets de collection en Espagne?
+
+Comment fonctionne le régime spécial d'agriculture, élevage et pêche en Espagne?
+
+Quel est le traitement de la TVA pour les opérations de médiation dans la vente de biens immobiliers en Espagne?
+
+Quels sont les requis pour appliquer le régime simplifié de TVA en Espagne?
+
+Comment la TVA est-elle traitée pour les ventes de biens par distributeurs automatiques en Espagne?
+
+Quel est le traitement de la TVA pour les opérations de crédit-bail (leasing) en Espagne?
+
+Quel est le traitement de la TVA pour les prestations de services d'intermédiation dans les opérations financières en Espagne?
+
+Comment la TVA est-elle traitée pour les prestations de services de restauration et de traiteur en Espagne?
+
+### German Language Questions (Spanien) - 10 Questions
+
+Wie hoch ist der Standard-Mehrwertsteuersatz in Spanien?
+
+Welche reduzierten Mehrwertsteuersätze gelten für pharmazeutische Produkte in Spanien?
+
+Wie funktioniert das monatliche Rückerstattungssystem (REDEME) in Spanien?
+
+Was sind die Anforderungen für die Anwendung der vereinfachten Dreiecksregelung in Spanien?
+
+Wie wird die Mehrwertsteuer bei kontinuierlichen Lieferungen in Spanien berechnet?
+
+Wie wird die Mehrwertsteuer bei Fernverkäufen von Waren aus Spanien in andere EU-Länder behandelt?
+
+Was sind die Anforderungen für die Anwendung des Sonderregimes für gebrauchte Waren, Kunstgegenstände, Antiquitäten und Sammlerobjekte in Spanien?
+
+Wie funktioniert das Sonderregime für Landwirtschaft, Viehzucht und Fischerei in Spanien?
+
+Wie wird die Mehrwertsteuer bei Immobilienmaklergeschäften in Spanien behandelt?
+
+Was sind die Anforderungen für die Anwendung des vereinfachten Mehrwertsteuerregimes in Spanien?
+
+Wie wird die Mehrwertsteuer beim Verkauf von Waren über Automaten in Spanien behandelt?
+
+Wie wird die Mehrwertsteuer bei Finanzierungsleasing-Operationen in Spanien behandelt?
+
+Wie wird die Mehrwertsteuer bei Finanzintermediationsdienstleistungen in Spanien behandelt?
+
+Wie wird die Mehrwertsteuer bei Restaurant- und Cateringdienstleistungen in Spanien behandelt?
+
+### Portuguese Language Questions (Espanha) - 10 Questions
+
+Qual é a taxa padrão de IVA aplicável em Espanha?
+
+Como funciona o regime especial de reembolso mensal (REDEME) em Espanha?
+
+Quais são os requisitos para a aplicação da isenção de IVA nas entregas intracomunitárias em Espanha?
+
+Como é tratado o IVA para importações seguidas de uma entrega intracomunitária em Espanha?
+
+Qual é o tratamento do IVA para operações de triangulação simplificada em Espanha?
+
+Qual é o tratamento do IVA para operações de venda à distância de bens desde Espanha para outros países da UE?
+
+Quais são os requisitos para aplicar o regime especial de bens usados, objetos de arte, antiguidades e objetos de coleção em Espanha?
+
+Como funciona o regime especial de agricultura, pecuária e pesca em Espanha?
+
+Qual é o tratamento do IVA para operações de mediação na compra e venda de bens imóveis em Espanha?
+
+Quais são os requisitos para aplicar o regime simplificado de IVA em Espanha?
+
+Como é tratado o IVA nas operações de venda de bens através de máquinas de venda automática em Espanha?
+
+Qual é o tratamento do IVA para operações de arrendamento financeiro (leasing) em Espanha?
+
+Qual é o tratamento do IVA para prestações de serviços de intermediação em operações financeiras em Espanha?
+
+Como é tratado o IVA nas prestações de serviços de restauração e catering em Espanha?
+
+## OTHER COUNTRIES - 30 Questions
+
+### France - 5 Questions
+
+Quel est le taux de TVA standard en France et quels sont les taux réduits applicables? (French)
+
+Comment fonctionne le mécanisme d'autoliquidation de la TVA en France pour les services fournis par des prestataires non établis? (French)
+
+What is the VAT registration threshold for domestic taxable persons in France? (English)
+
+Wie hoch ist der Standard-Mehrwertsteuersatz in Frankreich? (German)
+
+Qual é a taxa padrão de IVA em França? (Portuguese)
+
+### Germany - 5 Questions
+
+Wie hoch ist der Standard-Mehrwertsteuersatz in Deutschland und welche ermäßigten Sätze gelten? (German)
+
+Welche Schwellenwerte gelten für die Mehrwertsteuerregistrierung in Deutschland? (German)
+
+What is the VAT registration threshold for domestic taxable persons in Germany? (English)
+
+¿Cuál es el tipo de IVA estándar aplicable en Alemania? (Spanish)
+
+Quel est le taux de TVA standard en Allemagne? (French)
+
+### Italy - 4 Questions
+
+Qual è l'aliquota IVA standard in Italia e quali sono le aliquote ridotte applicabili? (Italian - Portuguese similar)
+
+Come funziona il meccanismo di inversione contabile (reverse charge) in Italia per i servizi forniti da operatori non residenti? (Italian - Portuguese similar)
+
+What is the standard VAT rate in Italy? (English)
+
+¿Cuál es el umbral de registro de IVA para empresas nacionales en Italia? (Spanish)
+
+### Portugal - 4 Questions
+
+Qual é a taxa padrão de IVA em Portugal e quais são as taxas reduzidas aplicáveis? (Portuguese)
+
+Como funciona o regime de agrupamento de IVA em Portugal? (Portuguese)
+
+What is the VAT registration threshold for domestic taxable persons in Portugal? (English)
+
+Wie hoch ist der Standard-Mehrwertsteuersatz in Portugal? (German)
+
+### Finland - 3 Questions
+
+What is the standard VAT rate in Finland and what are the reduced rates applicable as of 2025? (English)
+
+¿Cuál es el umbral de registro de IVA para empresas nacionales en Finlandia a partir de 2025? (Spanish)
+
+Quel est le taux de TVA standard en Finlande? (French)
+
+### Lithuania - 3 Questions
+
+What is the standard VAT rate in Lithuania and what are the reduced rates applicable? (English)
+
+What are the requirements for VAT registration in Lithuania for foreign taxable persons? (English)
+
+¿Cuál es el umbral de registro de IVA para empresas nacionales en Lituania? (Spanish)
+
+### Romania - 3 Questions
+
+What is the VAT registration threshold for domestic taxable persons in Romania? (English)
+
+How does the VAT grouping regime work in Romania and what are its main features? (English)
+
+Qual é a taxa padrão de IVA na Roménia? (Portuguese)
+
+### Belgium - 3 Questions
+
+Quel est le traitement de la TVA pour les opérations de triangulation simplificée en Belgique? (French)
+
+What is the standard VAT rate in Belgium? (English)
+
+Wie hoch ist der Standard-Mehrwertsteuersatz in Belgien? (German)
+
+### Netherlands - 3 Questions
+
+What is the standard VAT rate in the Netherlands? (English)
+
+¿Cuál es el tipo de IVA estándar aplicable en los Países Bajos? (Spanish)
+
+Quel est le taux de TVA standard aux Pays-Bas? (French)
+
+### Austria - 2 Questions
+
+What is the standard VAT rate in Austria? (English)
+
+Wie hoch ist der Standard-Mehrwertsteuersatz in Österreich? (German)
