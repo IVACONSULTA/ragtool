@@ -1,6 +1,6 @@
 # Excluded VAT Questions - European VAT Handbook 2025-2026
 # 100 questions covering VAT topics NOT included in raw documents
-# 70 questions about Spain | 30 questions about other countries (10+ countries)
+# 70 questions about Spain | 30 questions about other countries
 # Languages: Spanish, English, French, Portuguese, German
 
 ## SPAIN - 70 Questions
