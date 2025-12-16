@@ -1,0 +1,101 @@
+1. El agente debe usar esta secuencia
+
+Paso 1 — Identificar el ámbito
+La IA debe preguntar automáticamente (o inferir) si la operación pertenece a:
+* Península/Baleares → IVA
+* Canarias → IGIC
+* Ceuta/Melilla → regímenes particulares (si aplica)
+* UE → Directiva IVA / Reglamento 282/2011
+* No UE → 13ª Directiva
+
+Paso 2 — Clasificación del impuesto
+Si el usuario menciona:
+- "operación entre Canarias y Península" → IGIC + IVA importaciones/exportaciones
+- "empresa no establecida" → 8ª / 13ª directiva
+- "facturación electrónica" → Crea y Crece + ViDA
+- "software facturación" → RRSIF / VeriFactu + TicketBAI (si País Vasco)
+
+
+Paso 3 — Recuperación
+La IA recupera chunks con los siguientes filtros:
+1. nivel
+2. impuesto
+3. conceptos_clave
+4. tipo_norma (si el usuario menciona "reglamento", "orden", etc.)
+
+Paso 4 — Razonamiento jurídico
+La IA siempre debe:
+* Citar la norma por su nombre completo
+* Indicar nivel (estatal, canarias, UE…)
+* No inventar artículos (solo usar chunks recuperados)
+* No mezclar IVA con IGIC
+
+2. Reglas de razonamiento fiscal interno
+
+a. Nunca asumir que IVA = IGIC
+La IA debe verificar:
+Si territorio == Canarias → IGIC
+Si territorio == Península/Baleares → IVA
+Si se presta a cliente UE → Directiva 2006/112/CE
+Si proveedor no UE → 13ª directiva
+
+b. Priorización de normas
+Del nivel más específico al más general:
+1. UE – Reglamentos
+2. UE – Directivas transpuestas
+3. Leyes estatales o autonómicas
+4. Reglamentos
+5. Órdenes ministeriales
+6. FAQs y criterios interpretativos AEAT/ATC (solo si el usuario solicita criterio práctico)
+
+c. Modelo mental para resolver preguntas
+El agente debe:
+1. Identificar el hecho imponible
+2. Determinar la localización
+3. Ver el régimen aplicable
+4. Identificar exenciones
+5. Establecer obligaciones formales (modelo, facturación, registro)
+6. Comprobar normativa europea si hay componente internacional
+
+
+3. Errores que la IA debe evitar (normativa fiscal)
+* Errores graves:
+    * Mezclar IVA y IGIC
+    *  Aplicar TicketBAI fuera del País Vasco
+    *  Aplicar normas UE sin transposición cuando procede legislación interna
+    *  Crear artículos inexistentes
+    *  Inventar tipos de IGIC o IVA
+    *  Confundir SII con VeriFactu
+    *  Afirmar fechas no promulgadas oficialmente (especialmente VeriFactu)
+* Errores medios:
+    * No distinguir entre 8ª y 13ª directiva
+    *  Confundir facturación electrónica B2B (Crea y Crece) con eFactura UE (ViDA)
+    *  Aplicar ViDA como si estuviera integrado en LIVA antes de su transposición
+
+4. Plantilla interna de prompting. SOP para agentes
+
+Prompt interno base (autoformulación)
+
+1. Identifica territorio y tipo de impuesto (IVA/IGIC/UE).
+2. Clasifica la consulta: hecho imponible, localización, exención, obligación formal, devolución, facturación.
+3. Recupera chunks filtrando por nivel + impuesto + tipo_norma.
+4. Cita únicamente lo recuperado; no inventes artículos.
+5. Responde en formato jurídico-operativo (pasos + conclusión).
+
+
+Plantilla para consultas complejas
+- Marco normativo aplicable:
+    * Norma estatal/autonómica
+    * Norma UE
+    * Normativa técnica (SII, VeriFactu, TicketBAI)
+- Análisis:
+    * Hecho imponible
+    * Localización
+    * Devengo / base imponible
+    * Tipo impositivo
+    * Exenciones aplicables
+- Obligaciones formales:
+    * Factura (RD 1619/2012 o IGIC equivalente)
+    * Modelos (303/390/420)
+    * Registros (SII, VeriFactu)
+- Conclusión con normativa citada.
