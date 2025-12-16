@@ -1,53 +1,117 @@
 ## 📝 Description
 
-This PR expands the VAT questions dataset from 50 to 100 questions, creates a new excluded information questions file, and reorganizes questions by country. It enhances the testing and evaluation capabilities of the IVA Consulta agent with a more comprehensive question set covering multiple European countries and languages.
+This PR enhances the RAG system to automatically detect, download, and process PDF documents from official links in the `dossier_fuentes.json` file. It adds comprehensive official links to all normativas (regulations) and implements intelligent PDF detection with fallback mechanisms for URLs that redirect to PDFs. This significantly improves the knowledge base by enabling automatic processing of official legal documents from BOE, EUR-Lex, and other government sources.
 
 ## 🎯 What does this PR do?
 
 - [x] Feature addition
 - [ ] Bug fix
-- [x] Documentation update
+- [ ] Documentation update
 - [x] Code refactoring
-- [ ] Other: Repository Cleanup & Organization
+- [ ] Other: **\*\*\_\*\***
 
 ## 🔍 Changes Made
 
-### 📊 VAT Questions Expansion
+### 🔗 Official Links Addition
 
-#### Control Questions (`control_questions.txt`)
+#### Enhanced `dossier_fuentes.json`
 
-- **Expanded from 50 to 100 questions**
-  - **70 questions about Spain** (distributed across Spanish, English, French, German, Portuguese)
-  - **30 questions about other countries** covering:
-    - France (5), Germany (5), Italy (4), Portugal (4)
-    - Finland (3), Lithuania (3), Romania (3), Belgium (3), Netherlands (3), Austria (2)
-- **Language distribution**: Questions are now in Spanish, English, French, German, and Portuguese regardless of country context, providing better multilingual testing coverage
+- **Added `enlaces_oficiales` field to all 22 normativas** in the JSON file
+- **43 official links added** covering:
+  - **BOE (Boletín Oficial del Estado)** links for Spanish regulations
+  - **EUR-Lex** links for European Union directives and regulations
+  - **AEAT (Agencia Tributaria)** portal links for tax forms and guides
+  - **Canarias Government** links for IGIC regulations
+  - **Euskadi/TicketBAI** links for Basque Country tax system
+- **Link types include**:
+  - Original act links (`act.php`)
+  - Consolidated version links (`doc.php`)
+  - Portal and guide pages
+  - Model forms and technical specifications
 
-#### Excluded Information Questions (`excluded_info_questions.txt`)
+### 🤖 PDF Detection & Processing Enhancement
 
-- **Created new file with 100 questions** covering VAT topics NOT included in raw documents
-  - **70 questions about Spain** (topics not covered in raw data)
-  - **30 questions about other countries** (Austria, Netherlands, Poland, Sweden, Denmark, Ireland, Greece, Czech Republic, Hungary, Bulgaria, Croatia, Cyprus, Estonia, Latvia, Malta, Norway, United Kingdom)
-- **Purpose**: Enables testing of the agent's ability to identify when information is not available in the knowledge base
+#### Intelligent PDF Detection (`_is_pdf_url`)
 
-#### Randomized Questions (`control_questions_randomized.txt`)
+- **Multi-layered PDF detection**:
+  - File extension check (`.pdf`)
+  - Content-Type header verification (`application/pdf`)
+  - PDF magic number verification (`%PDF` in first bytes)
+  - Final URL check after redirects
+- **User-Agent headers** added to avoid bot blocking
+- **Handles redirects** properly to detect PDFs behind redirect chains
 
-- **Rebuilt with all 100 questions grouped by country** (instead of by language)
-- Maintains same question set but organized for country-based evaluation
-- All languages mixed within each country section
+#### PDF Download Functionality (`_download_pdf`)
 
-### 📁 Files Modified/Created
+- **Downloads PDFs from URLs** to temporary files
+- **Validates PDF content** before saving (magic number check)
+- **Streaming download** for large files
+- **Proper cleanup** of temporary files after processing
+- **Error handling** with informative messages
 
-- ✅ `data/processed/control_questions.txt` - Expanded to 100 questions
-- ✅ `data/processed/excluded_info_questions.txt` - New file with 100 excluded info questions
-- ✅ `data/processed/control_questions_randomized.txt` - Rebuilt with country grouping
+#### URL Type Detection (`_detect_url_type`)
+
+- **Automatic detection** of PDF vs web page URLs
+- **Special handling** for BOE and EUR-Lex URLs (many redirect to PDFs)
+- **Non-destructive checking** (doesn't consume stream)
+
+### 🔄 Enhanced JSON Processing
+
+#### Extended `validate_web_page_links`
+
+- **Supports `dossier_fuentes.json` structure**:
+  - Detects `{"normativa": [{"enlaces_oficiales": [...]}]}` format
+  - Extracts all links from `enlaces_oficiales` arrays
+  - Automatically detects PDF vs web page for each link
+  - Maintains backward compatibility with legacy format
+- **Enhanced validation** with detailed error reporting
+- **Metadata extraction** (normativa ID and title) for better tracking
+
+#### Improved `process_json_file`
+
+- **Dual processing mode**:
+  - PDFs: Download → Process → Cleanup
+  - Web pages: Direct processing with PDF fallback
+- **Automatic PDF fallback**: If web page processing fails, attempts to download as PDF
+- **Comprehensive error handling** with retry logic
+- **Metadata tracking** for processed URLs
+
+### 🛠️ Web Page Processing Improvements
+
+#### Enhanced `add_document` in `ragtool.py`
+
+- **Direct URL support** using `RagTool.add()` for web pages
+- **Fallback to `WebBaseLoader`** if direct method fails
+- **Proper error handling** for different URL types
+- **Support for both local files and URLs**
+
+### 📦 Dependencies
+
+- **Added `requests>=2.31.0`** to `requirements.txt` for HTTP requests and PDF downloads
+
+### 🧹 Code Quality
+
+- **Removed JSON comments** that caused parsing errors (lines 106, 164, 242)
+- **Improved error messages** with context
+- **Better logging** for debugging URL processing issues
+- **Code organization** with clear separation of concerns
+
+## 📁 Files Modified/Created
+
+- ✅ `data/raw/dossier_fuentes.json` - Added `enlaces_oficiales` to all 22 normativas, removed invalid JSON comments
+- ✅ `agents/rag/files_ragtool.py` - Added PDF detection, download, and processing functionality
+- ✅ `agents/rag/ragtool.py` - Enhanced `add_document` to handle web page URLs properly
+- ✅ `requirements.txt` - Added `requests>=2.31.0` dependency
 
 ## 🧪 Testing
 
 - [x] I have tested this locally
-- [x] Question counts verified (70 Spain + 30 other countries = 100 total)
-- [x] Language distribution verified across all countries
-- [x] No breaking changes
+- [x] JSON file validates correctly (no syntax errors)
+- [x] PDF detection works for various URL patterns
+- [x] Fallback mechanism tested with BOE URLs
+- [x] Error handling verified for failed downloads
+- [x] Temporary file cleanup confirmed
+- [x] No breaking changes to existing functionality
 
 ## 📸 Screenshots (if applicable)
 
@@ -59,22 +123,33 @@ N/A
 - [x] Self-review completed
 - [x] Code is commented where necessary
 - [x] Documentation updated (if needed)
-- [x] Question counts verified
-- [x] Language distribution verified
+- [x] Error handling implemented
+- [x] Resource cleanup (temporary files) implemented
+- [x] Backward compatibility maintained
 
 ## 🚀 Deployment Notes
 
-- No environment variables or configuration changes required
-- New question files are ready for use in agent evaluation and testing
-- Questions cover multiple European countries and languages for comprehensive testing
+- **New dependency**: `requests>=2.31.0` must be installed
+- **No environment variables** or configuration changes required
+- **Database rebuild recommended**: Process `dossier_fuentes.json` to add all official links to the knowledge base
+- **Network access required**: System needs internet access to download PDFs from official sources
 
 ## 📞 Additional Notes
 
-This PR significantly enhances the testing dataset for the IVA Consulta agent:
+This PR significantly enhances the RAG system's capability to process official legal documents:
 
-- **Doubled the question set** from 50 to 100 questions
-- **Added excluded information questions** to test agent's ability to identify missing information
-- **Improved language diversity** with questions in 5 languages across all countries
-- **Better organization** with country-based grouping for easier evaluation
+- **Automatic PDF processing**: No manual download needed for official documents
+- **Intelligent detection**: System automatically identifies PDFs even when URLs don't have `.pdf` extension
+- **Robust fallback**: If web page processing fails, automatically tries PDF download
+- **Comprehensive coverage**: All 22 normativas now have official links for easy reference and processing
+- **Better knowledge base**: Official legal documents can now be automatically indexed and searched
 
-The expanded dataset will enable more thorough testing of the agent's VAT knowledge across different countries and languages, as well as its ability to handle queries about information not present in the knowledge base.
+The implementation handles common challenges:
+
+- **BOE URLs** that redirect to PDFs without `.pdf` in the URL
+- **EUR-Lex** links that may serve PDFs or HTML
+- **Bot protection** using proper User-Agent headers
+- **Large files** using streaming downloads
+- **Error recovery** with automatic fallback mechanisms
+
+This enables the RAG system to automatically build a comprehensive knowledge base from official sources, significantly improving the quality and accuracy of legal information retrieval.
