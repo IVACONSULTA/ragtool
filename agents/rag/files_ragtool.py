@@ -35,8 +35,11 @@ Supported Data Sources:
 import hashlib
 import json
 import os
+import tempfile
+import requests
 from datetime import datetime
 from typing import Dict, List, Optional, Union, Tuple
+from urllib.parse import urlparse
 
 from crewai_tools import RagTool
 
@@ -430,17 +433,167 @@ class FilesRagTool(BaseRagTool):
         print(f"📁 Directories: directory")
         print(f"📚 Other sources: Gmail, Slack, Discord, etc.")
 
-    def validate_web_page_links(self, json_data: Union[str, List[Dict]]) -> Dict:
+    def _is_pdf_url(self, url: str) -> bool:
         """
-        Validate JSON data containing web page links.
+        Check if a URL points to a PDF file.
         
         Args:
-            json_data: JSON string or list of dictionaries containing link data
+            url: URL to check
+            
+        Returns:
+            bool: True if URL appears to be a PDF
+        """
+        # Check by file extension
+        parsed = urlparse(url)
+        path = parsed.path.lower()
+        if path.endswith('.pdf'):
+            return True
+        
+        # Check Content-Type header with GET request (more reliable than HEAD)
+        # Use a User-Agent to avoid blocking
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        try:
+            # Try HEAD first (faster)
+            response = requests.head(url, timeout=10, allow_redirects=True, headers=headers)
+            content_type = response.headers.get('Content-Type', '').lower()
+            if 'application/pdf' in content_type:
+                return True
+            
+            # If HEAD doesn't work, try GET with limited content
+            # Some servers don't support HEAD properly
+            response = requests.get(url, timeout=10, allow_redirects=True, headers=headers, stream=True)
+            content_type = response.headers.get('Content-Type', '').lower()
+            if 'application/pdf' in content_type:
+                return True
+            
+            # Check first bytes for PDF magic number
+            if hasattr(response, 'content') and len(response.content) >= 4:
+                first_bytes = response.content[:4]
+                if first_bytes == b'%PDF':
+                    return True
+            
+            # Check final URL after redirects
+            final_url = response.url
+            if final_url.lower().endswith('.pdf'):
+                return True
+                
+        except Exception as e:
+            # If request fails, we'll try downloading later
+            print(f"⚠️  Could not verify PDF type for {url}: {e}")
+        
+        return False
+    
+    def _download_pdf(self, url: str) -> Optional[str]:
+        """
+        Download a PDF from a URL to a temporary file.
+        
+        Args:
+            url: URL of the PDF to download
+            
+        Returns:
+            str: Path to temporary file if successful, None otherwise
+        """
+        try:
+            print(f"📥 Downloading PDF from: {url}")
+            
+            # Use User-Agent to avoid blocking
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/pdf,application/octet-stream,*/*'
+            }
+            
+            response = requests.get(url, timeout=60, allow_redirects=True, stream=True, headers=headers)
+            response.raise_for_status()
+            
+            # Verify it's actually a PDF by checking first bytes
+            # Read first chunk to verify
+            first_chunk = b''
+            for chunk in response.iter_content(chunk_size=4):
+                first_chunk = chunk
+                break
+            
+            if first_chunk[:4] != b'%PDF':
+                # Try reading more content
+                content_preview = b''
+                for chunk in response.iter_content(chunk_size=1024):
+                    content_preview += chunk
+                    if len(content_preview) >= 4:
+                        break
+                
+                if content_preview[:4] != b'%PDF':
+                    print(f"⚠️  URL does not appear to be a PDF (magic number check failed): {url}")
+                    # Check Content-Type as fallback
+                    content_type = response.headers.get('Content-Type', '').lower()
+                    if 'application/pdf' not in content_type:
+                        print(f"⚠️  Content-Type is {content_type}, not application/pdf")
+                        return None
+                    else:
+                        print(f"✅ Content-Type indicates PDF, proceeding...")
+            
+            # Create temporary file
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+            temp_path = temp_file.name
+            
+            # Write first chunk if we read it
+            if first_chunk:
+                temp_file.write(first_chunk)
+            
+            # Write remaining content to file
+            for chunk in response.iter_content(chunk_size=8192):
+                temp_file.write(chunk)
+            temp_file.close()
+            
+            print(f"✅ PDF downloaded to temporary file: {temp_path}")
+            return temp_path
+            
+        except Exception as e:
+            print(f"❌ Error downloading PDF from {url}: {e}")
+            return None
+    
+    def _detect_url_type(self, url: str) -> str:
+        """
+        Detect the type of content a URL points to.
+        
+        Args:
+            url: URL to check
+            
+        Returns:
+            str: Data type ('pdf_file' or 'web_page')
+        """
+        # First check: simple extension check
+        parsed = urlparse(url)
+        if parsed.path.lower().endswith('.pdf'):
+            return 'pdf_file'
+        
+        # Second check: Content-Type header check (non-destructive)
+        # This uses HEAD or GET but doesn't consume the stream
+        if self._is_pdf_url(url):
+            return 'pdf_file'
+        
+        # For BOE URLs, many redirect to PDFs, so we'll be more aggressive
+        # and try downloading during processing if web_page fails
+        # For now, default to web_page and let the download function handle it
+        
+        return 'web_page'
+
+    def validate_web_page_links(self, json_data: Union[str, List[Dict]]) -> Dict:
+        """
+        Validate JSON data containing web page links and extract enlaces_oficiales.
+        
+        Supports two JSON structures:
+        1. List of objects with 'data_type' and 'url' fields
+        2. Object with 'normativa' array containing 'enlaces_oficiales' arrays
+        
+        Args:
+            json_data: JSON string or dictionary containing link data
             
         Returns:
             Dict with validation results:
             - 'valid': bool indicating if all elements are valid
-            - 'valid_links': list of valid link dictionaries
+            - 'valid_links': list of valid link dictionaries with 'url' and 'data_type'
             - 'invalid_links': list of invalid link dictionaries with error details
             - 'errors': list of general validation errors
         """
@@ -457,11 +610,48 @@ class FilesRagTool(BaseRagTool):
                 data = json.loads(json_data)
             else:
                 data = json_data
+            
+            # Handle dossier_fuentes.json structure: {"normativa": [...]}
+            if isinstance(data, dict) and 'normativa' in data:
+                print("📋 Detected dossier_fuentes.json structure, extracting enlaces_oficiales...")
+                normativas = data.get('normativa', [])
                 
-            # Ensure data is a list
+                for normativa_idx, normativa in enumerate(normativas):
+                    if not isinstance(normativa, dict):
+                        continue
+                    
+                    enlaces = normativa.get('enlaces_oficiales', [])
+                    if not isinstance(enlaces, list):
+                        continue
+                    
+                    for link_idx, link_url in enumerate(enlaces):
+                        if not isinstance(link_url, str) or not link_url.strip():
+                            result['invalid_links'].append({
+                                'normativa_index': normativa_idx,
+                                'link_index': link_idx,
+                                'url': link_url,
+                                'error': 'URL must be a non-empty string'
+                            })
+                            result['valid'] = False
+                            continue
+                        
+                        # Detect URL type (PDF or web page)
+                        url_type = self._detect_url_type(link_url.strip())
+                        
+                        result['valid_links'].append({
+                            'url': link_url.strip(),
+                            'data_type': url_type,
+                            'normativa_id': normativa.get('id', f'normativa_{normativa_idx}'),
+                            'normativa_titulo': normativa.get('titulo', 'Unknown')
+                        })
+                
+                print(f"✅ Extracted {len(result['valid_links'])} links from enlaces_oficiales")
+                return result
+            
+            # Handle legacy structure: list of objects with 'data_type' and 'url'
             if not isinstance(data, list):
                 result['valid'] = False
-                result['errors'].append("JSON data must be a list of link objects")
+                result['errors'].append("JSON data must be a list of link objects or a dictionary with 'normativa' key")
                 return result
                 
             # Validate each element
@@ -483,11 +673,11 @@ class FilesRagTool(BaseRagTool):
                         'error': 'Missing required property: data_type'
                     })
                     result['valid'] = False
-                elif element['data_type'] != 'web_page':
+                elif element['data_type'] not in ['web_page', 'pdf_file']:
                     result['invalid_links'].append({
                         'index': i,
                         'element': element,
-                        'error': f"data_type must be 'web_page', got: {element['data_type']}"
+                        'error': f"data_type must be 'web_page' or 'pdf_file', got: {element['data_type']}"
                     })
                     result['valid'] = False
                     
@@ -507,7 +697,7 @@ class FilesRagTool(BaseRagTool):
                     result['valid'] = False
                     
                 # If element passed all validations, add to valid_links
-                if (element.get('data_type') == 'web_page' and 
+                if (element.get('data_type') in ['web_page', 'pdf_file'] and 
                     'url' in element and 
                     isinstance(element['url'], str) and 
                     element['url'].strip()):
@@ -524,7 +714,7 @@ class FilesRagTool(BaseRagTool):
 
     def process_json_file(self, metadata: Dict, failed_to_process: List, validation_result: Dict) -> Tuple[bool, int, List, Dict]:
         """
-        Process a JSON file, extracting and processing web page links if found.
+        Process a JSON file, extracting and processing web page links and PDFs if found.
         
         Args:
             metadata: Dictionary containing processed files metadata
@@ -535,35 +725,140 @@ class FilesRagTool(BaseRagTool):
             Tuple of (success, successful_count, failed_to_process, metadata)
         """
         successful_count = 0
-        retry_count = 0  # Number of retries for failed URLs
+        retry_count = 2  # Number of retries for failed URLs
+        temp_files = []  # Track temporary files to clean up
         
         try:
-            print(f"🔗 Found {len(validation_result['valid_links'])} valid web page links in JSON file")
+            print(f"🔗 Found {len(validation_result['valid_links'])} valid links in JSON file")
             
             # Process each valid link
             for link in validation_result['valid_links']:
-                print(f"🌐 Processing web page: {link['url']}")
+                url = link['url']
+                data_type = link.get('data_type', 'web_page')
                 
-                # Try to add document to DataBase with retry logic
-                success = self._add_document_with_retry(link["url"], data_type="web_page", max_retries=retry_count)
+                print(f"🌐 Processing {data_type}: {url}")
                 
-                if not success:
-                    failed_to_process.append(link["url"])
-                    print(f"❌ Failed to process after {retry_count} retries: {link['url']}")
+                # Handle PDF files: download first, then process
+                if data_type == 'pdf_file':
+                    temp_pdf_path = self._download_pdf(url)
+                    if not temp_pdf_path:
+                        failed_to_process.append(url)
+                        print(f"❌ Failed to download PDF: {url}")
+                        continue
+                    
+                    temp_files.append(temp_pdf_path)  # Track for cleanup
+                    
+                    # Process downloaded PDF
+                    success = self._add_document_with_retry(
+                        temp_pdf_path, 
+                        data_type="pdf_file", 
+                        max_retries=retry_count
+                    )
+                    
+                    # Clean up temporary file after processing
+                    try:
+                        if os.path.exists(temp_pdf_path):
+                            os.unlink(temp_pdf_path)
+                            temp_files.remove(temp_pdf_path)
+                    except Exception as cleanup_error:
+                        print(f"⚠️  Warning: Could not delete temporary file {temp_pdf_path}: {cleanup_error}")
+                    
+                    if not success:
+                        failed_to_process.append(url)
+                        print(f"❌ Failed to process PDF after {retry_count} retries: {url}")
+                    else:
+                        # Update metadata for the URL
+                        url_key = f"url_{hashlib.md5(url.encode()).hexdigest()}"
+                        metadata["processed_files"][url_key] = {
+                            "hash": hashlib.md5(url.encode()).hexdigest(),
+                            "processed_at": datetime.now().isoformat(),
+                            "path": url,
+                            "data_type": "pdf_file",
+                            "normativa_id": link.get('normativa_id', ''),
+                            "normativa_titulo": link.get('normativa_titulo', '')
+                        }
+                        successful_count += 1
+                        print(f"✅ Successfully processed PDF: {url}")
+                
+                # Handle web pages: process directly, with PDF fallback
                 else:
-                    # Update metadata for the URL
-                    url_key = f"url_{hashlib.md5(link['url'].encode()).hexdigest()}"
-                    metadata["processed_files"][url_key] = {
-                        "hash": hashlib.md5(link['url'].encode()).hexdigest(),
-                        "processed_at": datetime.now().isoformat(),
-                        "path": link['url'],
-                        "data_type": "web_page"
-                    }
-                    successful_count += 1
-                    print(f"✅ Successfully processed: {link['url']}")
+                    success = self._add_document_with_retry(
+                        url, 
+                        data_type="web_page", 
+                        max_retries=retry_count
+                    )
+                    
+                    # If web_page fails, try downloading as PDF (many BOE URLs redirect to PDFs)
+                    if not success:
+                        print(f"⚠️  Web page processing failed, trying as PDF: {url}")
+                        temp_pdf_path = self._download_pdf(url)
+                        
+                        if temp_pdf_path:
+                            temp_files.append(temp_pdf_path)
+                            # Try processing as PDF
+                            pdf_success = self._add_document_with_retry(
+                                temp_pdf_path,
+                                data_type="pdf_file",
+                                max_retries=retry_count
+                            )
+                            
+                            # Clean up temporary file
+                            try:
+                                if os.path.exists(temp_pdf_path):
+                                    os.unlink(temp_pdf_path)
+                                    temp_files.remove(temp_pdf_path)
+                            except Exception as cleanup_error:
+                                print(f"⚠️  Warning: Could not delete temporary file {temp_pdf_path}: {cleanup_error}")
+                            
+                            if pdf_success:
+                                # Update metadata as PDF
+                                url_key = f"url_{hashlib.md5(url.encode()).hexdigest()}"
+                                metadata["processed_files"][url_key] = {
+                                    "hash": hashlib.md5(url.encode()).hexdigest(),
+                                    "processed_at": datetime.now().isoformat(),
+                                    "path": url,
+                                    "data_type": "pdf_file",
+                                    "normativa_id": link.get('normativa_id', ''),
+                                    "normativa_titulo": link.get('normativa_titulo', '')
+                                }
+                                successful_count += 1
+                                print(f"✅ Successfully processed as PDF (fallback): {url}")
+                                continue
+                        
+                        # If PDF fallback also fails, mark as failed
+                        failed_to_process.append(url)
+                        print(f"❌ Failed to process after {retry_count} retries and PDF fallback: {url}")
+                    else:
+                        # Update metadata for the URL
+                        url_key = f"url_{hashlib.md5(url.encode()).hexdigest()}"
+                        metadata["processed_files"][url_key] = {
+                            "hash": hashlib.md5(url.encode()).hexdigest(),
+                            "processed_at": datetime.now().isoformat(),
+                            "path": url,
+                            "data_type": "web_page",
+                            "normativa_id": link.get('normativa_id', ''),
+                            "normativa_titulo": link.get('normativa_titulo', '')
+                        }
+                        successful_count += 1
+                        print(f"✅ Successfully processed: {url}")
+            
+            # Clean up any remaining temporary files
+            for temp_file in temp_files:
+                try:
+                    if os.path.exists(temp_file):
+                        os.unlink(temp_file)
+                except Exception as cleanup_error:
+                    print(f"⚠️  Warning: Could not delete temporary file {temp_file}: {cleanup_error}")
             
         except Exception as json_error:
             print(f"⚠️  Error processing JSON file: {json_error}")
+            # Clean up temporary files on error
+            for temp_file in temp_files:
+                try:
+                    if os.path.exists(temp_file):
+                        os.unlink(temp_file)
+                except Exception:
+                    pass
             return False, successful_count, failed_to_process, metadata
         
         if successful_count > 0:

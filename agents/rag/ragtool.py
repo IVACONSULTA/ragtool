@@ -150,7 +150,7 @@ class BaseRagTool:
 
         Args:
             document_path: Path to the document to add
-            data_type: Type of data being added (e.g., "pdf_file", "text_file")
+            data_type: Type of data being added (e.g., "pdf_file", "text_file", "web_page")
 
         Returns:
             bool: True if successful
@@ -160,6 +160,27 @@ class BaseRagTool:
                 return False
 
         try:
+            # Handle URLs (web_page) - use RagTool's built-in URL handling
+            if data_type == "web_page" and document_path.startswith(('http://', 'https://')):
+                # CrewAI RagTool can handle URLs directly
+                # Use the add method which accepts URLs
+                try:
+                    self.rag_tool.add(document_path)
+                    return True
+                except Exception as url_error:
+                    # If direct URL fails, try using a web loader
+                    print(f"⚠️  Direct URL add failed, trying web loader: {url_error}")
+                    try:
+                        from langchain_community.document_loaders import WebBaseLoader
+                        loader = WebBaseLoader(document_path)
+                        documents = loader.load()
+                        for doc in documents:
+                            self.rag_tool.add(doc.page_content)
+                        return True
+                    except Exception as loader_error:
+                        print(f"❌ Web loader also failed: {loader_error}")
+                        return False
+            
             # Create document loader based on data type
             if data_type == "text_file":
                 from langchain_community.document_loaders import TextLoader

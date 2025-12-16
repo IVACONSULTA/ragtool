@@ -102,9 +102,6 @@
         "https://www.agenciatributaria.es/AEAT.internet/Inicio/La_Agencia_Tributaria/Campanas/_Informacion_General_/Informacion_institucional/Modelos__formularios_y_servicios/Modelos_y_formularios/Impuestos/Modelo_390.shtml"
       ]
     },
-
-    /* ------------------ IGIC ------------------ */
-
     {
       "id": "ES-LE-20-1991-IGIC",
       "titulo": "Ley 20/1991 Régimen Económico y Fiscal de Canarias – IGIC",
@@ -160,9 +157,6 @@
         "https://www.gobiernodecanarias.org/hacienda/modelos/"
       ]
     },
-
-    /* ------------------ AEAT: SII – Veri*Factu – E-factura – TicketBAI ------------------ */
-
     {
       "id": "ES-RD-596-2016-SII",
       "titulo": "Real Decreto 596/2016 – Suministro Inmediato de Información (SII)",
@@ -238,9 +232,6 @@
         "https://www.gipuzkoa.eus/es/web/hacienda/ticketbai"
       ]
     },
-
-    /* ------------------ UE: IVA – 8ª – 13ª – DAC – ViDA ------------------ */
-
     {
       "id": "EU-DIR-112-2006",
       "titulo": "Directiva 2006/112/CE – Sistema Común del IVA",
