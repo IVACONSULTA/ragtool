@@ -39,7 +39,8 @@
         "Regímenes especiales"
       ],
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=BOE-A-1992-28925"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-1992-28741",
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-1992-28741"
       ]
     },
     {
@@ -59,7 +60,8 @@
         "Facturación por terceros o destinatario"
       ],
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=BOE-A-2012-14696"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2012-14628",
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2012-14628"
       ]
     },
     {
@@ -71,7 +73,7 @@
       "descripcion": "Regulación censal general: alta, modificación o baja de empresarios y profesionales.",
       "modelos": ["036", "037"],
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=BOE-A-2023-26632"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2007-21384"
       ]
     },
     {
@@ -81,9 +83,10 @@
       "nivel": "Estatal",
       "impuesto": "IVA",
       "descripcion": "Autoliquidación periódica del IVA. Incluye la versión 2024 con autoliquidación rectificativa.",
-      "modelos": ["303", "322", "353"],
+      "modelos": ["303"],
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=BOE-A-2024-16129"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2013-12622",
+        "https://www.agenciatributaria.es/AEAT.internet/Inicio/La_Agencia_Tributaria/Campanas/_Informacion_General_/Informacion_institucional/Modelos__formularios_y_servicios/Modelos_y_formularios/Impuestos/Modelo_303.shtml"
       ]
     },
     {
@@ -95,12 +98,10 @@
       "descripcion": "Resumen anual del IVA.",
       "modelos": ["390"],
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=BOE-A-2024-21961"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2013-12623",
+        "https://www.agenciatributaria.es/AEAT.internet/Inicio/La_Agencia_Tributaria/Campanas/_Informacion_General_/Informacion_institucional/Modelos__formularios_y_servicios/Modelos_y_formularios/Impuestos/Modelo_390.shtml"
       ]
     },
-
-    /* ------------------ IGIC ------------------ */
-
     {
       "id": "ES-LE-20-1991-IGIC",
       "titulo": "Ley 20/1991 Régimen Económico y Fiscal de Canarias – IGIC",
@@ -117,7 +118,8 @@
         "Operaciones con la Península y la UE"
       ],
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=BOE-A-1991-14463"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-1991-28019",
+        "https://www.gobiernodecanarias.org/hacienda/"
       ]
     },
     {
@@ -129,7 +131,8 @@
       "descripcion": "Regula obligaciones censales, autoliquidaciones, gestión de IGIC y otros tributos REF.",
       "ultima_reforma": "2024-04-01",
       "enlaces_oficiales": [
-        "https://www.gobiernodecanarias.org/boc/2011/159/001.html"
+        "https://www.gobiernodecanarias.org/boc/2011/134/001.html",
+        "https://www.gobiernodecanarias.org/hacienda/"
       ]
     },
     {
@@ -140,9 +143,7 @@
       "impuesto": "IGIC",
       "descripcion": "Alta, modificación y cese en el censo de empresarios en Canarias.",
       "enlaces_oficiales": [
-        "https://www.gobiernodecanarias.org/boc/1998/039/002.html",
-        "https://www.gobiernodecanarias.org/boc/2001/084/002.html",
-        "https://www.gobiernodecanarias.org/boc/2018/210/002.html"
+        "https://www.gobiernodecanarias.org/hacienda/modelos/"
       ]
     },
     {
@@ -153,12 +154,9 @@
       "impuesto": "IGIC",
       "descripcion": "Declaración trimestral/mensual del IGIC.",
       "enlaces_oficiales": [
-        "https://www3.gobiernodecanarias.org/tributos/atc/w/modelo-420"
+        "https://www.gobiernodecanarias.org/hacienda/modelos/"
       ]
     },
-
-    /* ------------------ AEAT: SII – Veri*Factu – E-factura – TicketBAI ------------------ */
-
     {
       "id": "ES-RD-596-2016-SII",
       "titulo": "Real Decreto 596/2016 – Suministro Inmediato de Información (SII)",
@@ -167,8 +165,9 @@
       "impuesto": "IVA",
       "descripcion": "Regulación del SII: gestión electrónica del IVA, envío de libros registro en tiempo casi real.",
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=BOE-A-2016-11575",
-        "https://sede.agenciatributaria.gob.es/static_files/Sede/Procedimiento_ayuda/G417/FicherosSuministros/bolinform_SII_es_es.pdf"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2016-11659",
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2016-11659",
+        "https://www.agenciatributaria.es/AEAT.internet/Inicio/La_Agencia_Tributaria/Campanas/_Informacion_General_/Informacion_institucional/Suministro_Inmediato_de_Informacion_SII_/Suministro_Inmediato_de_Informacion_SII_.shtml"
       ]
     },
     {
@@ -179,8 +178,8 @@
       "impuesto": "IVA",
       "descripcion": "Esquemas XML, estructura de libros registro y requisitos técnicos.",
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/act.php?id=BOE-A-2017-5312",
-        "https://sede.agenciatributaria.gob.es/Sede/iva/suministro-inmediato-informacion/2017/cambios-orden-hfp-417-2017-especificac__.html"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2017-12929",
+        "https://www.agenciatributaria.es/AEAT.internet/Inicio/La_Agencia_Tributaria/Campanas/_Informacion_General_/Informacion_institucional/Suministro_Inmediato_de_Informacion_SII_/Especificaciones_tecnicas/Especificaciones_tecnicas.shtml"
       ]
     },
     {
@@ -191,8 +190,8 @@
       "impuesto": "General / IVA",
       "descripcion": "Requisitos de integridad, trazabilidad e inviolabilidad para software de facturación. Base del sistema Veri*Factu.",
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/act.php?id=BOE-A-2023-24840",
-        "https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/cuestiones-generales.html"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2023-24684",
+        "https://www.agenciatributaria.es/AEAT.internet/Inicio/La_Agencia_Tributaria/Campanas/_Informacion_General_/Informacion_institucional/Verifactu/Verifactu.shtml"
       ]
     },
     {
@@ -203,7 +202,8 @@
       "impuesto": "General",
       "descripcion": "Obligaciones de los sistemas informáticos de facturación, prohibición de software de doble uso y requisito de registro de procesos.",
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=BOE-A-2021-11473"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2021-12429",
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2021-12429"
       ]
     },
     {
@@ -214,7 +214,8 @@
       "impuesto": "General",
       "descripcion": "Establece la futura obligatoriedad de la factura electrónica entre empresas.",
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/act.php?id=BOE-A-2022-15818"
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2022-14069",
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2022-14069"
       ]
     },
     {
@@ -225,12 +226,12 @@
       "impuesto": "General",
       "descripcion": "Sistema antifraude obligatorio en Euskadi: firma, QR, envío inmediato a Hacienda Foral.",
       "enlaces_oficiales": [
-        "https://egoitza.gipuzkoa.eus/gao-bog/castell/bog/2020/11/12/c2005886.pdf"
+        "https://www.euskadi.eus/ticketbai/",
+        "https://www.araba.eus/es/administracion-publica/hacienda/ticketbai",
+        "https://www.bizkaia.eus/es/hacienda/ticketbai",
+        "https://www.gipuzkoa.eus/es/web/hacienda/ticketbai"
       ]
     },
-
-    /* ------------------ UE: IVA – 8ª – 13ª – DAC – ViDA ------------------ */
-
     {
       "id": "EU-DIR-112-2006",
       "titulo": "Directiva 2006/112/CE – Sistema Común del IVA",
@@ -239,7 +240,8 @@
       "impuesto": "IVA",
       "descripcion": "Marco legal del IVA europeo: estructura general, lugar de entrega y servicios, base imponible, regímenes especiales.",
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=DOUE-L-2006-82505"
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32006L0112",
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32006L0112&from=ES"
       ]
     },
     {
@@ -249,7 +251,10 @@
       "nivel": "UE",
       "impuesto": "IVA",
       "descripcion": "Medidas de aplicación de la Directiva IVA: reglas de localización, comercio electrónico, sujetos pasivos.",
-      "enlaces_oficiales": ["https://www.boe.es/doue/2011/077/L00001-00022.pdf"]
+      "enlaces_oficiales": [
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32011R0282",
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32011R0282&from=ES"
+      ]
     },
     {
       "id": "EU-DIR-2008-9",
@@ -258,7 +263,10 @@
       "nivel": "UE",
       "impuesto": "IVA",
       "descripcion": "Procedimiento de devolución de IVA soportado a empresarios establecidos en otros Estados miembros de la UE.",
-      "enlaces_oficiales": ["https://www.boe.es/doue/2008/044/L00023-00028.pdf"]
+      "enlaces_oficiales": [
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32008L0009",
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32008L0009&from=ES"
+      ]
     },
     {
       "id": "EU-DIR-86-560",
@@ -268,7 +276,8 @@
       "impuesto": "IVA",
       "descripcion": "Procedimiento de devolución de IVA soportado a empresarios no establecidos en la UE.",
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=DOUE-L-1986-81630"
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:31986L0560",
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:31986L0560&from=ES"
       ]
     },
     {
@@ -279,7 +288,8 @@
       "impuesto": "General",
       "descripcion": "Marco de intercambio de información entre administraciones tributarias de la UE.",
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=DOUE-L-2011-80479"
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32011L0016",
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32011L0016&from=ES"
       ]
     },
     {
@@ -290,7 +300,8 @@
       "impuesto": "IVA",
       "descripcion": "Reforma integral del IVA europeo en la era digital: DRR, facturación electrónica, plataformas digitales, registro único de IVA.",
       "enlaces_oficiales": [
-        "https://www.boe.es/buscar/doc.php?id=DOUE-L-2025-80487"
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32025L0516",
+        "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32025L0516&from=ES"
       ]
     }
   ]
