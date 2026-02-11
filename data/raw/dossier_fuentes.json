@@ -98,9 +98,6 @@
         "https://www.boe.es/buscar/doc.php?id=BOE-A-2024-21961"
       ]
     },
-
-    /* ------------------ IGIC ------------------ */
-
     {
       "id": "ES-LE-20-1991-IGIC",
       "titulo": "Ley 20/1991 Régimen Económico y Fiscal de Canarias – IGIC",
@@ -156,9 +153,6 @@
         "https://www3.gobiernodecanarias.org/tributos/atc/w/modelo-420"
       ]
     },
-
-    /* ------------------ AEAT: SII – Veri*Factu – E-factura – TicketBAI ------------------ */
-
     {
       "id": "ES-RD-596-2016-SII",
       "titulo": "Real Decreto 596/2016 – Suministro Inmediato de Información (SII)",
