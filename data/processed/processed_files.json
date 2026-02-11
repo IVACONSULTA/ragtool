@@ -1,29 +1,4 @@
 {
-  "processed_files": {
-    "VATBOOK4.txt": {
-      "hash": "7e4371dae9bc62df0601011becd0c9ef",
-      "processed_at": "2026-02-10T23:09:26.029367",
-      "path": "./data/raw/VATBOOK4.txt",
-      "data_type": "text_file"
-    },
-    "VATBOOK1.txt": {
-      "hash": "af0c0a2e9a435d5f89bd75a5c7315315",
-      "processed_at": "2026-02-10T23:11:48.232730",
-      "path": "./data/raw/VATBOOK1.txt",
-      "data_type": "text_file"
-    },
-    "VATBOOK3.txt": {
-      "hash": "f519fcfe35c1ebd16ae0e44bf4a01abf",
-      "processed_at": "2026-02-10T23:14:02.726300",
-      "path": "./data/raw/VATBOOK3.txt",
-      "data_type": "text_file"
-    },
-    "VATBOOK2.txt": {
-      "hash": "5ffd50a508464dc7fc1e7e7576e0bf6f",
-      "processed_at": "2026-02-10T23:16:52.240570",
-      "path": "./data/raw/VATBOOK2.txt",
-      "data_type": "text_file"
-    }
-  },
-  "last_updated": "2026-02-10T23:16:52.240615"
+  "processed_files": {},
+  "last_updated": null
 }
