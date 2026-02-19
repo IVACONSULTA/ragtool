@@ -1,16 +1,35 @@
 ## 📝 Description
 
-This PR enhances the RAG system to automatically detect, download, and process PDF documents from official links in the `dossier_fuentes.json` file. It adds comprehensive official links to all normativas (regulations) and implements intelligent PDF detection with fallback mechanisms for URLs that redirect to PDFs. This significantly improves the knowledge base by enabling automatic processing of official legal documents from BOE, EUR-Lex, and other government sources.
+This PR introduces **IP and privacy safeguards** for agents, extends the **VAT/IGIC agent and tasks** with a structured 4-step methodology, and enhances the **RAG system** to automatically detect, download, and process PDF documents from official links in `dossier_fuentes.json`. Agents are explicitly instructed never to request or collect personal information (including IP addresses). The VAT consultation flow is aligned with a legal-operational methodology (identify scope → tax classification → RAG retrieval → legal reasoning). The RAG pipeline gains comprehensive official links for all normativas and intelligent PDF detection with fallback mechanisms for BOE, EUR-Lex, and other government sources.
 
 ## 🎯 What does this PR do?
 
 - [x] Feature addition
-- [ ] Bug fix
-- [ ] Documentation update
+- [x] Bug fix (privacy: prevent agents from requesting IP/personal data)
+- [x] Documentation update
 - [x] Code refactoring
 - [ ] Other: **\*\*\_\*\***
 
 ## 🔍 Changes Made
+
+### 🔒 IP & Privacy
+
+- **Explicit privacy instructions** in both **IVA Consulta** and **SAP** agents (`agents.yaml`):
+  - Agents **never request, collect, or ask for** personal information: IP addresses, email, phone numbers, physical addresses, names, or any other identifying information
+  - Consultation is provided solely from the question asked, without requiring user data
+- **Control questions** (`data/processed/control_questions.txt`): Removed language/locale tags from question text (e.g. "(French)", "(German)") to reduce metadata exposure and support privacy-aware evaluation
+- **Excluded-info questions** updated accordingly
+
+### 🤖 Agent & Task Enhancements (VAT Deep Methodology)
+
+- **IVA Consulta agent** (`agents/crewai/agents.yaml`): Extended with:
+  - **4-step methodology**: (1) Identify scope (territory: IVA/IGIC/EU), (2) Tax classification, (3) RAG retrieval with filters (`nivel`, `impuesto`, `conceptos_clave`, `tipo_norma`), (4) Legal reasoning with norm hierarchy
+  - Explicit **knowledge base** list (LIVA, IGIC, SII, VeriFactu, TicketBAI, Crea y Crece, EU directives, dossier_fuentes)
+  - **Critical errors to avoid** (e.g. never mix IVA/IGIC, never invent articles, correct 8th/13th Directive use)
+  - **Response format** for complex queries (marco normativo, análisis, obligaciones formales, conclusión)
+- **VAT consultation task** (`agents/crewai/tasks.yaml`): Rewritten to mirror the 4-step flow, RAG filters, validation checks, and structured expected output (simple vs complex query format)
+- **New** `agents/crewai/instrunctions_vat_deep.txt`: Internal methodology and reasoning rules for VAT/IGIC (scope, classification, retrieval, legal reasoning, norm prioritization)
+- **Backup files** added: `agents_backup.yaml`, `tasks_backup.yaml` for previous agent/task definitions
 
 ### 🔗 Official Links Addition
 
@@ -98,14 +117,33 @@ This PR enhances the RAG system to automatically detect, download, and process P
 
 ## 📁 Files Modified/Created
 
+**IP & privacy / agents & tasks**
+- ✅ `agents/crewai/agents.yaml` - Privacy instructions for IVA Consulta & SAP; IVA Consulta extended with 4-step methodology and knowledge base
+- ✅ `agents/crewai/tasks.yaml` - VAT consultation task rewritten with 4-step flow, RAG filters, validation checks
+- ✅ `agents/crewai/instrunctions_vat_deep.txt` - New methodology and reasoning rules for VAT/IGIC
+- ✅ `agents/crewai/agents_backup.yaml`, `tasks_backup.yaml` - Backups of previous definitions
+- ✅ `data/processed/control_questions.txt`, `control_questions_randomized.txt` - Privacy-aware question set (language tags removed)
+- ✅ `data/processed/excluded_info_questions.txt` - Updated exclusions
+
+**RAG & data**
 - ✅ `data/raw/dossier_fuentes.json` - Added `enlaces_oficiales` to all 22 normativas, removed invalid JSON comments
-- ✅ `agents/rag/files_ragtool.py` - Added PDF detection, download, and processing functionality
-- ✅ `agents/rag/ragtool.py` - Enhanced `add_document` to handle web page URLs properly
-- ✅ `requirements.txt` - Added `requests>=2.31.0` dependency
+- ✅ `data/raw_txt/dossier_fuentes_old.json` - Backup/legacy version of sources
+- ✅ `data/processed/enlaces_normativas.md` - Added
+- ✅ `data/processed/processed_files.json` - Updated
+- ✅ `agents/rag/files_ragtool.py` - PDF detection, download, and processing
+- ✅ `agents/rag/ragtool.py` - Enhanced `add_document` for web page URLs
+- ✅ `agents/utils/config.py` - Embedding model set to `gemini-embedding-001`
+
+**Docs & deps**
+- ✅ `docs/RagTool_files_management.md` - Extended RAG file management documentation
+- ✅ `docs/Ragtool_Api.md` - Extended RAG API documentation
+- ✅ `requirements.txt` - Added `requests>=2.31.0`
 
 ## 🧪 Testing
 
 - [x] I have tested this locally
+- [x] Agent privacy instructions: agents do not request IP or personal data
+- [x] VAT task and agent methodology align (4-step flow, RAG filters)
 - [x] JSON file validates correctly (no syntax errors)
 - [x] PDF detection works for various URL patterns
 - [x] Fallback mechanism tested with BOE URLs
@@ -130,26 +168,24 @@ N/A
 ## 🚀 Deployment Notes
 
 - **New dependency**: `requests>=2.31.0` must be installed
-- **No environment variables** or configuration changes required
+- **Config**: Embedding model set to `gemini-embedding-001` in `agents/utils/config.py` (if using default RAG config)
+- **No new environment variables** required
 - **Database rebuild recommended**: Process `dossier_fuentes.json` to add all official links to the knowledge base
 - **Network access required**: System needs internet access to download PDFs from official sources
 
 ## 📞 Additional Notes
 
-This PR significantly enhances the RAG system's capability to process official legal documents:
+**Privacy & compliance**
+- Agents (IVA Consulta and SAP) are explicitly instructed **not** to request or collect IP addresses or other personal data; consultation is based only on the question.
+- Control and evaluation question sets are adjusted to avoid unnecessary metadata in text (supporting privacy-aware evaluation).
 
-- **Automatic PDF processing**: No manual download needed for official documents
-- **Intelligent detection**: System automatically identifies PDFs even when URLs don't have `.pdf` extension
-- **Robust fallback**: If web page processing fails, automatically tries PDF download
-- **Comprehensive coverage**: All 22 normativas now have official links for easy reference and processing
-- **Better knowledge base**: Official legal documents can now be automatically indexed and searched
+**Agent & methodology**
+- VAT consultation follows a **structured 4-step methodology** (scope → classification → RAG retrieval with metadata filters → legal reasoning) so answers stay territory- and norm-consistent (IVA vs IGIC, EU directives, etc.).
+- Task and agent definitions are aligned with `instrunctions_vat_deep.txt` for consistent behavior and easier maintenance.
 
-The implementation handles common challenges:
+**RAG & knowledge base**
+- **Automatic PDF processing**: No manual download needed for official documents; intelligent detection and fallback for BOE/EUR-Lex style URLs.
+- **Comprehensive coverage**: All 22 normativas have official links; the RAG pipeline can download, validate, and index PDFs from these sources.
+- Handles **redirects**, **bot protection** (User-Agent), **streaming** for large files, and **error recovery** with PDF fallback when web page processing fails.
 
-- **BOE URLs** that redirect to PDFs without `.pdf` in the URL
-- **EUR-Lex** links that may serve PDFs or HTML
-- **Bot protection** using proper User-Agent headers
-- **Large files** using streaming downloads
-- **Error recovery** with automatic fallback mechanisms
-
-This enables the RAG system to automatically build a comprehensive knowledge base from official sources, significantly improving the quality and accuracy of legal information retrieval.
+Together, these changes improve privacy posture, consultation consistency, and the ability to build and maintain the legal knowledge base from official sources.
