@@ -385,7 +385,7 @@ class ConfigurationManager:
                 rag_provider="google-generativeai",
                 rag_model="gemini-2.0-flash",
                 embedding_provider="google-generativeai",
-                embedding_model="models/embedding-001",
+                embedding_model="gemini-embedding-001",
                 chunk_size=1200,
                 chunk_overlap=200,
                 chroma_db_path="./db",

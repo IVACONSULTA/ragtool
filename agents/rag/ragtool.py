@@ -66,17 +66,53 @@ class BaseRagTool:
         """Initialize CrewAI RagTool with persistent storage."""
         # Ensure EMBEDDINGS_GOOGLE_API_KEY is set for Google embeddings
         self._ensure_embedding_api_key()
-        
+        # Ensure Google embedding model from our config is used (CrewAI factory
+        # expects spec["config"] but crewai_tools passes a flat spec; patch so
+        # provider_config gets model_name).
+        self._patch_google_embedding_spec()
+
         # Get chunk parameters with defaults if not present
         chunk_size = self.rag_config.get("chunk_size", 1200)
         chunk_overlap = self.rag_config.get("chunk_overlap", 200)
-        
+
         return RagTool(
             config=self._get_core_config(),
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             storage_path=self.storage_path,
         )
+
+    def _patch_google_embedding_spec(self):
+        """Patch CrewAI factory so Google embedding receives our model_name.
+
+        crewai_tools passes a flat spec {provider, model_name} to
+        get_embedding_function, but the factory only uses spec.get("config", {}),
+        so the Google provider gets default "models/embedding-001" (deprecated).
+        This patch merges top-level spec keys into provider_config when
+        provider is google-generativeai so gemini-embedding-001 is used.
+        """
+        try:
+            from crewai.rag.embeddings import factory as embed_factory
+
+            _original = embed_factory.build_embedder_from_dict
+
+            def _patched_build_embedder_from_dict(spec):
+                provider_name = spec.get("provider")
+                if provider_name == "google-generativeai":
+                    # Factory expects spec["config"]; crewai_tools passes flat spec.
+                    config = spec.get("config") or {}
+                    if not config and ("model_name" in spec or "model" in spec):
+                        config = {
+                            "model_name": spec.get("model_name")
+                            or spec.get("model", "gemini-embedding-001")
+                        }
+                    if config:
+                        spec = {**spec, "config": {**config, **spec.get("config", {})}}
+                return _original(spec)
+
+            embed_factory.build_embedder_from_dict = _patched_build_embedder_from_dict
+        except Exception:
+            pass
     
     def _ensure_embedding_api_key(self):
         """Ensure required API keys are set for embedding providers."""
@@ -150,7 +186,7 @@ class BaseRagTool:
 
         Args:
             document_path: Path to the document to add
-            data_type: Type of data being added (e.g., "pdf_file", "text_file")
+            data_type: Type of data being added (e.g., "pdf_file", "text_file", "web_page")
 
         Returns:
             bool: True if successful
@@ -160,6 +196,27 @@ class BaseRagTool:
                 return False
 
         try:
+            # Handle URLs (web_page) - use RagTool's built-in URL handling
+            if data_type == "web_page" and document_path.startswith(('http://', 'https://')):
+                # CrewAI RagTool can handle URLs directly
+                # Use the add method which accepts URLs
+                try:
+                    self.rag_tool.add(document_path)
+                    return True
+                except Exception as url_error:
+                    # If direct URL fails, try using a web loader
+                    print(f"⚠️  Direct URL add failed, trying web loader: {url_error}")
+                    try:
+                        from langchain_community.document_loaders import WebBaseLoader
+                        loader = WebBaseLoader(document_path)
+                        documents = loader.load()
+                        for doc in documents:
+                            self.rag_tool.add(doc.page_content)
+                        return True
+                    except Exception as loader_error:
+                        print(f"❌ Web loader also failed: {loader_error}")
+                        return False
+            
             # Create document loader based on data type
             if data_type == "text_file":
                 from langchain_community.document_loaders import TextLoader

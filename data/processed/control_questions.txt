@@ -1,7 +1,7 @@
 # Sample VAT Questions - European VAT Handbook 2025-2026
 # 100 questions covering VAT topics from multiple European countries
-# 70 questions about Spain | 30 questions about other countries (8+ countries)
-# Languages: Spanish, English, French, German, Portuguese (mixed across all countries)
+# 70 questions about Spain | 30 questions about other countries
+# Languages: Spanish, English, French, German, Portuguese
 
 ## SPAIN - 70 Questions
 
@@ -239,90 +239,90 @@ Como é tratado o IVA nas prestações de serviços de restauração e catering 
 
 ### France - 5 Questions
 
-Quel est le taux de TVA standard en France et quels sont les taux réduits applicables? (French)
+Quel est le taux de TVA standard en France et quels sont les taux réduits applicables?
 
-Comment fonctionne le mécanisme d'autoliquidation de la TVA en France pour les services fournis par des prestataires non établis? (French)
+Comment fonctionne le mécanisme d'autoliquidation de la TVA en France pour les services fournis par des prestataires non établis?
 
-What is the VAT registration threshold for domestic taxable persons in France? (English)
+What is the VAT registration threshold for domestic taxable persons in France?
 
-Wie hoch ist der Standard-Mehrwertsteuersatz in Frankreich? (German)
+Wie hoch ist der Standard-Mehrwertsteuersatz in Frankreich?
 
-Qual é a taxa padrão de IVA em França? (Portuguese)
+Qual é a taxa padrão de IVA em França?
 
 ### Germany - 5 Questions
 
-Wie hoch ist der Standard-Mehrwertsteuersatz in Deutschland und welche ermäßigten Sätze gelten? (German)
+Wie hoch ist der Standard-Mehrwertsteuersatz in Deutschland und welche ermäßigten Sätze gelten?
 
-Welche Schwellenwerte gelten für die Mehrwertsteuerregistrierung in Deutschland? (German)
+Welche Schwellenwerte gelten für die Mehrwertsteuerregistrierung in Deutschland?
 
-What is the VAT registration threshold for domestic taxable persons in Germany? (English)
+What is the VAT registration threshold for domestic taxable persons in Germany?
 
-¿Cuál es el tipo de IVA estándar aplicable en Alemania? (Spanish)
+¿Cuál es el tipo de IVA estándar aplicable en Alemania?
 
-Quel est le taux de TVA standard en Allemagne? (French)
+Quel est le taux de TVA standard en Allemagne?
 
 ### Italy - 4 Questions
 
-Qual è l'aliquota IVA standard in Italia e quali sono le aliquote ridotte applicabili? (Italian - Portuguese similar)
+Qual è l'aliquota IVA standard in Italia e quali sono le aliquote ridotte applicabili?
 
-Come funziona il meccanismo di inversione contabile (reverse charge) in Italia per i servizi forniti da operatori non residenti? (Italian - Portuguese similar)
+Come funziona il meccanismo di inversione contabile (reverse charge) in Italia per i servizi forniti da operatori non residenti?
 
-What is the standard VAT rate in Italy? (English)
+What is the standard VAT rate in Italy?
 
-¿Cuál es el umbral de registro de IVA para empresas nacionales en Italia? (Spanish)
+¿Cuál es el umbral de registro de IVA para empresas nacionales en Italia?
 
 ### Portugal - 4 Questions
 
-Qual é a taxa padrão de IVA em Portugal e quais são as taxas reduzidas aplicáveis? (Portuguese)
+Qual é a taxa padrão de IVA em Portugal e quais são as taxas reduzidas aplicáveis?
 
-Como funciona o regime de agrupamento de IVA em Portugal? (Portuguese)
+Como funciona o regime de agrupamento de IVA em Portugal?
 
-What is the VAT registration threshold for domestic taxable persons in Portugal? (English)
+What is the VAT registration threshold for domestic taxable persons in Portugal?
 
-Wie hoch ist der Standard-Mehrwertsteuersatz in Portugal? (German)
+Wie hoch ist der Standard-Mehrwertsteuersatz in Portugal?
 
 ### Finland - 3 Questions
 
-What is the standard VAT rate in Finland and what are the reduced rates applicable as of 2025? (English)
+What is the standard VAT rate in Finland and what are the reduced rates applicable as of 2025?
 
-¿Cuál es el umbral de registro de IVA para empresas nacionales en Finlandia a partir de 2025? (Spanish)
+¿Cuál es el umbral de registro de IVA para empresas nacionales en Finlandia a partir de 2025?
 
-Quel est le taux de TVA standard en Finlande? (French)
+Quel est le taux de TVA standard en Finlande?
 
 ### Lithuania - 3 Questions
 
-What is the standard VAT rate in Lithuania and what are the reduced rates applicable? (English)
+What is the standard VAT rate in Lithuania and what are the reduced rates applicable?
 
-What are the requirements for VAT registration in Lithuania for foreign taxable persons? (English)
+What are the requirements for VAT registration in Lithuania for foreign taxable persons?
 
-¿Cuál es el umbral de registro de IVA para empresas nacionales en Lituania? (Spanish)
+¿Cuál es el umbral de registro de IVA para empresas nacionales en Lituania?
 
 ### Romania - 3 Questions
 
-What is the VAT registration threshold for domestic taxable persons in Romania? (English)
+What is the VAT registration threshold for domestic taxable persons in Romania?
 
-How does the VAT grouping regime work in Romania and what are its main features? (English)
+How does the VAT grouping regime work in Romania and what are its main features?
 
-Qual é a taxa padrão de IVA na Roménia? (Portuguese)
+Qual é a taxa padrão de IVA na Roménia?
 
 ### Belgium - 3 Questions
 
-Quel est le traitement de la TVA pour les opérations de triangulation simplificée en Belgique? (French)
+Quel est le traitement de la TVA pour les opérations de triangulation simplificée en Belgique?
 
-What is the standard VAT rate in Belgium? (English)
+What is the standard VAT rate in Belgium?
 
-Wie hoch ist der Standard-Mehrwertsteuersatz in Belgien? (German)
+Wie hoch ist der Standard-Mehrwertsteuersatz in Belgien?
 
 ### Netherlands - 3 Questions
 
-What is the standard VAT rate in the Netherlands? (English)
+What is the standard VAT rate in the Netherlands?
 
-¿Cuál es el tipo de IVA estándar aplicable en los Países Bajos? (Spanish)
+¿Cuál es el tipo de IVA estándar aplicable en los Países Bajos?
 
-Quel est le taux de TVA standard aux Pays-Bas? (French)
+Quel est le taux de TVA standard aux Pays-Bas?
 
 ### Austria - 2 Questions
 
-What is the standard VAT rate in Austria? (English)
+What is the standard VAT rate in Austria?
 
-Wie hoch ist der Standard-Mehrwertsteuersatz in Österreich? (German)
+Wie hoch ist der Standard-Mehrwertsteuersatz in Österreich?

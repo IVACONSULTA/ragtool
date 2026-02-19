@@ -28,4 +28,5 @@ PyYAML>=6.0.0
 langchain-community>=0.3.0
 
 docx2txt
+requests>=2.31.0
 

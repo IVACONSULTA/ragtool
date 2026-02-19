@@ -1,0 +1,288 @@
+{
+  "normativa": [
+    {
+      "id": "ES-LIVA-37-1992",
+      "titulo": "Ley 37/1992 del Impuesto sobre el Valor Añadido (LIVA)",
+      "tipo_norma": "Ley",
+      "nivel": "Estatal",
+      "impuesto": "IVA",
+      "fecha_aprobacion": "1992-12-28",
+      "ultima_reforma": "2025-01-01",
+      "origen": "BOE",
+      "descripcion": "Norma básica del IVA en España: hecho imponible, localización, base imponible, tipos, deducciones, exenciones y regímenes especiales.",
+      "bloques": [
+        "Hecho imponible y localización",
+        "Exenciones interiores y exteriores",
+        "Devengo y base imponible",
+        "Regímenes especiales: REAGP, recargo de equivalencia, grupo de entidades, oro de inversión, bienes usados",
+        "Deducciones y prorrata",
+        "Obligaciones formales"
+      ],
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/act.php?id=BOE-A-1992-28740"
+      ]
+    },
+    {
+      "id": "ES-RD-1624-1992-RIVA",
+      "titulo": "Real Decreto 1624/1992 Reglamento del IVA",
+      "tipo_norma": "Real Decreto",
+      "nivel": "Estatal",
+      "impuesto": "IVA",
+      "fecha_aprobacion": "1992-12-29",
+      "ultima_reforma": "2025-01-01",
+      "origen": "BOE",
+      "descripcion": "Desarrollo del IVA: obligaciones formales, libros registro, devoluciones, operaciones intracomunitarias.",
+      "bloques": [
+        "Obligaciones censales",
+        "Libros registro IVA (base SII)",
+        "Devoluciones IVA intracomunitarias y no establecidas",
+        "Regímenes especiales"
+      ],
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-1992-28925"
+      ]
+    },
+    {
+      "id": "ES-RD-1619-2012-FACTURACION",
+      "titulo": "Real Decreto 1619/2012 Reglamento de facturación",
+      "tipo_norma": "Real Decreto",
+      "nivel": "Estatal",
+      "impuesto": "General / IVA",
+      "fecha_aprobacion": "2012-11-30",
+      "ultima_reforma": "2025-01-01",
+      "origen": "BOE",
+      "descripcion": "Regula contenido obligatorio de la factura, facturas simplificadas, facturación electrónica, plazos de expedición y conservación.",
+      "bloques": [
+        "Factura completa y simplificada",
+        "Facturación electrónica",
+        "Conservación y sistemas informáticos",
+        "Facturación por terceros o destinatario"
+      ],
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2012-14696"
+      ]
+    },
+    {
+      "id": "ES-ORDEN-EHA-1274-2007-CENSALES",
+      "titulo": "Órdenes EHA/1274/2007 – Modelos censales 036 y 037",
+      "tipo_norma": "Orden Ministerial",
+      "nivel": "Estatal",
+      "impuesto": "General",
+      "descripcion": "Regulación censal general: alta, modificación o baja de empresarios y profesionales.",
+      "modelos": ["036", "037"],
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2023-26632"
+      ]
+    },
+    {
+      "id": "ES-ORDEN-303",
+      "titulo": "Orden que aprueba el Modelo 303 del IVA",
+      "tipo_norma": "Orden Ministerial",
+      "nivel": "Estatal",
+      "impuesto": "IVA",
+      "descripcion": "Autoliquidación periódica del IVA. Incluye la versión 2024 con autoliquidación rectificativa.",
+      "modelos": ["303", "322", "353"],
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2024-16129"
+      ]
+    },
+    {
+      "id": "ES-ORDEN-390",
+      "titulo": "Orden que aprueba el Modelo 390",
+      "tipo_norma": "Orden Ministerial",
+      "nivel": "Estatal",
+      "impuesto": "IVA",
+      "descripcion": "Resumen anual del IVA.",
+      "modelos": ["390"],
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2024-21961"
+      ]
+    },
+    {
+      "id": "ES-LE-20-1991-IGIC",
+      "titulo": "Ley 20/1991 Régimen Económico y Fiscal de Canarias – IGIC",
+      "tipo_norma": "Ley",
+      "nivel": "Autonómico Canarias",
+      "impuesto": "IGIC",
+      "descripcion": "Norma principal del IGIC: hecho imponible, exenciones, tipos, deducciones, devoluciones.",
+      "bloques": [
+        "Hecho imponible IGIC",
+        "Tipos impositivos",
+        "Exenciones",
+        "Deducciones",
+        "Regímenes especiales",
+        "Operaciones con la Península y la UE"
+      ],
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-1991-14463"
+      ]
+    },
+    {
+      "id": "ES-DECRETO-268-2011-REF",
+      "titulo": "Decreto 268/2011 Reglamento de gestión de los tributos REF Canarias",
+      "tipo_norma": "Decreto autonómico",
+      "nivel": "Autonómico Canarias",
+      "impuesto": "IGIC",
+      "descripcion": "Regula obligaciones censales, autoliquidaciones, gestión de IGIC y otros tributos REF.",
+      "ultima_reforma": "2024-04-01",
+      "enlaces_oficiales": [
+        "https://www.gobiernodecanarias.org/boc/2011/159/001.html"
+      ]
+    },
+    {
+      "id": "ES-MODELO-400",
+      "titulo": "Modelo 400 – Declaración censal IGIC",
+      "tipo_norma": "Modelo tributario",
+      "nivel": "Autonómico Canarias",
+      "impuesto": "IGIC",
+      "descripcion": "Alta, modificación y cese en el censo de empresarios en Canarias.",
+      "enlaces_oficiales": [
+        "https://www.gobiernodecanarias.org/boc/1998/039/002.html",
+        "https://www.gobiernodecanarias.org/boc/2001/084/002.html",
+        "https://www.gobiernodecanarias.org/boc/2018/210/002.html"
+      ]
+    },
+    {
+      "id": "ES-MODELO-420",
+      "titulo": "Modelo 420 – Autoliquidación IGIC",
+      "tipo_norma": "Modelo tributario",
+      "nivel": "Autonómico Canarias",
+      "impuesto": "IGIC",
+      "descripcion": "Declaración trimestral/mensual del IGIC.",
+      "enlaces_oficiales": [
+        "https://www3.gobiernodecanarias.org/tributos/atc/w/modelo-420"
+      ]
+    },
+    {
+      "id": "ES-RD-596-2016-SII",
+      "titulo": "Real Decreto 596/2016 – Suministro Inmediato de Información (SII)",
+      "tipo_norma": "Real Decreto",
+      "nivel": "Estatal",
+      "impuesto": "IVA",
+      "descripcion": "Regulación del SII: gestión electrónica del IVA, envío de libros registro en tiempo casi real.",
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2016-11575",
+        "https://sede.agenciatributaria.gob.es/static_files/Sede/Procedimiento_ayuda/G417/FicherosSuministros/bolinform_SII_es_es.pdf"
+      ]
+    },
+    {
+      "id": "ES-ORDEN-HFP-417-2017-SII",
+      "titulo": "Orden HFP/417/2017 – Especificaciones técnicas SII",
+      "tipo_norma": "Orden Ministerial",
+      "nivel": "Estatal",
+      "impuesto": "IVA",
+      "descripcion": "Esquemas XML, estructura de libros registro y requisitos técnicos.",
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2017-5312",
+        "https://sede.agenciatributaria.gob.es/Sede/iva/suministro-inmediato-informacion/2017/cambios-orden-hfp-417-2017-especificac__.html"
+      ]
+    },
+    {
+      "id": "ES-RD-1007-2023-RRSIF",
+      "titulo": "Reglamento RRSIF – Sistemas informáticos Veri*Factu",
+      "tipo_norma": "Real Decreto",
+      "nivel": "Estatal",
+      "impuesto": "General / IVA",
+      "descripcion": "Requisitos de integridad, trazabilidad e inviolabilidad para software de facturación. Base del sistema Veri*Factu.",
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2023-24840",
+        "https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/cuestiones-generales.html"
+      ]
+    },
+    {
+      "id": "ES-LG-11-2021-FRAUDE",
+      "titulo": "Ley 11/2021 – Reforma LGT art. 29.2.j) (Veri*Factu)",
+      "tipo_norma": "Ley",
+      "nivel": "Estatal",
+      "impuesto": "General",
+      "descripcion": "Obligaciones de los sistemas informáticos de facturación, prohibición de software de doble uso y requisito de registro de procesos.",
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2021-11473"
+      ]
+    },
+    {
+      "id": "ES-LEY-18-2022-EFACTURA",
+      "titulo": "Ley 18/2022 Crea y Crece – Facturación electrónica B2B",
+      "tipo_norma": "Ley",
+      "nivel": "Estatal",
+      "impuesto": "General",
+      "descripcion": "Establece la futura obligatoriedad de la factura electrónica entre empresas.",
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/act.php?id=BOE-A-2022-15818"
+      ]
+    },
+    {
+      "id": "ES-TBAI-BASE",
+      "titulo": "TicketBAI – Normativa foral",
+      "tipo_norma": "Norma Foral + Decretos Forales",
+      "nivel": "Foral (País Vasco)",
+      "impuesto": "General",
+      "descripcion": "Sistema antifraude obligatorio en Euskadi: firma, QR, envío inmediato a Hacienda Foral.",
+      "enlaces_oficiales": [
+        "https://egoitza.gipuzkoa.eus/gao-bog/castell/bog/2020/11/12/c2005886.pdf"
+      ]
+    },
+    {
+      "id": "EU-DIR-112-2006",
+      "titulo": "Directiva 2006/112/CE – Sistema Común del IVA",
+      "tipo_norma": "Directiva UE",
+      "nivel": "UE",
+      "impuesto": "IVA",
+      "descripcion": "Marco legal del IVA europeo: estructura general, lugar de entrega y servicios, base imponible, regímenes especiales.",
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=DOUE-L-2006-82505"
+      ]
+    },
+    {
+      "id": "EU-REG-282-2011",
+      "titulo": "Reglamento UE 282/2011 – Reglamento de Servicios IVA",
+      "tipo_norma": "Reglamento UE",
+      "nivel": "UE",
+      "impuesto": "IVA",
+      "descripcion": "Medidas de aplicación de la Directiva IVA: reglas de localización, comercio electrónico, sujetos pasivos.",
+      "enlaces_oficiales": ["https://www.boe.es/doue/2011/077/L00001-00022.pdf"]
+    },
+    {
+      "id": "EU-DIR-2008-9",
+      "titulo": "Directiva 2008/9/CE – Devolución IVA intracomunitaria (8ª directiva moderna)",
+      "tipo_norma": "Directiva UE",
+      "nivel": "UE",
+      "impuesto": "IVA",
+      "descripcion": "Procedimiento de devolución de IVA soportado a empresarios establecidos en otros Estados miembros de la UE.",
+      "enlaces_oficiales": ["https://www.boe.es/doue/2008/044/L00023-00028.pdf"]
+    },
+    {
+      "id": "EU-DIR-86-560",
+      "titulo": "Directiva 86/560/CEE – Devolución IVA a no establecidos en la UE (13ª directiva)",
+      "tipo_norma": "Directiva UE",
+      "nivel": "UE",
+      "impuesto": "IVA",
+      "descripcion": "Procedimiento de devolución de IVA soportado a empresarios no establecidos en la UE.",
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=DOUE-L-1986-81630"
+      ]
+    },
+    {
+      "id": "EU-DAC-2011-16",
+      "titulo": "Directiva 2011/16/UE – Cooperación administrativa (DAC)",
+      "tipo_norma": "Directiva UE",
+      "nivel": "UE",
+      "impuesto": "General",
+      "descripcion": "Marco de intercambio de información entre administraciones tributarias de la UE.",
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=DOUE-L-2011-80479"
+      ]
+    },
+    {
+      "id": "EU-VIDA-2025-516",
+      "titulo": "Directiva (UE) 2025/516 – Reforma ViDA",
+      "tipo_norma": "Directiva UE",
+      "nivel": "UE",
+      "impuesto": "IVA",
+      "descripcion": "Reforma integral del IVA europeo en la era digital: DRR, facturación electrónica, plataformas digitales, registro único de IVA.",
+      "enlaces_oficiales": [
+        "https://www.boe.es/buscar/doc.php?id=DOUE-L-2025-80487"
+      ]
+    }
+  ]
+}

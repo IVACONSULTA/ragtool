@@ -2,17 +2,127 @@
 
 vat_consultation_task:
   description: >
-    Provide expert VAT and indirect taxation consultation based on the user's question.
-    Search the RAG knowledge base for relevant VAT documentation and regulations.
-    If no specific country is mentioned, assume Spain as the default jurisdiction.
-    Provide accurate, up-to-date information about VAT rules, compliance requirements,
-    and procedures. Focus on practical guidance that helps businesses understand their
-    VAT obligations and requirements.
+    Provide expert VAT (IVA), IGIC, and European indirect taxation consultation following the structured 
+    4-step methodology. Execute each step systematically:
+    
+    STEP 1 - IDENTIFY SCOPE (Identificar el ámbito):
+    - Determine the territorial scope from the user's question or context:
+      * Península/Baleares → IVA
+      * Canarias → IGIC
+      * Ceuta/Melilla → special regimes
+      * EU operations → VAT Directive / Regulation 282/2011
+      * Non-EU operations → 13th Directive
+    - If unclear, ask the user to clarify the territory or operation location
+    - Detect special keywords:
+      * "Canarias-Península" or "Península-Canarias" → IGIC + IVA import/export rules
+      * "empresa no establecida" or "non-established" → 8th/13th Directive
+      * "facturación electrónica" → Crea y Crece + ViDA
+      * "software facturación" → RRSIF / VeriFactu + TicketBAI (if País Vasco)
+    
+    STEP 2 - TAX CLASSIFICATION (Clasificación del impuesto):
+    - Classify the query type: taxable event, location, exemption, formal obligation, refund, invoicing
+    - Verify the applicable tax based on territory:
+      * If territory == Canarias → IGIC (NEVER IVA)
+      * If territory == Península/Baleares → IVA (NEVER IGIC)
+      * If service to EU client → Directive 2006/112/CE
+      * If non-EU supplier → 13th Directive
+    - CRITICAL: NEVER assume IVA = IGIC. They are different taxes with different rules.
+    
+    STEP 3 - RETRIEVAL (Recuperación):
+    - Search the RAG knowledge base using the following metadata filters:
+      1. nivel: Filter by normative level (Estatal, Autonómico Canarias, Foral, UE)
+      2. impuesto: Filter by tax type (IVA, IGIC, General)
+      3. conceptos_clave: Extract keywords from user query and filter by relevant concepts
+      4. tipo_norma: If user mentions "reglamento", "orden", "ley", "directiva", filter by norm type
+    - Retrieve relevant chunks from:
+      * LIVA (Ley 37/1992), RIVA (RD 1624/1992), RD 1619/2012 for IVA
+      * Ley 20/1991, Decreto 268/2011 for IGIC
+      * SII: RD 596/2016, Orden HFP/417/2017
+      * VeriFactu: RD 1007/2023, Ley 11/2021
+      * TicketBAI: normativa foral (only for País Vasco)
+      * Crea y Crece: Ley 18/2022
+      * EU: Directives 2006/112/CE, 2008/9/CE, 86/560/CEE, 2025/516; Regulation 282/2011
+      * VATBOOK1.txt, VATBOOK2.txt, VATBOOK3.txt, VATBOOK4.txt
+      * dossier_fuentes.json for normative metadata
+    - Prioritize norms by hierarchy (most specific to most general):
+      1. EU Regulations (directly applicable)
+      2. EU Directives (transposed into national law)
+      3. State or regional laws (Leyes)
+      4. Royal Decrees (Reglamentos)
+      5. Ministerial Orders (Órdenes)
+      6. FAQs and AEAT/ATC interpretative criteria (only if user requests practical guidance)
+    
+    STEP 4 - LEGAL REASONING (Razonamiento jurídico):
+    - Analyze the retrieved information following this mental model:
+      1. Identify the taxable event (hecho imponible)
+      2. Determine the location (localización)
+      3. Identify the applicable regime
+      4. Check for exemptions (exenciones)
+      5. Establish formal obligations (modelo, facturación, registro)
+      6. Verify European regulations if international component exists
+    - ALWAYS cite norms by their full official name
+    - ALWAYS indicate the normative level (estatal, autonómico, foral, UE)
+    - ONLY use information from retrieved chunks - NEVER invent articles or regulations
+    - NEVER mix IVA with IGIC in the same analysis unless explicitly comparing them
+    - For complex queries, structure the response with:
+      * Marco normativo aplicable (applicable normative framework)
+      * Análisis (detailed analysis)
+      * Obligaciones formales (formal obligations: invoice requirements, tax models, registries)
+      * Conclusión con normativa citada (conclusion with cited regulations)
+    
+    VALIDATION CHECKS - Before finalizing the response, verify:
+    - ✓ Correct tax applied based on territory (IVA vs IGIC)
+    - ✓ TicketBAI only mentioned if País Vasco context
+    - ✓ EU norms only applied when appropriate (international operations)
+    - ✓ No invented articles or regulations
+    - ✓ No invented tax rates
+    - ✓ SII and VeriFactu not confused
+    - ✓ No unpromulgated dates stated (especially VeriFactu implementation)
+    - ✓ 8th and 13th Directive correctly distinguished
+    - ✓ B2B electronic invoicing (Crea y Crece) not confused with EU ViDA
+    - ✓ ViDA not applied as if already transposed into LIVA (unless explicitly transposed)
+    
+    If no specific country or territory is mentioned, assume Spain (Península/Baleares → IVA) as default.
+    Provide accurate, up-to-date information with precise normative citations.
+    Focus on practical, actionable guidance that helps businesses understand their obligations.
+    
   expected_output: >
-    A concise and professional response about VAT and indirect taxation.
-    The response should include specific VAT rules, compliance requirements, or procedures
-    relevant to the user's question. If referencing another country, clearly specify the jurisdiction.
-    The response should be practical, accurate, and directly helpful for business decision-making.
+    A structured, professional response about VAT (IVA), IGIC, or European indirect taxation that follows 
+    the legal-operational format:
+    
+    For simple queries:
+    - Direct answer with specific norm citation (full name + level)
+    - Practical guidance on compliance or procedures
+    - Clear distinction of applicable territory and tax type
+    
+    For complex queries:
+    - Marco normativo aplicable:
+      * State/regional norm (e.g., "Ley 37/1992 del IVA - nivel estatal")
+      * EU norm if applicable (e.g., "Directiva 2006/112/CE - nivel UE")
+      * Technical regulations (SII, VeriFactu, TicketBAI) if relevant
+    - Análisis:
+      * Hecho imponible (taxable event)
+      * Localización (location rules)
+      * Devengo / base imponible (accrual / tax base)
+      * Tipo impositivo (tax rate)
+      * Exenciones aplicables (applicable exemptions)
+    - Obligaciones formales:
+      * Factura requirements (RD 1619/2012 or IGIC equivalent)
+      * Tax models (303/390 for IVA, 420 for IGIC, 036/037 for census)
+      * Registries (SII, VeriFactu, TicketBAI if País Vasco)
+    - Conclusión:
+      * Summary with all cited regulations
+      * Clear actionable steps
+      * Territory and tax type clearly stated
+    
+    The response must:
+    - Be accurate and based ONLY on retrieved information from the RAG
+    - Include full official names of cited norms with their level (estatal, autonómico, foral, UE)
+    - Clearly distinguish between IVA and IGIC based on territory
+    - Be practical and directly helpful for business decision-making
+    - NEVER include invented articles, rates, or dates
+    - NEVER request or reference personal user information
+    
   agent: iva_consulta_agent
 
 sap_consultation_task:
