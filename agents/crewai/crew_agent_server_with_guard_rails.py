@@ -69,11 +69,9 @@ nest_asyncio.apply()
 # Load environment variables if present
 load_dotenv()
 
-# Configure CrewAI to automatically show execution traces without prompting
-# This ensures continuous logging without blocking on user input
-os.environ.setdefault("CREWAI_TRACING_ENABLED", "true")
-# Disable interactive prompts by setting a default response
-# We'll mock stdin to automatically answer 'y' to continue logging
+os.environ.setdefault("CREWAI_TRACING_ENABLED", "false")
+os.environ.setdefault("CREWAI_DISABLE_TELEMETRY", "true")
+os.environ.setdefault("OTEL_SDK_DISABLED", "true")
 
 railway_public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN")
 railway_private_domain = os.getenv("RAILWAY_PRIVATE_DOMAIN")
