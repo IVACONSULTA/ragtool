@@ -55,6 +55,10 @@ spec:
             - name: AGENT_ROLE
               value: VAT_AGENT
             - name: CREWAI_TRACING_ENABLED
+              value: "false"
+            - name: CREWAI_DISABLE_TELEMETRY
+              value: "true"
+            - name: OTEL_SDK_DISABLED
               value: "true"
             - name: LANGCHAIN_TRACING_V2
               value: "true"
