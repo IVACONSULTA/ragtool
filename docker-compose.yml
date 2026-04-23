@@ -1,0 +1,45 @@
+# Local Docker Compose for the RagIvaconsulta service.
+#
+# Builds from Dockerfile.flexible (same image used for Cloud Run) and exposes
+# the Flask + CrewAI + guardrails server on http://localhost:8001.
+#
+# Usage (from RagIvaconsulta/):
+#   docker compose up --build            # build + start in foreground
+#   docker compose up -d --build         # detached
+#   docker compose logs -f rag
+#   docker compose down                  # stop + remove
+#
+# Rebuild the vector DB on startup (one-off):
+#   REBUILD_DATABASE=true docker compose up --build
+#
+# Requirements:
+#   - A RagIvaconsulta/.env file (see docs/Local_setup_Configuration_Guide.md).
+#     At minimum: OPENAI_API_KEY (or GOOGLE_API_KEY / GROQ_API_KEY), and
+#     API_KEY=local-dev-rag-key if you want X-API-Key enforcement.
+
+services:
+  rag:
+    build:
+      context: .
+      dockerfile: Dockerfile.flexible
+    image: rag-ivaconsulta:local
+    container_name: rag-ivaconsulta
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      PORT: "8001"
+      # Set to "true" to rebuild the vector DB on container start
+      REBUILD_DATABASE: "${REBUILD_DATABASE:-false}"
+    volumes:
+      # Persist the vector DB and source documents across rebuilds so you
+      # don't have to re-ingest every time the image is rebuilt.
+      - ./db:/db
+      - ./data:/data
+    # Allows the container to reach other services running on the host
+    # (e.g. the Orchestrator on :8003 or the ExpressApi on :3000) via
+    # host.docker.internal, on Linux as well as macOS/Windows.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
