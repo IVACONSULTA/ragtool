@@ -16,7 +16,8 @@ This PR adds support for the **Mistral Large 2411** model via OpenRouter, expand
   - Provider: `openrouter`
   - Model: `mistralai/mistral-large-2411`
   - Max tokens: 4096
-  - Uses OpenAI embeddings (`text-embedding-3-small`)
+  - Uses Google embeddings (`gemini-embedding-001`) to avoid OpenAI quota limits
+  - Requires both `OPENROUTER_API_KEY` (for LLM) and `GEMINI_API_KEY` (for embeddings)
 
 - Updated API key validation to support `OPENROUTER_API_KEY`:
   - Added validation in `ConfigurationSet.validate()`
@@ -69,14 +70,16 @@ python3 -m agents.utils.config --info
 
 ## 🚀 Deployment Notes
 
-**New environment variable required when using Mistral Large:**
-- `OPENROUTER_API_KEY` - Your OpenRouter API key (required for MISTRAL_LARGE_MODEL configuration)
+**New environment variables required when using Mistral Large:**
+- `OPENROUTER_API_KEY` - Your OpenRouter API key (required for Mistral LLM)
+- `GEMINI_API_KEY` - Your Google API key (required for Google embeddings)
 
 **Usage:**
 ```bash
 # Set in .env file or Railway dashboard
 CONFIG_SET=MISTRAL_LARGE_MODEL
 OPENROUTER_API_KEY=your-openrouter-api-key-here
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
 The configuration works for both:
@@ -100,7 +103,9 @@ The configuration works for both:
 - 131K context window for handling larger documents
 
 **Embedding Strategy:**
-Since OpenRouter does not provide embedding models, this configuration uses OpenAI's `text-embedding-3-small` for embeddings while using Mistral Large for LLM operations. This requires having both `OPENROUTER_API_KEY` and `OPENAI_API_KEY` set.
+Since OpenRouter does not provide embedding models, this configuration uses Google's `gemini-embedding-001` for embeddings while using Mistral Large for LLM operations. This requires having both `OPENROUTER_API_KEY` and `GEMINI_API_KEY` set.
+
+This avoids OpenAI rate limits and quota issues that can occur with `text-embedding-3-small`.
 
 ---
 
