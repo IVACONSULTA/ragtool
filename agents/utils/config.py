@@ -8,8 +8,13 @@ for different deployment scenarios (development, production, testing, etc.).
 ## Configuration Sets
 
 Built-in configuration sets:
-- **gpt-4o-mini**: OpenAI GPT-4o-mini configuration (1024 tokens)
-- **google-pro**:  google Pro configuration (2048 tokens)
+- **GEMINI_2.0_FLASH**: Google Gemini 2.0 Flash (2048 tokens)
+- **GEMINI_2.5_FLASH**: Google Gemini 2.5 Flash (4096 tokens)
+- **OPENAI_4o_MINI**: OpenAI GPT-4o-mini (1024 tokens)
+- **GROQ_LLAMA__LIGHT_MODEL**: Groq Llama 3.1 8B Instant (1024 tokens)
+- **GROQ_LLAMA__MODEL**: Groq Llama 3.1 70B Versatile (1024 tokens)
+- **GROQ_MIXTRAL_MODEL**: Groq Mixtral 8x7B (1024 tokens)
+- **MISTRAL_LARGE_MODEL**: Mistral Large 2411 via OpenRouter (4096 tokens)
 
 ## Usage Examples
 
@@ -65,7 +70,9 @@ Global environment variables (apply to all sets):
 - **CONFIG_SET**: Configuration set to use (default: auto-detect)
 - **API_KEY**: Generic API key that works for all providers (alternative to provider-specific keys)
 - **OPENAI_API_KEY**: OpenAI-specific API key (required if using OpenAI providers)
-- **GEMINI_API_KEY**: google-specific API key (required if using google providers)
+- **GEMINI_API_KEY**: Google-specific API key (required if using Google providers)
+- **GROQ_API_KEY**: Groq-specific API key (required if using Groq providers)
+- **OPENROUTER_API_KEY**: OpenRouter-specific API key (required if using OpenRouter/Mistral)
 
 Override variables (override set defaults):
 - **LLM_MODEL**: LLM model name
@@ -94,11 +101,14 @@ Configuration sets are auto-selected based on:
 
 Simply set the `CONFIG_SET` variable in your `.env` file:
 ```bash
-# Use gpt-4o-mini configuration
-CONFIG_SET=gpt-4o-mini
+# Use OpenAI GPT-4o-mini configuration
+CONFIG_SET=OPENAI_4o_MINI
 
-# Use google-pro configuration
-CONFIG_SET=google-pro
+# Use Google Gemini 2.0 Flash configuration
+CONFIG_SET=GEMINI_2.0_FLASH
+
+# Use Mistral Large 2411 via OpenRouter
+CONFIG_SET=MISTRAL_LARGE_MODEL
 ```
 """
 
@@ -203,6 +213,8 @@ class ConfigurationSet:
         openai_api_key = os.getenv("OPENAI_API_KEY")
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+        openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+
         if not generic_api_key:
             requires_openai = (
                 self.llm_provider == "openai" or self.embedding_provider == "openai"
@@ -210,12 +222,15 @@ class ConfigurationSet:
             requires_gemini = (
                 self.llm_provider == "google" or self.embedding_provider == "google"
             )
+            requires_openrouter = self.llm_provider == "openrouter"
 
             missing_keys = []
             if requires_openai and not openai_api_key:
                 missing_keys.append("OPENAI_API_KEY")
             if requires_gemini and not GEMINI_API_KEY:
                 missing_keys.append("GEMINI_API_KEY")
+            if requires_openrouter and not openrouter_api_key:
+                missing_keys.append("OPENROUTER_API_KEY")
 
             if missing_keys:
                 errors.append(
@@ -348,6 +363,7 @@ class ConfigurationSet:
             "environment_type": self.environment_type,
             "openai_api_key_set": bool(os.getenv("OPENAI_API_KEY")),
             "GEMINI_API_KEY_set": bool(os.getenv("GEMINI_API_KEY")),
+            "OPENROUTER_API_KEY_set": bool(os.getenv("OPENROUTER_API_KEY")),
             "llm_provider": self.llm_provider,
             "llm_model": self.llm_model,
             "embedding_provider": self.embedding_provider,
@@ -475,6 +491,24 @@ class ConfigurationManager:
                 llm_max_tokens=1024,
                 rag_provider="groq",
                 rag_model="mixtral-8x7b-32768",
+                embedding_provider="openai",
+                embedding_model="text-embedding-3-small",
+                chunk_size=1200,
+                chunk_overlap=200,
+                chroma_db_path="./db",
+                environment_type="auto",
+                langsmith_enabled=bool(os.getenv("LANGSMITH_API_KEY")),
+                langsmith_api_key=os.getenv("LANGSMITH_API_KEY"),
+                langsmith_project=os.getenv("LANGSMITH_PROJECT", "sap-rag-tool-dev"),
+                langsmith_endpoint=os.getenv("LANGCHAIN_ENDPOINT"),
+            ),
+            "MISTRAL_LARGE_MODEL": ConfigurationSet(
+                name="mistral-large-2411",
+                llm_provider="openrouter",
+                llm_model="mistralai/mistral-large-2411",
+                llm_max_tokens=4096,
+                rag_provider="openrouter",
+                rag_model="mistralai/mistral-large-2411",
                 embedding_provider="openai",
                 embedding_model="text-embedding-3-small",
                 chunk_size=1200,
@@ -654,6 +688,7 @@ def _validate_api_keys(config: ConfigurationSet):
     # Check provider-specific keys
     openai_api_key = os.getenv("OPENAI_API_KEY")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 
     # Determine which keys are required based on providers in use
     requires_openai = (
@@ -662,6 +697,7 @@ def _validate_api_keys(config: ConfigurationSet):
     requires_gemini = (
         config.llm_provider == "gemini" or config.embedding_provider == "gemini"
     )
+    requires_openrouter = config.llm_provider == "openrouter"
 
     missing_keys = []
 
@@ -670,6 +706,9 @@ def _validate_api_keys(config: ConfigurationSet):
 
     if requires_gemini and not GEMINI_API_KEY:
         missing_keys.append("GEMINI_API_KEY")
+
+    if requires_openrouter and not openrouter_api_key:
+        missing_keys.append("OPENROUTER_API_KEY")
 
     if missing_keys:
         raise ValueError(
@@ -713,6 +752,14 @@ def _validate_llm_api_keys(config: ConfigurationSet):
             raise ValueError(
                 "GEMINI_API_KEY is required for google LLM provider. "
                 "Please set GEMINI_API_KEY in your environment or .env file, "
+                "or set a generic API_KEY that works for all providers."
+            )
+    elif config.llm_provider == "openrouter":
+        openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+        if not openrouter_api_key:
+            raise ValueError(
+                "OPENROUTER_API_KEY is required for OpenRouter LLM provider. "
+                "Please set OPENROUTER_API_KEY in your environment or .env file, "
                 "or set a generic API_KEY that works for all providers."
             )
 
@@ -816,6 +863,9 @@ def print_config_info():
         )
         print(
             f"Gemini API Key: {'✅ Set' if env_info['GEMINI_API_KEY_set'] else '❌ Missing'}"
+        )
+        print(
+            f"OpenRouter API Key: {'✅ Set' if env_info['OPENROUTER_API_KEY_set'] else '❌ Missing'}"
         )
         print(f"LLM Model: {current_config.llm_model}")
         print(f"LLM Provider: {current_config.llm_provider}")
