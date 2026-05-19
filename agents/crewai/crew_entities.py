@@ -65,9 +65,22 @@ class CustomLlm:
             llm_provider = self.config["llm_provider"]
             llm_max_tokens = self.config["llm_max_tokens"]
 
-            self.llm = LLM(
-                model=f"{llm_provider}/{llm_model}", max_tokens=llm_max_tokens
-            )
+            # Build LLM kwargs
+            llm_kwargs = {
+                "model": f"{llm_provider}/{llm_model}",
+                "max_tokens": llm_max_tokens,
+            }
+
+            # Add API key for providers that require it
+            if llm_provider == "openrouter":
+                openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+                if openrouter_api_key:
+                    llm_kwargs["api_key"] = openrouter_api_key
+                    print("🔑 OpenRouter API key configured")
+                else:
+                    print("⚠️  Warning: OPENROUTER_API_KEY not set in environment")
+
+            self.llm = LLM(**llm_kwargs)
             print("✅ LLM initialized successfully with configuration")
 
         except Exception as e:
