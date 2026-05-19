@@ -220,7 +220,9 @@ class ConfigurationSet:
                 self.llm_provider == "openai" or self.embedding_provider == "openai"
             )
             requires_gemini = (
-                self.llm_provider == "google" or self.embedding_provider == "google"
+                self.llm_provider == "google"
+                or self.embedding_provider == "google"
+                or self.embedding_provider == "google-generativeai"
             )
             requires_openrouter = self.llm_provider == "openrouter"
 
@@ -509,8 +511,8 @@ class ConfigurationManager:
                 llm_max_tokens=4096,
                 rag_provider="openrouter",
                 rag_model="mistralai/mistral-large-2411",
-                embedding_provider="openai",
-                embedding_model="text-embedding-3-small",
+                embedding_provider="google-generativeai",
+                embedding_model="gemini-embedding-001",
                 chunk_size=1200,
                 chunk_overlap=200,
                 chroma_db_path="./db",
@@ -695,7 +697,9 @@ def _validate_api_keys(config: ConfigurationSet):
         config.llm_provider == "openai" or config.embedding_provider == "openai"
     )
     requires_gemini = (
-        config.llm_provider == "gemini" or config.embedding_provider == "gemini"
+        config.llm_provider == "gemini"
+        or config.embedding_provider == "gemini"
+        or config.embedding_provider == "google-generativeai"
     )
     requires_openrouter = config.llm_provider == "openrouter"
 
