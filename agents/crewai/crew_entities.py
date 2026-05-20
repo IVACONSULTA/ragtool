@@ -75,10 +75,20 @@ class CustomLlm:
             if llm_provider == "openrouter":
                 openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
                 if openrouter_api_key:
+                    # Set environment variable for LiteLLM compatibility
+                    os.environ["OPENROUTER_API_KEY"] = openrouter_api_key
+                    os.environ["OPENAI_API_BASE"] = "https://openrouter.ai/api/v1"
+                    
+                    # Pass to LLM constructor
                     llm_kwargs["api_key"] = openrouter_api_key
-                    print("🔑 OpenRouter API key configured")
+                    llm_kwargs["base_url"] = "https://openrouter.ai/api/v1"
+                    
+                    # Mask key for logging (show first 10 chars)
+                    masked_key = openrouter_api_key[:10] + "..." if len(openrouter_api_key) > 10 else "***"
+                    print(f"🔑 OpenRouter API key configured: {masked_key}")
                 else:
                     print("⚠️  Warning: OPENROUTER_API_KEY not set in environment")
+                    print(f"   Available env vars: {[k for k in os.environ.keys() if 'KEY' in k or 'API' in k]}")
 
             self.llm = LLM(**llm_kwargs)
             print("✅ LLM initialized successfully with configuration")
