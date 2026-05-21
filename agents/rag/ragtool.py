@@ -83,13 +83,12 @@ class BaseRagTool:
         )
 
     def _patch_google_embedding_spec(self):
-        """Patch CrewAI factory so Google embedding receives our model_name.
+        """Patch CrewAI factory so embedding providers receive our model_name.
 
         crewai_tools passes a flat spec {provider, model_name} to
         get_embedding_function, but the factory only uses spec.get("config", {}),
-        so the Google provider gets default "models/embedding-001" (deprecated).
-        This patch merges top-level spec keys into provider_config when
-        provider is google-generativeai so gemini-embedding-001 is used.
+        so providers fall back to their defaults. This patch merges top-level
+        spec keys into provider_config for Google and Cohere.
         """
         try:
             from crewai.rag.embeddings import factory as embed_factory
@@ -98,8 +97,8 @@ class BaseRagTool:
 
             def _patched_build_embedder_from_dict(spec):
                 provider_name = spec.get("provider")
+
                 if provider_name == "google-generativeai":
-                    # Factory expects spec["config"]; crewai_tools passes flat spec.
                     config = spec.get("config") or {}
                     if not config and ("model_name" in spec or "model" in spec):
                         config = {
@@ -108,6 +107,17 @@ class BaseRagTool:
                         }
                     if config:
                         spec = {**spec, "config": {**config, **spec.get("config", {})}}
+
+                elif provider_name == "cohere":
+                    config = spec.get("config") or {}
+                    if not config and ("model_name" in spec or "model" in spec):
+                        config = {
+                            "model_name": spec.get("model_name")
+                            or spec.get("model", "embed-english-v3.0")
+                        }
+                    if config:
+                        spec = {**spec, "config": {**config, **spec.get("config", {})}}
+
                 return _original(spec)
 
             embed_factory.build_embedder_from_dict = _patched_build_embedder_from_dict
