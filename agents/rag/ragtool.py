@@ -122,13 +122,22 @@ class BaseRagTool:
         # For Google embeddings, CrewAI requires EMBEDDINGS_GOOGLE_API_KEY
         if provider in ["google-generativeai", "google", "gemini"]:
             if not os.getenv("EMBEDDINGS_GOOGLE_API_KEY"):
-                # Try to use GOOGLE_API_KEY or GEMINI_API_KEY as fallback
                 google_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
                 if google_key:
                     os.environ["EMBEDDINGS_GOOGLE_API_KEY"] = google_key
                     print("✅ Set EMBEDDINGS_GOOGLE_API_KEY from GOOGLE_API_KEY/GEMINI_API_KEY")
                 else:
                     print("⚠️  Warning: EMBEDDINGS_GOOGLE_API_KEY not set for Google embeddings")
+
+        # For Cohere embeddings, CrewAI requires EMBEDDINGS_COHERE_API_KEY
+        if provider == "cohere":
+            if not os.getenv("EMBEDDINGS_COHERE_API_KEY"):
+                cohere_key = os.getenv("COHERE_API_KEY")
+                if cohere_key:
+                    os.environ["EMBEDDINGS_COHERE_API_KEY"] = cohere_key
+                    print("✅ Set EMBEDDINGS_COHERE_API_KEY from COHERE_API_KEY")
+                else:
+                    print("⚠️  Warning: COHERE_API_KEY not set for Cohere embeddings")
 
     def initialize_rag_tool(self) -> bool:
         """
