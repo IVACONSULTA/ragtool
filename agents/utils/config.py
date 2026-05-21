@@ -511,8 +511,8 @@ class ConfigurationManager:
                 llm_max_tokens=4096,
                 rag_provider="openrouter",
                 rag_model="mistralai/mistral-large-2411",
-                embedding_provider="openai",
-                embedding_model="text-embedding-3-small",
+                embedding_provider="cohere",
+                embedding_model="embed-english-v3.0",
                 chunk_size=1200,
                 chunk_overlap=200,
                 chroma_db_path="./db",
@@ -691,6 +691,7 @@ def _validate_api_keys(config: ConfigurationSet):
     openai_api_key = os.getenv("OPENAI_API_KEY")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+    cohere_api_key = os.getenv("COHERE_API_KEY")
 
     # Determine which keys are required based on providers in use
     requires_openai = (
@@ -702,6 +703,7 @@ def _validate_api_keys(config: ConfigurationSet):
         or config.embedding_provider == "google-generativeai"
     )
     requires_openrouter = config.llm_provider == "openrouter"
+    requires_cohere = config.embedding_provider == "cohere"
 
     missing_keys = []
 
@@ -713,6 +715,9 @@ def _validate_api_keys(config: ConfigurationSet):
 
     if requires_openrouter and not openrouter_api_key:
         missing_keys.append("OPENROUTER_API_KEY")
+
+    if requires_cohere and not cohere_api_key:
+        missing_keys.append("COHERE_API_KEY")
 
     if missing_keys:
         raise ValueError(
@@ -870,6 +875,9 @@ def print_config_info():
         )
         print(
             f"OpenRouter API Key: {'✅ Set' if env_info['OPENROUTER_API_KEY_set'] else '❌ Missing'}"
+        )
+        print(
+            f"Cohere API Key: {'✅ Set' if env_info['COHERE_API_KEY_set'] else '❌ Missing'}"
         )
         print(f"LLM Model: {current_config.llm_model}")
         print(f"LLM Provider: {current_config.llm_provider}")
