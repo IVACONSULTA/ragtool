@@ -15,6 +15,9 @@ Built-in configuration sets:
 - **GROQ_LLAMA__MODEL**: Groq Llama 3.1 70B Versatile (1024 tokens)
 - **GROQ_MIXTRAL_MODEL**: Groq Mixtral 8x7B (1024 tokens)
 - **MISTRAL_LARGE_MODEL**: Mistral Large 2411 via OpenRouter (4096 tokens)
+- **GROQ_LLAMA_3_3_70B**: Groq Llama 3.3 70B Versatile — free tier, 1,000 req/day (2048 tokens)
+- **OPENROUTER_FREE**: OpenRouter DeepSeek R1 free — 128K context, GPT-4 class (4096 tokens)
+- **OPENROUTER_LLAMA4_FREE**: OpenRouter Llama 4 Scout free — 10M context window (4096 tokens)
 
 ## Usage Examples
 
@@ -109,6 +112,15 @@ CONFIG_SET=GEMINI_2.0_FLASH
 
 # Use Mistral Large 2411 via OpenRouter
 CONFIG_SET=MISTRAL_LARGE_MODEL
+
+# Free tier — Groq Llama 3.3 70B (fastest, 1,000 req/day)
+CONFIG_SET=GROQ_LLAMA_3_3_70B
+
+# Free tier — OpenRouter DeepSeek R1 (128K context, GPT-4 class)
+CONFIG_SET=OPENROUTER_FREE
+
+# Free tier — OpenRouter Llama 4 Scout (10M context window)
+CONFIG_SET=OPENROUTER_LLAMA4_FREE
 ```
 """
 
@@ -511,6 +523,63 @@ class ConfigurationManager:
                 llm_max_tokens=4096,
                 rag_provider="openrouter",
                 rag_model="mistralai/mistral-large-2411",
+                embedding_provider="google-generativeai",
+                embedding_model="gemini-embedding-001",
+                chunk_size=1200,
+                chunk_overlap=200,
+                chroma_db_path="./db",
+                environment_type="auto",
+                langsmith_enabled=bool(os.getenv("LANGSMITH_API_KEY")),
+                langsmith_api_key=os.getenv("LANGSMITH_API_KEY"),
+                langsmith_project=os.getenv("LANGSMITH_PROJECT", "sap-rag-tool-dev"),
+                langsmith_endpoint=os.getenv("LANGCHAIN_ENDPOINT"),
+            ),
+            # Free tier — Option 2: Groq Llama 3.3 70B (fastest free inference, 1,000 req/day)
+            "GROQ_LLAMA_3_3_70B": ConfigurationSet(
+                name="llama-3.3-70b-versatile",
+                llm_provider="groq",
+                llm_model="llama-3.3-70b-versatile",
+                llm_max_tokens=2048,
+                rag_provider="groq",
+                rag_model="llama-3.3-70b-versatile",
+                embedding_provider="google-generativeai",
+                embedding_model="gemini-embedding-001",
+                chunk_size=1200,
+                chunk_overlap=200,
+                chroma_db_path="./db",
+                environment_type="auto",
+                langsmith_enabled=bool(os.getenv("LANGSMITH_API_KEY")),
+                langsmith_api_key=os.getenv("LANGSMITH_API_KEY"),
+                langsmith_project=os.getenv("LANGSMITH_PROJECT", "sap-rag-tool-dev"),
+                langsmith_endpoint=os.getenv("LANGCHAIN_ENDPOINT"),
+            ),
+            # Free tier — Option 4: OpenRouter DeepSeek R1 free (128K context, GPT-4 class)
+            "OPENROUTER_FREE": ConfigurationSet(
+                name="deepseek-r1-free",
+                llm_provider="openrouter",
+                llm_model="deepseek/deepseek-r1:free",
+                llm_max_tokens=4096,
+                rag_provider="openrouter",
+                rag_model="deepseek/deepseek-r1:free",
+                embedding_provider="google-generativeai",
+                embedding_model="gemini-embedding-001",
+                chunk_size=1200,
+                chunk_overlap=200,
+                chroma_db_path="./db",
+                environment_type="auto",
+                langsmith_enabled=bool(os.getenv("LANGSMITH_API_KEY")),
+                langsmith_api_key=os.getenv("LANGSMITH_API_KEY"),
+                langsmith_project=os.getenv("LANGSMITH_PROJECT", "sap-rag-tool-dev"),
+                langsmith_endpoint=os.getenv("LANGCHAIN_ENDPOINT"),
+            ),
+            # Free tier — Option 4 variant: OpenRouter Llama 4 Scout free (10M context window)
+            "OPENROUTER_LLAMA4_FREE": ConfigurationSet(
+                name="llama-4-scout-free",
+                llm_provider="openrouter",
+                llm_model="meta-llama/llama-4-scout:free",
+                llm_max_tokens=4096,
+                rag_provider="openrouter",
+                rag_model="meta-llama/llama-4-scout:free",
                 embedding_provider="google-generativeai",
                 embedding_model="gemini-embedding-001",
                 chunk_size=1200,
